@@ -1,0 +1,13 @@
+.invis-input{
+  /* Hide the visual aspects of the input element */
+  background: none;
+  border: none;
+  padding: 0;
+
+  /* Fill parent element */
+  height: 100%;
+  width: 100%;
+
+  /* Inherit global font weight specified in App.css */
+  font-weight: inherit;
+}

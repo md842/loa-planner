@@ -1,0 +1,14 @@
+/* All pages common styling */
+
+body{
+  font-family: "Noto Sans", system-ui;
+  font-weight: 300;
+}
+
+main{
+  margin: 0% 10% 0% 10%; /* top, right, bottom, left */
+}
+
+a{
+  color: var(--bs-body-color); /* Set link color to text color */
+}
