@@ -5,9 +5,16 @@
   padding: 0;
 
   /* Fill parent element */
-  height: 100%;
   width: 100%;
 
   /* Inherit global font weight specified in App.css */
   font-weight: inherit;
+}
+
+.invis-input.goal-name{
+  min-width: 100px;
+}
+
+input:disabled{ /* Disabled input has same text color as surroundings */
+  color: unset;
 }

@@ -1,17 +1,18 @@
 import './CharacterCard.css';
 
+import {type JSX} from 'react';
+
 import gold from '../assets/gold.png';
 import silver from '../assets/silver.png';
 import t4_blue from '../assets/t4_blue.png';
-import t4_bluesolar from '../assets/t4_bluesolar.png';
+import t4_blueSolar from '../assets/t4_bluesolar.png';
 import t4_fusion from '../assets/t4_fusion.png';
 //import t4_gem from '../assets/t4_gem.png';
 import t4_leap from '../assets/t4_leap.png';
 import t4_red from '../assets/t4_red.png';
-import t4_redsolar from '../assets/t4_redsolar.png';
+import t4_redSolar from '../assets/t4_redsolar.png';
 import t4_shard from '../assets/t4_shard.png';
 
-import type { JSX } from 'react';
 import Table from 'react-bootstrap/Table';
 
 /** Props interface for CharacterCard(). */
@@ -19,12 +20,18 @@ interface Character{
   name: string; // Name of character.
   ilvl: string; // Item level of character.
   class: string; // Class of character.
-  goals: Array<Goal>; // Array of goals belonging to character.
+  goals: Goal[]; // Array of goals belonging to character.
 }
 
 /** Interface for character goal data. */
 export interface Goal{
   name: string;
+  values: GoalValues;
+}
+
+/** Helps with type checking by providing a uniform index signature. **/
+interface GoalValues{
+  [key: string]: number;
   silver: number;
   gold: number;
   shards: number;
@@ -32,61 +39,39 @@ export interface Goal{
   reds: number;
   blues: number;
   leaps: number;
-  redsolars: number;
-  bluesolars: number;
+  redSolars: number;
+  blueSolars: number;
 }
 
 export function CharacterCard(params: Character): JSX.Element{
-  let goals = new Array<JSX.Element>;
-  let total = {name: "Total", silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redsolars: 0, bluesolars: 0} as Goal;
+  let table: JSX.Element[] = []; // Initialize character table and total values
+  let total: Goal = {name: "Total", values: {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0}};
 
-  params.goals.forEach((goal) => { // For each goal the character has:
-    // TODO: See if there is a more elegant way to do this...
-    total.silver += goal.silver;
-    total.gold += goal.gold;
-    total.shards += goal.shards;
-    total.fusions += goal.fusions;
-    total.reds += goal.reds;
-    total.blues += goal.blues;
-    total.leaps += goal.leaps;
-    total.redsolars += goal.redsolars;
-    total.bluesolars += goal.bluesolars;
+  params.goals.forEach((goal: Goal, index: number) => { // For each goal the character has:
+    let row: JSX.Element[] = []; // Initialize table row for this goal
+    // Add goal name and calculated gold value to the table row for this goal
+    row.push(<td key="goalName"><input className="invis-input goal-name" defaultValue={goal.name}/></td>);
+    row.push(<td key="goldValue"><b><input className="invis-input" value="Placeholder" disabled/></b></td>); // TODO: Calculate value using market data once implemented.
 
-    // TODO: and this...
-    // TODO: Calculate value using market data once implemented.
-    goals.push( // Create table row for the current goal
-      <tr>
-        <td><input className="invis-input" defaultValue={goal.name}/></td>
-        <td><b>Placeholder</b></td>
-        <td><input className="invis-input" defaultValue={goal.silver}/></td>
-        <td><input className="invis-input" defaultValue={goal.gold}/></td>
-        <td><input className="invis-input" defaultValue={goal.shards}/></td>
-        <td><input className="invis-input" defaultValue={goal.fusions}/></td>
-        <td><input className="invis-input" defaultValue={goal.reds}/></td>
-        <td><input className="invis-input" defaultValue={goal.blues}/></td>
-        <td><input className="invis-input" defaultValue={goal.leaps}/></td>
-        <td><input className="invis-input" defaultValue={goal.redsolars}/></td>
-        <td><input className="invis-input" defaultValue={goal.bluesolars}/></td>
-      </tr>
-    );
+    // Build the rest of the table row for this goal by pushing values as <td>
+    for (let [key, value] of Object.entries(goal.values)){
+      total.values[key] += value; // Accumulate value into total and add to row
+      row.push(<td key={key}><input className="invis-input" defaultValue={value} key={key}/></td>);
+    }
+
+    table.push(<tr key={index}>{row}</tr>); // Push completed row to table
   });
 
-  // TODO: and this...
-  goals.push( // At the end, create table row for the total of all goals
-    <tr>
-      <td><b>{total.name}</b></td>
-      <td><b>Placeholder</b></td>
-      <td><b>{total.silver}</b></td>
-      <td><b>{total.gold}</b></td>
-      <td><b>{total.shards}</b></td>
-      <td><b>{total.fusions}</b></td>
-      <td><b>{total.reds}</b></td>
-      <td><b>{total.blues}</b></td>
-      <td><b>{total.leaps}</b></td>
-      <td><b>{total.redsolars}</b></td>
-      <td><b>{total.bluesolars}</b></td>
-    </tr>
-  );
+  let totalRow: JSX.Element[] = []; // Initialize table row for the total
+  // Add "Total" label and calculated gold value to the table row for the total
+  totalRow.push(<td key="goalName"><b><input className="invis-input goal-name" defaultValue={total.name}/></b></td>);
+  totalRow.push(<td key="goldValue"><b><input className="invis-input" value="Placeholder" disabled/></b></td>); // TODO: Calculate value using market data once implemented.
+
+  // Build the rest of the table row for the total by pushing values as <td>
+  for (let [key, value] of Object.entries(total.values))
+    totalRow.push(<td key={key}><b><input className="invis-input" defaultValue={value}/></b></td>);
+
+  table.push(<tr key="total">{totalRow}</tr>); // Push completed row to table
 
   return(
     <>
@@ -103,13 +88,11 @@ export function CharacterCard(params: Character): JSX.Element{
             <th><img src={t4_red}/></th>
             <th><img src={t4_blue}/></th>
             <th><img src={t4_leap}/></th>
-            <th><img src={t4_redsolar}/></th>
-            <th><img src={t4_bluesolar}/></th>
+            <th><img src={t4_redSolar}/></th>
+            <th><img src={t4_blueSolar}/></th>
           </tr>
         </thead>
-        <tbody>
-          {goals /* Display unpacked goals */}
-        </tbody>
+        <tbody>{table /* Render table as built in function body */}</tbody>
       </Table>
     </>
   );
