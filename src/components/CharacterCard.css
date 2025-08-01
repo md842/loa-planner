@@ -1,4 +1,7 @@
 .invis-input{
+  /* Hide arrows on numeric input */
+  appearance: textfield;
+
   /* Hide the visual aspects of the input element */
   background: none;
   border: none;
@@ -17,4 +20,8 @@
 
 input:disabled{ /* Disabled input has same text color as surroundings */
   color: unset;
+}
+
+.bold{ /* Custom bold for gold value and total row */
+  font-weight: 400;
 }

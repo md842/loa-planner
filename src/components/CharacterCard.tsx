@@ -1,6 +1,6 @@
 import './CharacterCard.css';
 
-import {type JSX} from 'react';
+import {type ChangeEvent, type JSX, useState} from 'react';
 
 import gold from '../assets/gold.png';
 import silver from '../assets/silver.png';
@@ -15,6 +15,12 @@ import t4_shard from '../assets/t4_shard.png';
 
 import Table from 'react-bootstrap/Table';
 
+/** Interface for character goal data. */
+export interface Goal{
+  name: string;
+  values: GoalValues;
+}
+
 /** Props interface for CharacterCard(). */
 interface Character{
   name: string; // Name of character.
@@ -23,15 +29,9 @@ interface Character{
   goals: Goal[]; // Array of goals belonging to character.
 }
 
-/** Interface for character goal data. */
-export interface Goal{
-  name: string;
-  values: GoalValues;
-}
-
 /** Helps with type checking by providing a uniform index signature. **/
 interface GoalValues{
-  [key: string]: number;
+  [key: string]: number; // Index signature
   silver: number;
   gold: number;
   shards: number;
@@ -44,34 +44,59 @@ interface GoalValues{
 }
 
 export function CharacterCard(params: Character): JSX.Element{
-  let table: JSX.Element[] = []; // Initialize character table and total values
-  let total: Goal = {name: "Total", values: {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0}};
+  var total: GoalValues; // Initialized by initTable, but not part of state
+  const [table, setTable] = useState(initTable);
 
-  params.goals.forEach((goal: Goal, index: number) => { // For each goal the character has:
+  function initTable(): JSX.Element[]{
+    let workingTable: JSX.Element[] = [];
+    total = {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0};
+    
+    params.goals.forEach((goal: Goal, index: number) => {
+      // Build a row for each goal and push it to the table
+      workingTable.push(<tr key={index}>{goalRow(goal)}</tr>);
+      // Accumulate each goal's individual values into the total
+      for (let [key, value] of Object.entries(goal.values))
+        total[key] += value;
+    });
+    // Build a row for the total and push it to the table
+    workingTable.push(<tr className="bold" key="total">{totalRow(total)}</tr>);
+    return workingTable;
+  }
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>, key: string, goal: Goal) => {
+    let diff = Number(e.target.value) - goal.values[key];
+    goal.values[key] = Number(e.target.value); // Update value in goal
+    total[key] += diff; // Update total
+
+    // Update the total row in the table (setTable triggers re-render)
+    setTable(table.slice(0, -1).concat(<tr className="bold" key="total">{totalRow(total)}</tr>));
+  }
+
+  function goalRow(goal: Goal): JSX.Element[]{
     let row: JSX.Element[] = []; // Initialize table row for this goal
     // Add goal name and calculated gold value to the table row for this goal
     row.push(<td key="goalName"><input className="invis-input goal-name" defaultValue={goal.name}/></td>);
-    row.push(<td key="goldValue"><b><input className="invis-input" value="Placeholder" disabled/></b></td>); // TODO: Calculate value using market data once implemented.
+    row.push(<td key="goldValue"><input className="invis-input bold" value="Placeholder" disabled/></td>); // TODO: Calculate value using market data once implemented.
 
     // Build the rest of the table row for this goal by pushing values as <td>
-    for (let [key, value] of Object.entries(goal.values)){
-      total.values[key] += value; // Accumulate value into total and add to row
-      row.push(<td key={key}><input className="invis-input" defaultValue={value} key={key}/></td>);
-    }
+    for (let [key, value] of Object.entries(goal.values))
+      row.push(<td key={key}><input className="invis-input" defaultValue={value} onChange={(e) => handleChange(e, key, goal)} type="number"/></td>);
 
-    table.push(<tr key={index}>{row}</tr>); // Push completed row to table
-  });
+    return row;
+  }
 
-  let totalRow: JSX.Element[] = []; // Initialize table row for the total
-  // Add "Total" label and calculated gold value to the table row for the total
-  totalRow.push(<td key="goalName"><b><input className="invis-input goal-name" defaultValue={total.name}/></b></td>);
-  totalRow.push(<td key="goldValue"><b><input className="invis-input" value="Placeholder" disabled/></b></td>); // TODO: Calculate value using market data once implemented.
+  function totalRow(total: GoalValues): JSX.Element[]{
+    let row: JSX.Element[] = []; // Initialize table row for the total
+    // Add goal name and calculated gold value to the table row for the total
+    row.push(<td key="goalName"><input className="invis-input goal-name" value="Total" disabled/></td>);
+    row.push(<td key="goldValue"><input className="invis-input bold" value="Placeholder" disabled/></td>); // TODO: Calculate value using market data once implemented.
 
-  // Build the rest of the table row for the total by pushing values as <td>
-  for (let [key, value] of Object.entries(total.values))
-    totalRow.push(<td key={key}><b><input className="invis-input" defaultValue={value}/></b></td>);
+    // Build the rest of the table row for this goal by pushing values as <td>
+    for (let [key, value] of Object.entries(total))
+      row.push(<td key={key}><input className="invis-input" value={value} readOnly/></td>);
 
-  table.push(<tr key="total">{totalRow}</tr>); // Push completed row to table
+    return row;
+  }
 
   return(
     <>
