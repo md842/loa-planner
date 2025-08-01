@@ -1,7 +1,4 @@
 .invis-input{
-  /* Hide arrows on numeric input */
-  appearance: textfield;
-
   /* Hide the visual aspects of the input element */
   background: none;
   border: none;

@@ -64,12 +64,21 @@ export function CharacterCard(params: Character): JSX.Element{
   }
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>, key: string, goal: Goal) => {
-    let diff = Number(e.target.value) - goal.values[key];
-    goal.values[key] = Number(e.target.value); // Update value in goal
-    total[key] += diff; // Update total
+    if (e.target.value == "") // Input sanitization: allow deleting last digit
+      e.target.value = "0"; // Set empty input to 0
 
-    // Update the total row in the table (setTable triggers re-render)
-    setTable(table.slice(0, -1).concat(<tr className="bold" key="total">{totalRow(total)}</tr>));
+    let input: number = Number(e.target.value);
+    if (Number.isNaN(input)) // Input sanitization: Reject non-numeric input
+      e.target.value = String(goal.values[key]); // Overwrite invalid value
+    else{ // Input is valid
+      e.target.value = String(input); // Input sanitization: Clear leading 0s
+      let diff = input - goal.values[key];
+      goal.values[key] = input; // Update value in goal
+      total[key] += diff; // Update total
+
+      // Update the total row in the table (setTable triggers re-render)
+      setTable(table.slice(0, -1).concat(<tr className="bold" key="total">{totalRow(total)}</tr>));
+    }
   }
 
   function goalRow(goal: Goal): JSX.Element[]{
@@ -80,7 +89,7 @@ export function CharacterCard(params: Character): JSX.Element{
 
     // Build the rest of the table row for this goal by pushing values as <td>
     for (let [key, value] of Object.entries(goal.values))
-      row.push(<td key={key}><input className="invis-input" defaultValue={value} onChange={(e) => handleChange(e, key, goal)} type="number"/></td>);
+      row.push(<td key={key}><input className="invis-input" defaultValue={value} onChange={(e) => handleChange(e, key, goal)}/></td>);
 
     return row;
   }
