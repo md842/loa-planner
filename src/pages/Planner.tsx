@@ -13,6 +13,7 @@ export default function Home(){
         ilvl="1725"
         class="Aeromancer"
         goals={char1Goals}
+        boundMats={{silver: NaN, gold: 0, shards: 6289662, fusions: 55, reds: 32188, blues: 239752, leaps: 3646, redSolars: 0, blueSolars: 750}}
       />
     </main>
 	);
