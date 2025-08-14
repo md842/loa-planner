@@ -57,7 +57,7 @@ export function CharacterCard(char: Character): JSX.Element{
     goalsTotal = {name: "Total", values: {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0}};
 
     // Add section title
-    workingTable.push(<tr className="bold" key="goals"><td colSpan={11}>Goals</td></tr>);
+    workingTable.push(<tr className="bold" key="goals"><td className="section-title" colSpan={11}>Goals</td></tr>);
     
     char.goals.forEach((goal: Goal, index: number) => {
       // Build a row for each goal and push it to the table
@@ -77,12 +77,12 @@ export function CharacterCard(char: Character): JSX.Element{
     let workingTable: JSX.Element[] = [];
     
     // Add section title
-    workingTable.push(<tr className="bold" key="ownedMats"><td colSpan={11}>Owned materials</td></tr>);
+    workingTable.push(<tr className="bold" key="ownedMats"><td className="section-title" colSpan={11}>Owned materials</td></tr>);
 
     // Owned materials section
     workingTable.push(<tr key="boundMats">{matRow({name: "Bound", disable: 1})}</tr>);
-    workingTable.push(<tr key="rosterMats">{matRow({name: "Roster", disable: 0})}</tr>);
-    workingTable.push(<tr className="bold" key="totalMats">{matRow({name: "Total", disable: 0})}</tr>);
+    workingTable.push(<tr key="rosterMats">{matRow({name: "Roster", disable: 11})}</tr>);
+    workingTable.push(<tr className="bold" key="totalMats">{matRow({name: "Total", disable: 11})}</tr>);
     
     return workingTable;
   }
@@ -103,7 +103,7 @@ export function CharacterCard(char: Character): JSX.Element{
     let workingTable: JSX.Element[] = [];
     
     // Add section title
-    workingTable.push(<tr className="bold" key="ownedMats"><td colSpan={11}>{fnParams.name}</td></tr>);
+    workingTable.push(<tr className="bold section-title" key="ownedMats"><td className="section-title" colSpan={11}>{fnParams.name}</td></tr>);
 
     char.goals.forEach((goal: Goal, index: number) => {
       // Build a row for each goal and push it to the table
@@ -141,22 +141,28 @@ export function CharacterCard(char: Character): JSX.Element{
 
   function goalRow(fnParams: {goal: Goal, isTotal: boolean, subtract?: Materials}): JSX.Element[]{
     let row: JSX.Element[] = []; // Initialize table row for this goal
-    // Add goal name and calculated gold value to the table row for this goal
-    row.push(<td key="name"><input className="invis-input goal-name" defaultValue={fnParams.goal.name}/></td>);
-    row.push(<td key="goldValue"><input className="invis-input bold" value="Placeholder" disabled/></td>); // TODO: Calculate value using market data once implemented.
+
+    // Add goal name to the table row for this goal
+    if (fnParams.isTotal || fnParams.subtract) // Read-only if "Remaining materials" row or total row
+      row.push(<td className="read-only" key="name"><input className="invis-input goal-name" value={fnParams.goal.name} disabled/></td>);
+    else // Writeable if non-total goal row
+      row.push(<td className="writeable" key="name"><input className="invis-input goal-name" defaultValue={fnParams.goal.name}/></td>);
+    
+    // Add calculated gold value to the table row for this goal
+    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value="Placeholder" disabled/></td>); // TODO: Calculate value using market data once implemented.
 
     // Build the rest of the table row for this goal by pushing values as <td>
     for (let [key, value] of Object.entries(fnParams.goal.values)){
       if (fnParams.subtract){ // Row is in the "Remaining materials" section
         value = Math.max(0, value - fnParams.subtract[key]) // Must be >= 0
         // Always read only. Ternary expression replaces NaN with "--"
-        row.push(<td key={key}><input className="invis-input" value={Number.isNaN(value) ? "--" : value} readOnly/></td>);
+        row.push(<td className="read-only" key={key}><input className="invis-input" value={Number.isNaN(value) ? "--" : value} disabled/></td>);
       }
       else{ // Row is in the "Goals" section.
-        if (fnParams.isTotal) // If total row, specify readOnly
-          row.push(<td key={key}><input className="invis-input" value={value} readOnly/></td>);
+        if (fnParams.isTotal) // If total row, disable the input
+          row.push(<td className="read-only" key={key}><input className="invis-input" value={value} disabled/></td>);
         else // If goal row, specify change handler
-          row.push(<td key={key}><input className="invis-input" defaultValue={value} onChange={(e) => handleGoalChange(e, key, fnParams.goal)}/></td>);
+          row.push(<td className="writeable" key={key}><input className="invis-input" defaultValue={value} onChange={(e) => handleGoalChange(e, key, fnParams.goal)}/></td>);
       }
     }
     return row;
@@ -166,15 +172,15 @@ export function CharacterCard(char: Character): JSX.Element{
   function matRow(fnParams: {name: string, disable: number}): JSX.Element[]{
     let row: JSX.Element[] = []; // Initialize table row for this goal
     // Add goal name and calculated gold value to the table row for this goal
-    row.push(<td key="name"><input className="invis-input bold" value={fnParams.name} disabled/></td>);
-    row.push(<td key="goldValue"><input className="invis-input bold" value="Placeholder" disabled/></td>); // TODO: Calculate value using market data once implemented.
+    row.push(<td className="read-only" key="name"><input className="invis-input bold" value={fnParams.name} disabled/></td>);
+    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value="Placeholder" disabled/></td>); // TODO: Calculate value using market data once implemented.
 
     // Build the rest of the table row for this goal by pushing values as <td>
     for (let i = 0; i < 9; i++){
-      if (i < fnParams.disable) // If disabled field, set to "--" and readOnly
-        row.push(<td key={i}><input className="invis-input" value={"--"} readOnly/></td>);
+      if (i < fnParams.disable) // If disabled field, disable the input
+        row.push(<td className="read-only" key={i}><input className="invis-input" value={0} disabled/></td>);
       else // If enabled field, specify change handler
-        row.push(<td key={i}><input className="invis-input" defaultValue={0}/></td>);
+        row.push(<td className="writeable" key={i}><input className="invis-input" defaultValue={0}/></td>);
     }
 
     return row;
@@ -182,7 +188,7 @@ export function CharacterCard(char: Character): JSX.Element{
 
 
   return(
-    <Table striped bordered hover>
+    <Table hover>
       <thead>
         <tr>
           <th>{char.name}<br/>{char.ilvl} {char.class}</th>
@@ -201,7 +207,7 @@ export function CharacterCard(char: Character): JSX.Element{
       <tbody>
         {goalTable}
         {matsTable}
-        <tr><td colSpan={11}>&nbsp;</td></tr>{/* Blank row as spacer */}
+        <tr><th colSpan={11}>&nbsp;</th></tr>{/* Blank row as spacer */}
         {remTable}
         {remBoundTable}
       </tbody>

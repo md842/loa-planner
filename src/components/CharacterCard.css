@@ -1,3 +1,31 @@
+/* Table color formatting */
+
+:root{ /* Sets the table's theme color (other colors are derived from this) */
+  --color: var(--bs-blue);
+}
+
+td, th{ /* Set border color to the table's theme color */
+  border: 1px solid var(--color);
+}
+
+th{ /* Sets table header color to the table's theme color */
+  background-color: var(--color) !important; /* Override Bootstrap default */
+}
+
+.section-title{ /* Sets derived color for section titles */
+  background-color: color-mix(in srgb, var(--color) 75%, white 25%) !important;
+}
+
+.read-only{ /* Sets derived color for read-only fields */
+  background-color: color-mix(in srgb, var(--color) 50%, white 50%) !important;
+}
+
+.writeable{ /* Sets derived color for writeable fields */
+  background-color: color-mix(in srgb, var(--color) 25%, white 75%) !important;
+}
+
+/* Input formatting */
+
 .invis-input{
   /* Hide the visual aspects of the input element */
   background: none;
@@ -18,6 +46,8 @@
 input:disabled{ /* Disabled input has same text color as surroundings */
   color: unset;
 }
+
+/* Other formatting */
 
 .bold{ /* Custom bold for gold value and total row */
   font-weight: 400;
