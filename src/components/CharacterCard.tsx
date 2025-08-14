@@ -1,5 +1,6 @@
 import './CharacterCard.css';
 
+import {type Character, type Goal, type Materials} from '../components/Core';
 import {type ChangeEvent, type JSX, useState} from 'react';
 
 import gold from '../assets/gold.png';
@@ -14,35 +15,6 @@ import t4_redSolar from '../assets/t4_redsolar.png';
 import t4_shard from '../assets/t4_shard.png';
 
 import Table from 'react-bootstrap/Table';
-
-/** Interface for character goal data. */
-export interface Goal{
-  name: string;
-  values: Materials;
-}
-
-/** Props interface for CharacterCard(). */
-interface Character{
-  name: string; // Name of character.
-  ilvl: string; // Item level of character.
-  class: string; // Class of character.
-  goals: Goal[]; // Array of goals belonging to character.
-  boundMats: Materials; // Bound materials belonging to character.
-}
-
-/** Helps with type checking by providing a uniform index signature. **/
-interface Materials{
-  [key: string]: number; // Index signature
-  silver: number;
-  gold: number;
-  shards: number;
-  fusions: number;
-  reds: number;
-  blues: number;
-  leaps: number;
-  redSolars: number;
-  blueSolars: number;
-}
 
 export function CharacterCard(char: Character): JSX.Element{
   var goalsTotal: Goal; // Initialized by initGoalTable, but not part of state

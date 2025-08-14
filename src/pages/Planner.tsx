@@ -1,4 +1,5 @@
-import {CharacterCard, type Goal} from '../components/CharacterCard';
+import {CharacterCard} from '../components/CharacterCard';
+import {type Goal} from '../components/Core';
 
 export default function Home(){
   // Hardcoded placeholder goals. TODO: Load characters/goals dynamically.
