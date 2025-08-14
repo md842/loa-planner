@@ -1,21 +1,14 @@
 import {CharacterCard} from '../components/CharacterCard';
-import {type Goal} from '../components/Core';
+import {type Character, loadChars} from '../components/Core';
 
 export default function Home(){
-  // Hardcoded placeholder goals. TODO: Load characters/goals dynamically.
-  let char1Goals: Goal[] = [];
-  char1Goals.push({name: "Adv 21-40", values: {silver: 8613544, gold: 208063, shards: 919322, fusions: 1703, reds: 0, blues: 104032, leaps: 1939, redSolars: 0, blueSolars: 376}});
-  char1Goals.push({name: "Weapon +25", values: {silver: 11610890, gold: 258427, shards: 1173395, fusions: 2287, reds: 205827, blues: 0, leaps: 2974, redSolars: 2282, blueSolars: 0}});
+  let chars: Character[] = loadChars(); // Load all characters
 
 	return(
     <main className="home">
-      <CharacterCard
-        name="Stormvex"
-        ilvl="1725"
-        class="Aeromancer"
-        goals={char1Goals}
-        boundMats={{silver: NaN, gold: 0, shards: 6289662, fusions: 55, reds: 32188, blues: 239752, leaps: 3646, redSolars: 0, blueSolars: 750}}
-      />
+      {chars.map((char: Character) => { /* Create card for each character */
+        return <CharacterCard {...char}/>
+      })}
     </main>
 	);
 }

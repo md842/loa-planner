@@ -64,13 +64,9 @@ export function CharacterCard(char: Character): JSX.Element{
   function initRemTable(): JSX.Element[]{
     return initRemTableBase({name: "Remaining materials", subtract: {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0}});
   }
-
-
   function initRemBoundTable(): JSX.Element[]{
     return initRemTableBase({name: "Remaining materials (Bound only)", subtract: char.boundMats});
   }
-
-
   function initRemTableBase(fnParams: {name: string, subtract: Materials}): JSX.Element[]{
     let workingTable: JSX.Element[] = [];
     
@@ -97,6 +93,8 @@ export function CharacterCard(char: Character): JSX.Element{
       e.target.value = String(goal.values[key]); // Overwrite invalid value
     else{ // Input is valid
       e.target.value = String(input); // Input sanitization: Clear leading 0s
+
+      // Update goals section
       let diff = input - goal.values[key];
       goal.values[key] = input; // Update value in goal
       goalsTotal.values[key] += diff; // Update total
@@ -107,6 +105,8 @@ export function CharacterCard(char: Character): JSX.Element{
       let remainder = goalTable.slice(char.goals.length + 2);
 
       setGoals([...goalRows, goalTotalRow, ...remainder]);
+
+      // TODO: Update "remaining materials" sections
     }
   }
 
