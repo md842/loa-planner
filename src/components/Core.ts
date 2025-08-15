@@ -27,7 +27,7 @@ export interface Materials{
   blueSolars: number;
 }
 
-export function loadChars(){
+export function loadChars(): Character[]{
   // Uses placeholder values for now.
   let chars: Character[] = [];
 
@@ -37,7 +37,7 @@ export function loadChars(){
     class: "Aeromancer",
     goals: [],
     boundMats: {
-      silver: 0,
+      silver: NaN,
       gold: 27000,
       shards: 6062599,
       fusions: 11,
@@ -80,10 +80,59 @@ export function loadChars(){
   
   chars.push(char1);
 
+  /*let char2: Character = {
+    name: "Glaiv",
+    ilvl: "1704",
+    class: "Glaivier",
+    goals: [],
+    boundMats: {
+      silver: NaN,
+      gold: 0,
+      shards: 3378661,
+      fusions: 1054,
+      reds: 50755,
+      blues: 225010,
+      leaps: 2725,
+      redSolars: 69,
+      blueSolars: 579}
+  }
+
+  // Push placeholder goals to char 2
+  char2.goals.push({
+    name: "Adv 21-30",
+    values: {
+      silver: 19665071,
+      gold: 473413,
+      shards: 2006944,
+      fusions: 4025,
+      reds: 0,
+      blues: 236707,
+      leaps: 4261,
+      redSolars: 0, 
+      blueSolars: 855
+    }
+  });
+  char2.goals.push({
+    name: "Adv 31-40",
+    values: {
+      silver: 23430545,
+      gold: 568095,
+      shards: 2593650,
+      fusions: 4498,
+      reds: 0,
+      blues: 284048,
+      leaps: 5445,
+      redSolars: 0,
+      blueSolars: 1026
+    }
+  });
+  
+  chars.push(char2);*/
+
   return chars;
 }
 
-export function loadRosterMats(){
+export function loadRosterMats(): Materials{
   // Uses placeholder values for now.
   let rosterMats: Materials = {
     silver: 612665650,

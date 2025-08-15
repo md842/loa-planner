@@ -7,7 +7,7 @@ export default function Home(){
 	return(
     <main className="home">
       {chars.map((char: Character) => { /* Create card for each character */
-        return <CharacterCard {...char}/>
+        return <CharacterCard key={char.name} {...char}/>
       })}
     </main>
 	);

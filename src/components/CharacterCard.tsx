@@ -1,6 +1,6 @@
 import './CharacterCard.css';
 
-import {type Character, type Goal, type Materials} from '../components/Core';
+import {type Character, type Goal, type Materials, loadRosterMats} from '../components/Core';
 import {type ChangeEvent, type JSX, useState} from 'react';
 
 import gold from '../assets/gold.png';
@@ -17,9 +17,13 @@ import t4_shard from '../assets/t4_shard.png';
 import Table from 'react-bootstrap/Table';
 
 export function CharacterCard(char: Character): JSX.Element{
+  var rosterMats: Materials = loadRosterMats(); // Initialized here by Core.ts
+
   var goalsTotal: Goal; // Initialized by initGoalTable, but not part of state
+  var matsTotal: Materials; // Initialized by initMatsTable, but not part of state
+
   const [goalTable, setGoals] = useState(initGoalTable);
-  const [matsTable,] = useState(initMatsTable);
+  const [matsTable, setMats] = useState(initMatsTable);
   const [remTable,] = useState(initRemTable);
   const [remBoundTable,] = useState(initRemBoundTable);
 
@@ -47,14 +51,20 @@ export function CharacterCard(char: Character): JSX.Element{
 
   function initMatsTable(): JSX.Element[]{
     let workingTable: JSX.Element[] = [];
+    matsTotal = {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0};
     
     // Add section title
     workingTable.push(<tr className="bold" key="ownedMats"><td className="section-title" colSpan={11}>Owned materials</td></tr>);
 
+    // Accumulate total mats
+    for (let [key, value] of Object.entries(rosterMats))
+      matsTotal[key] = char.boundMats[key] + value;
+    matsTotal["silver"] = rosterMats["silver"];
+
     // Owned materials section
-    workingTable.push(<tr key="boundMats">{matRow({name: "Bound", disable: 1})}</tr>);
-    workingTable.push(<tr key="rosterMats">{matRow({name: "Roster", disable: 11})}</tr>);
-    workingTable.push(<tr className="bold" key="totalMats">{matRow({name: "Total", disable: 11})}</tr>);
+    workingTable.push(<tr key="boundMats">{matsRow({mats: char.boundMats, name: "Bound"})}</tr>);
+    workingTable.push(<tr key="rosterMats">{matsRow({mats: rosterMats, name: "Roster"})}</tr>);
+    workingTable.push(<tr className="bold" key="totalMats">{matsRow({mats: matsTotal, name: "Total"})}</tr>);
     
     return workingTable;
   }
@@ -62,7 +72,7 @@ export function CharacterCard(char: Character): JSX.Element{
 
   // Can't pass arguments to initializer functions, so this is the workaround.
   function initRemTable(): JSX.Element[]{
-    return initRemTableBase({name: "Remaining materials", subtract: {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0}});
+    return initRemTableBase({name: "Remaining materials", subtract: matsTotal});
   }
   function initRemBoundTable(): JSX.Element[]{
     return initRemTableBase({name: "Remaining materials (Bound only)", subtract: char.boundMats});
@@ -84,29 +94,63 @@ export function CharacterCard(char: Character): JSX.Element{
   }
 
 
-  const handleGoalChange = (e: ChangeEvent<HTMLInputElement>, key: string, goal: Goal) => {
+  function sanitizeInput(e: ChangeEvent<HTMLInputElement>, prevValue: number): boolean{
     if (e.target.value == "") // Input sanitization: allow deleting last digit
       e.target.value = "0"; // Set empty input to 0
-
+    
     let input: number = Number(e.target.value);
-    if (Number.isNaN(input)) // Input sanitization: Reject non-numeric input
-      e.target.value = String(goal.values[key]); // Overwrite invalid value
-    else{ // Input is valid
+    if (Number.isNaN(input)){ // Input sanitization: Reject non-numeric input
+      e.target.value = String(prevValue); // Overwrite invalid value
+      return false; // Input is invalid
+    }
+    else
       e.target.value = String(input); // Input sanitization: Clear leading 0s
+    return true; // Input is valid
+  }
 
-      // Update goals section
+
+  function handleGoalChange(e: ChangeEvent<HTMLInputElement>, key: string, goal: Goal){
+    console.log("handleGoalChange:", key);
+
+    if (sanitizeInput(e, goal.values[key])){ // Update only if valid input
+      let input: number = Number(e.target.value);
+
+      // Update "Goals" section
       let diff = input - goal.values[key];
       goal.values[key] = input; // Update value in goal
-      goalsTotal.values[key] += diff; // Update total
+      goalsTotal.values[key] += diff; // Update goals total
 
-      // Update the total row in the table (setTable triggers re-render)
-      let goalRows = goalTable.slice(0, char.goals.length + 1);
+      // Update the goals total row in the table (setGoals triggers re-render)
+      let remainder = goalTable.slice(0, -1);
       let goalTotalRow = <tr className="bold" key="total">{goalRow({goal: goalsTotal, isTotal: true})}</tr>;
-      let remainder = goalTable.slice(char.goals.length + 2);
+      setGoals([...remainder, goalTotalRow]);
 
-      setGoals([...goalRows, goalTotalRow, ...remainder]);
+      // TODO: Update "Remaining materials" sections
 
-      // TODO: Update "remaining materials" sections
+      // TODO: Save updated goals to character data
+    }
+  }
+
+
+  function handleBoundMatChange(e: ChangeEvent<HTMLInputElement>, key: string){
+    console.log("handleBoundMatChange:", key);
+
+    if (sanitizeInput(e, char.boundMats[key])){ // Update only if valid input
+      let input: number = Number(e.target.value);
+
+      // Update "Owned materials" section
+      let diff = input - char.boundMats[key];
+      char.boundMats[key] = input; // Update value in goal
+      matsTotal[key] += diff; // Update goals total
+
+      // Update the mats total row in the table (setMats triggers re-render)
+      let remainder = matsTable.slice(0, -1);
+      let matsTotalRow = <tr className="bold" key="totalMats">{matsRow({mats: matsTotal, name: "Total"})}</tr>;
+      setMats([...remainder, matsTotalRow]);
+
+      // TODO: Update "Remaining materials" sections
+
+      // TODO: Save updated bound mats to character data
     }
   }
 
@@ -141,20 +185,23 @@ export function CharacterCard(char: Character): JSX.Element{
   }
 
 
-  function matRow(fnParams: {name: string, disable: number}): JSX.Element[]{
+  function matsRow(fnParams: {mats: Materials, name: string}): JSX.Element[]{
     let row: JSX.Element[] = []; // Initialize table row for this goal
     // Add goal name and calculated gold value to the table row for this goal
     row.push(<td className="read-only" key="name"><input className="invis-input bold" value={fnParams.name} disabled/></td>);
     row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value="Placeholder" disabled/></td>); // TODO: Calculate value using market data once implemented.
 
     // Build the rest of the table row for this goal by pushing values as <td>
-    for (let i = 0; i < 9; i++){
-      if (i < fnParams.disable) // If disabled field, disable the input
-        row.push(<td className="read-only" key={i}><input className="invis-input" value={0} disabled/></td>);
-      else // If enabled field, specify change handler
-        row.push(<td className="writeable" key={i}><input className="invis-input" defaultValue={0}/></td>);
+    for (let [key, value] of Object.entries(fnParams.mats)){
+      if (fnParams.name == "Bound"){
+        if (key == "silver") // If bound silver, disable the input and replace value with "--"
+          row.push(<td className="read-only" key={key}><input className="invis-input" value="--" disabled/></td>);
+        else // If bound mat other than silver, specify change handler
+          row.push(<td className="writeable" key={key}><input className="invis-input" defaultValue={value} onChange={(e) => handleBoundMatChange(e, key)}/></td>);
+      }
+      else // If total or roster, disable the input
+        row.push(<td className="read-only" key={key}><input className="invis-input" value={value} disabled/></td>);
     }
-
     return row;
   }
 
