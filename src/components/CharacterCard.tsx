@@ -8,7 +8,6 @@ import silver from '../assets/silver.png';
 import t4_blue from '../assets/t4_blue.png';
 import t4_blueSolar from '../assets/t4_bluesolar.png';
 import t4_fusion from '../assets/t4_fusion.png';
-//import t4_gem from '../assets/t4_gem.png';
 import t4_leap from '../assets/t4_leap.png';
 import t4_red from '../assets/t4_red.png';
 import t4_redSolar from '../assets/t4_redsolar.png';
@@ -70,7 +69,7 @@ export function CharacterCard(char: Character): JSX.Element{
   }
 
 
-  // State initializers cannot take arguments, so set up subtract with helpers.
+  // State initializers cannot take arguments, set up "subtract" with helpers.
   function initRemTable(): JSX.Element[]{ // "Remaining materials" section
     return initRemTableBase({name: "Remaining materials", subtract: matsTotal});
   }
@@ -119,10 +118,10 @@ export function CharacterCard(char: Character): JSX.Element{
       goal.values[key] = input; // Update value in goal
       goalsTotal.values[key] += diff; // Update goals total
 
-      // Update the goals total row in the table (setGoals triggers re-render)
+      // Update the goals total row in the table
       let remainder = goalTable.slice(0, -1);
       let goalTotalRow = <tr className="bold" key="total">{goalRow({goal: goalsTotal, index: -1})}</tr>;
-      setGoals([...remainder, goalTotalRow]);
+      setGoals([...remainder, goalTotalRow]); // Update state (triggers re-render)
 
       // Update "Remaining materials" sections. Each only needs 2 row updates
       // (changed goal, total), so avoid re-initializing tables.
@@ -133,7 +132,7 @@ export function CharacterCard(char: Character): JSX.Element{
         let remRow = <tr key={goalIndex}>{goalRow({goal: goal, index: goalIndex, subtract: params.subtract})}</tr>; // The goal being changed
         let post = params.table.slice(goalIndex + 2, -1); // Any goals after the goal being changed
         let remTotalRow = <tr className="bold" key="total">{goalRow({goal: goalsTotal, index: -1, subtract: params.subtract})}</tr>; // The total
-        params.setter([...pre, remRow, ...post, remTotalRow]);
+        params.setter([...pre, remRow, ...post, remTotalRow]); // Update state (triggers re-render)
       });
 
       // TODO: Save updated goals to character data
@@ -150,10 +149,10 @@ export function CharacterCard(char: Character): JSX.Element{
       char.boundMats[key] = input; // Update value in goal
       matsTotal[key] += diff; // Update goals total
 
-      // Update the mats total row in the table (setMats triggers re-render)
+      // Update the mats total row in the table
       let remainder = matsTable.slice(0, -1);
       let matsTotalRow = <tr className="bold" key="totalMats">{matsRow({mats: matsTotal, name: "Total"})}</tr>;
-      setMats([...remainder, matsTotalRow]);
+      setMats([...remainder, matsTotalRow]); // Update state (triggers re-render)
 
       // Update "Remaining materials" sections.
       setRem(initRemTable); // Must update all rows, so just re-initialize.
