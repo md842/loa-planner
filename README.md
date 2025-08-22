@@ -1,69 +1,42 @@
-# React + TypeScript + Vite
+# LOA Planner
+This repository contains the source code and documentation for the LOA Planner project.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+All console commands given in this document are for Arch Linux kernel 6.16.0-arch2-1.
 
-Currently, two official plugins are available:
+This project was bootstrapped with [Vite](https://vitejs.dev/).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Dependencies (required)
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+#### npm (npm-11.5.2-1 used)
+```console
+$ sudo pacman -S npm
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## How to Build
+1. Install required dependencies from previous section.
+2. Clone this repository.
+```console
+$ git clone https://github.com/md842/loa-planner
 ```
+3. Navigate to the project directory.
+```console
+$ cd loa-planner
+```
+
+4. Install package dependencies.
+```console
+loa-planner$ npm install
+```
+
+5. Run the production build.
+```console
+loa-planner$ npm run build
+```
+
+## How to Run
+To run the app in development mode:
+```console
+loa-planner$ npm run dev
+```
+
+The app can now be accessed at `http://localhost:5173/`.
