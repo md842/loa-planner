@@ -4,12 +4,14 @@
   --color: var(--bs-blue);
 }
 
-td, th{ /* Set border color to the table's theme color */
-  border: 1px solid var(--color);
+.table > :not(caption) > * > * { /* Override Bootstrap table selector */
+  background-color: var(--color); /* Override background color */
+  /* Override text color within table so dark mode doesn't impact visibility */
+  color: #212529; /* Set light mode default text color */
 }
 
-th{ /* Sets table header color to the table's theme color */
-  background-color: var(--color) !important; /* Override Bootstrap default */
+td, th{ /* Set border color to the table's theme color */
+  border: 1px solid var(--color);
 }
 
 .section-title{ /* Sets derived color for section titles */
@@ -31,6 +33,9 @@ th{ /* Sets table header color to the table's theme color */
   background: none;
   border: none;
   padding: 0;
+
+  /* Override text color within table so dark mode doesn't impact visibility */
+  color: #212529; /* Set light mode default text color */
 
   /* Fill parent element */
   width: 100%;

@@ -9,8 +9,8 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 
 export default function Header(){
-  const [icon, setIcon] = useState("moon");
-  const [mode, setMode] = useState("light");
+  const [icon, setIcon] = useState("sun"); // Default to dark mode
+  const [mode, setMode] = useState("dark"); // Default to dark mode
 
   useEffect(() => {
     /* Load and set saved dark/light mode setting from local storage */
