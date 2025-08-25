@@ -26,6 +26,25 @@ td, th{ /* Set border color to the table's theme color */
   background-color: color-mix(in srgb, var(--color) 25%, white 75%) !important;
 }
 
+/* Goal buttons formatting */
+
+.section-title.goals{
+  border-right: none; /* Hide extra border to the right of "Goals" */
+}
+
+.section-title.goal-btns{
+  border-left: none; /* Hide extra border to the right of "Goals" */
+  text-align: right;
+  padding: calc(0.375em - 1px); /* Reduce padding according to button height to maintain row size */
+}
+
+.section-title.goal-btns button{
+  background-color: var(--color);
+  color: #212529; /* Set light mode default text color */
+  margin-left: 0.5em; /* Separate buttons */
+  line-height: 1em; /* Reduce button height to fit in row */
+}
+
 /* Input formatting */
 
 .invis-input{

@@ -13,6 +13,7 @@ import t4_red from '../assets/t4_red.png';
 import t4_redSolar from '../assets/t4_redsolar.png';
 import t4_shard from '../assets/t4_shard.png';
 
+import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 
 export function CharacterCard(char: Character): JSX.Element{
@@ -84,17 +85,13 @@ export function CharacterCard(char: Character): JSX.Element{
   }
 
 
-  function sanitizeInput(e: ChangeEvent<HTMLInputElement>, prevValue: number): boolean{
-    if (e.target.value == "") // Input sanitization: allow deleting last digit
-      e.target.value = "0"; // Set empty input to 0
-    
-    let input: number = Number(e.target.value);
-    if (Number.isNaN(input)){ // Input sanitization: Reject non-numeric input
-      e.target.value = String(prevValue); // Overwrite invalid value
-      return false; // Input is invalid
-    }
-    e.target.value = String(input); // Input sanitization: Clear leading 0s
-    return true; // Input is valid
+  function addGoal(){
+    console.log("addGoal called (not implemented)");
+  }
+
+
+  function removeGoal(){
+    console.log("removeGoal called (not implemented)");
   }
 
 
@@ -242,7 +239,13 @@ export function CharacterCard(char: Character): JSX.Element{
         </tr>
       </thead>
       <tbody>
-        <tr className="bold"><td className="section-title" colSpan={11}>Goals</td></tr>
+        <tr className="bold">
+          <td className="section-title goals" colSpan={1}>Goals</td>
+          <td className="section-title goal-btns" colSpan={10}>
+            <Button variant="primary" onClick={addGoal}>Add Goal</Button>
+            <Button variant="primary" onClick={removeGoal}>Remove Goal</Button>
+          </td>
+        </tr>
         {goalTable}
         <tr className="bold"><td className="section-title" colSpan={11}>Owned materials</td></tr>
         {matsTable}
@@ -254,4 +257,18 @@ export function CharacterCard(char: Character): JSX.Element{
       </tbody>
     </Table>
   );
+}
+
+
+function sanitizeInput(e: ChangeEvent<HTMLInputElement>, prevValue: number): boolean{
+  if (e.target.value == "") // Input sanitization: allow deleting last digit
+    e.target.value = "0"; // Set empty input to 0
+  
+  let input: number = Number(e.target.value);
+  if (Number.isNaN(input)){ // Input sanitization: Reject non-numeric input
+    e.target.value = String(prevValue); // Overwrite invalid value
+    return false; // Input is invalid
+  }
+  e.target.value = String(input); // Input sanitization: Clear leading 0s
+  return true; // Input is valid
 }
