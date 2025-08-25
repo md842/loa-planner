@@ -30,9 +30,6 @@ export function CharacterCard(char: Character): JSX.Element{
   function initGoalTable(): JSX.Element[]{
     let workingTable: JSX.Element[] = []; // Initialize table and goalsTotal
     goalsTotal = {name: "Total", values: {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0}};
-
-    // Add section title
-    workingTable.push(<tr className="bold" key="goals"><td className="section-title" colSpan={11}>Goals</td></tr>);
     
     char.goals.forEach((goal: Goal, index: number) => {
       // Build a row for each goal and push it to the table
@@ -51,9 +48,6 @@ export function CharacterCard(char: Character): JSX.Element{
   function initMatsTable(): JSX.Element[]{
     let workingTable: JSX.Element[] = []; // Initialize table and matsTotal
     matsTotal = {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0};
-    
-    // Add section title
-    workingTable.push(<tr className="bold" key="ownedMats"><td className="section-title" colSpan={11}>Owned materials</td></tr>);
 
     // Accumulate total materials
     for (let [key, value] of Object.entries(rosterMats))
@@ -71,16 +65,13 @@ export function CharacterCard(char: Character): JSX.Element{
 
   // State initializers cannot take arguments, set up "subtract" with helpers.
   function initRemTable(): JSX.Element[]{ // "Remaining materials" section
-    return initRemTableBase({name: "Remaining materials", subtract: matsTotal});
+    return initRemTableBase({subtract: matsTotal});
   }
   function initRemBoundTable(): JSX.Element[]{ // "Remaining bound materials" section
-    return initRemTableBase({name: "Remaining bound materials", subtract: char.boundMats});
+    return initRemTableBase({subtract: char.boundMats});
   }
-  function initRemTableBase(fnParams: {name: string, subtract: Materials}): JSX.Element[]{
+  function initRemTableBase(fnParams: {subtract: Materials}): JSX.Element[]{
     let workingTable: JSX.Element[] = []; // Initialize table
-    
-    // Add section title
-    workingTable.push(<tr className="bold section-title" key="ownedMats"><td className="section-title" colSpan={11}>{fnParams.name}</td></tr>);
 
     char.goals.forEach((goal: Goal, index: number) => {
       // Build a row for each goal and push it to the table
@@ -108,6 +99,8 @@ export function CharacterCard(char: Character): JSX.Element{
 
 
   function handleGoalChange(e: ChangeEvent<HTMLInputElement>, key: string, goalIndex: number){
+    console.log("handleGoalChange:", key, "in goal", goalIndex);
+
     let goal = char.goals[goalIndex]; // Get goal from index
 
     if (sanitizeInput(e, goal.values[key])){ // Update only if valid input
@@ -128,9 +121,9 @@ export function CharacterCard(char: Character): JSX.Element{
       [{table: remTable, setter: setRem, subtract: matsTotal}, // "Remaining materials"
        {table: remBoundTable, setter: setRemBound, subtract: char.boundMats} // "Remaining materials (Bound only)"
       ].forEach((params: {table: JSX.Element[], setter: React.Dispatch<React.SetStateAction<JSX.Element[]>>, subtract: Materials}) => {
-        let pre = params.table.slice(0, goalIndex + 1); // Section title and any goals before the goal being changed
+        let pre = params.table.slice(0, goalIndex); // Section title and any goals before the goal being changed
         let remRow = <tr key={goalIndex}>{goalRow({goal: goal, index: goalIndex, subtract: params.subtract})}</tr>; // The goal being changed
-        let post = params.table.slice(goalIndex + 2, -1); // Any goals after the goal being changed
+        let post = params.table.slice(goalIndex + 1, -1); // Any goals after the goal being changed
         let remTotalRow = <tr className="bold" key="total">{goalRow({goal: goalsTotal, index: -1, subtract: params.subtract})}</tr>; // The total
         params.setter([...pre, remRow, ...post, remTotalRow]); // Update state (triggers re-render)
       });
@@ -141,6 +134,8 @@ export function CharacterCard(char: Character): JSX.Element{
 
 
   function handleBoundMatChange(e: ChangeEvent<HTMLInputElement>, key: string){
+    console.log("handleBoundMatChange:", key);
+
     if (sanitizeInput(e, char.boundMats[key])){ // Update only if valid input
       let input: number = Number(e.target.value);
 
@@ -247,10 +242,14 @@ export function CharacterCard(char: Character): JSX.Element{
         </tr>
       </thead>
       <tbody>
+        <tr className="bold"><td className="section-title" colSpan={11}>Goals</td></tr>
         {goalTable}
+        <tr className="bold"><td className="section-title" colSpan={11}>Owned materials</td></tr>
         {matsTable}
         <tr><th colSpan={11}>&nbsp;</th></tr>{/* Blank row as spacer */}
+        <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining materials"}</td></tr>
         {remTable}
+        <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining bound materials"}</td></tr>
         {remBoundTable}
       </tbody>
     </Table>
