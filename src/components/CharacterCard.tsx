@@ -16,17 +16,16 @@ import t4_shard from '../assets/t4_shard.png';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 
+
+var rosterMats: Materials = loadRosterMats(); // From Core.ts, initialized here
+var goalsTotal: Goal; // Initialized by initGoalTable, but not part of state
+var matsTotal: Materials; // Initialized by initMatsTable, but not part of state
+
+
 export function CharacterCard(char: Character): JSX.Element{
-  var rosterMats: Materials = loadRosterMats(); // From Core.ts, initialized here
-
-  var goalsTotal: Goal; // Initialized by initGoalTable, but not part of state
-  var matsTotal: Materials; // Initialized by initMatsTable, but not part of state
-
   const [goalTable, setGoals] = useState(initGoalTable);
   const [matsTable, setMats] = useState(initMatsTable);
   const [remTable, setRem] = useState(initRemTable);
-  const [remBoundTable, setRemBound] = useState(initRemBoundTable);
-
 
   function initGoalTable(): JSX.Element[]{
     let workingTable: JSX.Element[] = []; // Initialize table and goalsTotal
@@ -39,12 +38,11 @@ export function CharacterCard(char: Character): JSX.Element{
       for (let [key, value] of Object.entries(goal.values))
         goalsTotal.values[key] += value;
     });
-    // Build a row for the goals total and push it to the table
-    workingTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, index: -1})}</tr>);
+    if (char.goals.length > 1) // Build total row
+      workingTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, index: -1})}</tr>);
     
     return workingTable; // Return table to state initializer
   }
-
 
   function initMatsTable(): JSX.Element[]{
     let workingTable: JSX.Element[] = []; // Initialize table and matsTotal
@@ -63,76 +61,60 @@ export function CharacterCard(char: Character): JSX.Element{
     return workingTable; // Return table to state initializer
   }
 
-
-  // State initializers cannot take arguments, set up "subtract" with helpers.
-  function initRemTable(): JSX.Element[]{ // "Remaining materials" section
-    return initRemTableBase({subtract: matsTotal});
-  }
-  function initRemBoundTable(): JSX.Element[]{ // "Remaining bound materials" section
-    return initRemTableBase({subtract: char.boundMats});
-  }
-  function initRemTableBase(fnParams: {subtract: Materials}): JSX.Element[]{
-    let workingTable: JSX.Element[] = []; // Initialize table
+  function initRemTable(): JSX.Element[][]{
+    let remTable: JSX.Element[] = [], remBoundTable: JSX.Element[] = []; // Initialize tables
 
     char.goals.forEach((goal: Goal, index: number) => {
-      // Build a row for each goal and push it to the table
-      workingTable.push(<tr key={index}>{goalRow({goal: goal, index: index, subtract: fnParams.subtract})}</tr>);
+      // Build rows for each goal and push it to the tables
+      remTable.push(<tr key={index}>{goalRow({goal: goal, index: index, subtract: matsTotal})}</tr>);
+      remBoundTable.push(<tr key={index}>{goalRow({goal: goal, index: index, subtract: char.boundMats})}</tr>);
     });
-    // Build a row for the goals total and push it to the table
-    workingTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, index: -1, subtract: fnParams.subtract})}</tr>);
+    if (char.goals.length > 1){ // Build total rows
+      remTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, index: -1, subtract: matsTotal})}</tr>);
+      remBoundTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, index: -1, subtract: char.boundMats})}</tr>);
+    }
     
-    return workingTable; // Return table to state initializer
+    return [remTable, remBoundTable]; // Return table to state initializer
   }
-
 
   function addGoal(){
-    console.log("addGoal called (not implemented)");
-  }
+    if (char.goals.length == 10) // Limit goals to 10
+      return;
 
+    let blankGoal: Goal = {name: "(Goal Name)", values: {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0}};
+    char.goals.push(blankGoal);
+    
+    // Update the goal table and remaining materials tables
+    setGoals(initGoalTable());
+    setRem(initRemTable());
+  }
 
   function removeGoal(){
-    console.log("removeGoal called (not implemented)");
+    if (char.goals.length == 1) // Must have at least 1 goal
+      return;
+
+    char.goals.pop();
+
+    // Update the goal table and remaining materials tables
+    setGoals(initGoalTable());
+    setRem(initRemTable());
   }
 
-
   function handleGoalChange(e: ChangeEvent<HTMLInputElement>, key: string, goalIndex: number){
-    console.log("handleGoalChange:", key, "in goal", goalIndex);
-
     let goal = char.goals[goalIndex]; // Get goal from index
 
     if (sanitizeInput(e, goal.values[key])){ // Update only if valid input
-      let input: number = Number(e.target.value);
+      goal.values[key] = Number(e.target.value); // Update value in goal
 
-      // Update "Goals" section
-      let diff = input - goal.values[key];
-      goal.values[key] = input; // Update value in goal
-      goalsTotal.values[key] += diff; // Update goals total
-
-      // Update the goals total row in the table
-      let remainder = goalTable.slice(0, -1);
-      let goalTotalRow = <tr className="bold" key="total">{goalRow({goal: goalsTotal, index: -1})}</tr>;
-      setGoals([...remainder, goalTotalRow]); // Update state (triggers re-render)
-
-      // Update "Remaining materials" sections. Each only needs 2 row updates
-      // (changed goal, total), so avoid re-initializing tables.
-      [{table: remTable, setter: setRem, subtract: matsTotal}, // "Remaining materials"
-       {table: remBoundTable, setter: setRemBound, subtract: char.boundMats} // "Remaining materials (Bound only)"
-      ].forEach((params: {table: JSX.Element[], setter: React.Dispatch<React.SetStateAction<JSX.Element[]>>, subtract: Materials}) => {
-        let pre = params.table.slice(0, goalIndex); // Section title and any goals before the goal being changed
-        let remRow = <tr key={goalIndex}>{goalRow({goal: goal, index: goalIndex, subtract: params.subtract})}</tr>; // The goal being changed
-        let post = params.table.slice(goalIndex + 1, -1); // Any goals after the goal being changed
-        let remTotalRow = <tr className="bold" key="total">{goalRow({goal: goalsTotal, index: -1, subtract: params.subtract})}</tr>; // The total
-        params.setter([...pre, remRow, ...post, remTotalRow]); // Update state (triggers re-render)
-      });
+      // Update the goal table and remaining materials tables
+      setGoals(initGoalTable());
+      setRem(initRemTable());
 
       // TODO: Save updated goals to character data
     }
   }
 
-
   function handleBoundMatChange(e: ChangeEvent<HTMLInputElement>, key: string){
-    console.log("handleBoundMatChange:", key);
-
     if (sanitizeInput(e, char.boundMats[key])){ // Update only if valid input
       let input: number = Number(e.target.value);
 
@@ -148,7 +130,6 @@ export function CharacterCard(char: Character): JSX.Element{
 
       // Update "Remaining materials" sections.
       setRem(initRemTable); // Must update all rows, so just re-initialize.
-      setRemBound(initRemBoundTable); // Same goes here.
 
       // TODO: Save updated bound mats to character data
     }
@@ -220,7 +201,6 @@ export function CharacterCard(char: Character): JSX.Element{
     return row;
   }
 
-
   return(
     <Table hover>
       <thead>
@@ -251,9 +231,9 @@ export function CharacterCard(char: Character): JSX.Element{
         {matsTable}
         <tr><th colSpan={11}>&nbsp;</th></tr>{/* Blank row as spacer */}
         <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining materials"}</td></tr>
-        {remTable}
+        {remTable[0]}
         <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining bound materials"}</td></tr>
-        {remBoundTable}
+        {remTable[1]}
       </tbody>
     </Table>
   );
