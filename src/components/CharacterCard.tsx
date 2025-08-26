@@ -1,6 +1,6 @@
 import './CharacterCard.css';
 
-import {type Character, type Goal, type Materials, loadRosterMats} from '../components/Core';
+import {type Character, type Goal, type Materials, loadRosterMats, saveChars} from '../components/Core';
 import {type ChangeEvent, type JSX, useState} from 'react';
 
 import gold from '../assets/gold.png';
@@ -17,7 +17,6 @@ import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 
 
-var rosterMats: Materials = loadRosterMats(); // From Core.ts, initialized here
 var goalsTotal: Goal; // Initialized by initGoalTable, but not part of state
 var matsTotal: Materials; // Initialized by initMatsTable, but not part of state
 
@@ -33,20 +32,21 @@ export function CharacterCard(char: Character): JSX.Element{
     
     char.goals.forEach((goal: Goal, index: number) => {
       // Build a row for each goal and push it to the table
-      workingTable.push(<tr key={index}>{goalRow({goal: goal, index: index})}</tr>);
+      workingTable.push(<tr key={index}>{goalRow({goal: goal, isTotal: false})}</tr>);
       // Accumulate each goal's individual values into goalsTotal
       for (let [key, value] of Object.entries(goal.values))
         goalsTotal.values[key] += value;
     });
     if (char.goals.length > 1) // Build total row
-      workingTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, index: -1})}</tr>);
+      workingTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, isTotal: true})}</tr>);
     
     return workingTable; // Return table to state initializer
   }
 
   function initMatsTable(): JSX.Element[]{
-    let workingTable: JSX.Element[] = []; // Initialize table and matsTotal
+    let workingTable: JSX.Element[] = []; // Initialize table, matsTotal
     matsTotal = {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0};
+    let rosterMats: Materials = loadRosterMats();
 
     // Accumulate total materials
     for (let [key, value] of Object.entries(rosterMats))
@@ -66,12 +66,12 @@ export function CharacterCard(char: Character): JSX.Element{
 
     char.goals.forEach((goal: Goal, index: number) => {
       // Build rows for each goal and push it to the tables
-      remTable.push(<tr key={index}>{goalRow({goal: goal, index: index, subtract: matsTotal})}</tr>);
-      remBoundTable.push(<tr key={index}>{goalRow({goal: goal, index: index, subtract: char.boundMats})}</tr>);
+      remTable.push(<tr key={index}>{goalRow({goal: goal, isTotal: false, subtract: matsTotal})}</tr>);
+      remBoundTable.push(<tr key={index}>{goalRow({goal: goal, isTotal: false, subtract: char.boundMats})}</tr>);
     });
     if (char.goals.length > 1){ // Build total rows
-      remTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, index: -1, subtract: matsTotal})}</tr>);
-      remBoundTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, index: -1, subtract: char.boundMats})}</tr>);
+      remTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, isTotal: true, subtract: matsTotal})}</tr>);
+      remBoundTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, isTotal: true, subtract: char.boundMats})}</tr>);
     }
     
     return [remTable, remBoundTable]; // Return table to state initializer
@@ -80,78 +80,67 @@ export function CharacterCard(char: Character): JSX.Element{
   function addGoal(){
     if (char.goals.length == 10) // Limit goals to 10
       return;
-
     let blankGoal: Goal = {name: "(Goal Name)", values: {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0}};
-    char.goals.push(blankGoal);
-    
-    // Update the goal table and remaining materials tables
-    setGoals(initGoalTable());
-    setRem(initRemTable());
+    char.goals.push(blankGoal); // Adds blank goal after existing goals
+    setGoals(initGoalTable()); // Update the goal table
+    setRem(initRemTable()); // Update remaining materials tables
   }
 
   function removeGoal(){
     if (char.goals.length == 1) // Must have at least 1 goal
       return;
-
-    char.goals.pop();
-
-    // Update the goal table and remaining materials tables
-    setGoals(initGoalTable());
-    setRem(initRemTable());
+    char.goals.pop(); // Removes last goal
+    setGoals(initGoalTable()); // Update the goal table
+    setRem(initRemTable()); // Update remaining materials tables
   }
 
-  function handleGoalChange(e: ChangeEvent<HTMLInputElement>, key: string, goalIndex: number){
-    let goal = char.goals[goalIndex]; // Get goal from index
-
-    if (sanitizeInput(e, goal.values[key])){ // Update only if valid input
-      goal.values[key] = Number(e.target.value); // Update value in goal
-
-      // Update the goal table and remaining materials tables
-      setGoals(initGoalTable());
-      setRem(initRemTable());
-
-      // TODO: Save updated goals to character data
+  function handleGoalChange(e: ChangeEvent<HTMLInputElement>, key: string, goal: Goal){
+    /* Sizes of these sections are dynamic, so row slicing is unreliable due to
+       the asynchronous nature of state. Thus, re-initialization is used. */
+    if (key == "name"){ // No input sanitization needed for name string
+      goal.name = e.target.value; // Update char data
+      setRem(initRemTable()); // Update remaining materials tables
+      saveChars(); // Save updated character data
     }
+    else if (sanitizeInput(e, goal.values[key])){ // Checks valid numeric input
+      goal.values[key] = Number(e.target.value); // Update char data
+      setGoals(initGoalTable()); // Update goal table
+      setRem(initRemTable()); // Update remaining materials tables
+      saveChars(); // Save updated character data
+    } // Reject non-numeric input outside of name field (do nothing)
   }
 
   function handleBoundMatChange(e: ChangeEvent<HTMLInputElement>, key: string){
-    if (sanitizeInput(e, char.boundMats[key])){ // Update only if valid input
-      let input: number = Number(e.target.value);
-
-      // Update "Owned materials" section
-      let diff = input - char.boundMats[key];
-      char.boundMats[key] = input; // Update value in goal
-      matsTotal[key] += diff; // Update goals total
-
-      // Update the mats total row in the table
-      let remainder = matsTable.slice(0, -1);
+    if (sanitizeInput(e, char.boundMats[key])){ // Checks valid numeric input
+      /* Size of this section is static, so only the total row needs updating,
+         and re-initialization can be avoided for performance reasons. */
+      matsTotal[key] += Number(e.target.value) - char.boundMats[key];
+      char.boundMats[key] = Number(e.target.value); // Update char data
+      
+      // Replace existing total row in matsTable with newly generated total row
       let matsTotalRow = <tr className="bold" key="totalMats">{matsRow({mats: matsTotal, name: "Total"})}</tr>;
-      setMats([...remainder, matsTotalRow]); // Update state (triggers re-render)
-
-      // Update "Remaining materials" sections.
-      setRem(initRemTable); // Must update all rows, so just re-initialize.
-
-      // TODO: Save updated bound mats to character data
-    }
+      setMats([...matsTable.slice(0, -1), matsTotalRow]); // Update mats table
+      setRem(initRemTable); // Update remaining materials tables
+      saveChars(); // Save updated character data
+    } // Reject non-numeric input (do nothing)
   }
 
   /**
    * Generate a table row for the "Goals" or "Remaining materials" sections.
    * @param  {Goal}           goal      The goal being used to generate the row.
-   * @param  {number}         index     The index of the goal, used for handleGoalChange.
-   *                                    If index == -1, this row represents a section total.
+   * @param  {boolean}        isTotal   If true, this row represents a section total.
    * @param  {Materials}      subtract  The materials to subtract from the goal.
    *                                    If defined, this row is in a "Remaining materials" section.
    * @return {JSX.Element[]}            The generated table row.
    */
-  function goalRow(fnParams: {goal: Goal, index: number, subtract?: Materials}): JSX.Element[]{
+  function goalRow(fnParams: {goal: Goal, isTotal: boolean, subtract?: Materials}): JSX.Element[]{
     let row: JSX.Element[] = []; // Initialize table row for this goal
 
     // Add goal name to the table row for this goal
-    if (fnParams.index == -1 || fnParams.subtract) // Read-only if total or "Remaining materials" row
+    if (fnParams.isTotal || fnParams.subtract) // Read-only if total or "Remaining materials" row
       row.push(<td className="read-only" key="name"><input className="invis-input goal-name" value={fnParams.goal.name} disabled/></td>);
     else // Writeable if non-total "Goals" row
-      row.push(<td className="writeable" key="name"><input className="invis-input goal-name" defaultValue={fnParams.goal.name}/></td>);
+      row.push(<td className="writeable" key="name"><input className="invis-input goal-name" defaultValue={fnParams.goal.name} onChange={(e) => handleGoalChange(e, "name", fnParams.goal)}/></td>);
     
     // Add calculated gold value to the table row for this goal
     row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value="Placeholder" disabled/></td>); // TODO: Calculate value using market data once implemented.
@@ -164,10 +153,10 @@ export function CharacterCard(char: Character): JSX.Element{
         row.push(<td className="read-only" key={key}><input className="invis-input" value={Number.isNaN(value) ? "--" : value} disabled/></td>);
       }
       else{ // Row is in the "Goals" section.
-        if (fnParams.index == -1) // If total row, disable the input
+        if (fnParams.isTotal) // If total row, disable the input
           row.push(<td className="read-only" key={key}><input className="invis-input" value={value} disabled/></td>);
         else // If goal row, specify change handler
-          row.push(<td className="writeable" key={key}><input className="invis-input" defaultValue={value} onChange={(e) => handleGoalChange(e, key, fnParams.index)}/></td>);
+          row.push(<td className="writeable" key={key}><input className="invis-input" defaultValue={value} onChange={(e) => handleGoalChange(e, key, fnParams.goal)}/></td>);
       }
     });
     return row;

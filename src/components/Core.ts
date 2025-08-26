@@ -1,5 +1,6 @@
 /** Stores information about a character. */
 export interface Character{
+  index: number; // Index of character.
   name: string; // Name of character.
   ilvl: string; // Item level of character.
   class: string; // Class of character.
@@ -27,11 +28,19 @@ export interface Materials{
   blueSolars: number;
 }
 
-export function loadChars(): Character[]{
-  // Uses placeholder values for now.
-  let chars: Character[] = [];
+var chars: Character[]; // Stored character data
 
+export function loadChars(): Character[]{
+  const storedChars = window.localStorage.getItem('chars');
+  if (storedChars){ // Found stored chars, load and return them.
+    chars = JSON.parse(storedChars);
+    return chars;
+  }
+
+  // If no stored characters were found, load placeholder character.
+  chars = []; // Initialize chars array
   let char1: Character = {
+    index: 0,
     name: "Stormvex",
     ilvl: "1727",
     class: "Aeromancer",
@@ -48,7 +57,7 @@ export function loadChars(): Character[]{
       blueSolars: 624}
   }
 
-  // Push placeholder goals to char 1
+  // Push placeholder goals
   char1.goals.push({
     name: "Weapon +25",
     values: {
@@ -80,56 +89,11 @@ export function loadChars(): Character[]{
   
   chars.push(char1);
 
-  /*let char2: Character = {
-    name: "Glaiv",
-    ilvl: "1704",
-    class: "Glaivier",
-    goals: [],
-    boundMats: {
-      silver: NaN,
-      gold: 0,
-      shards: 3378661,
-      fusions: 1054,
-      reds: 50755,
-      blues: 225010,
-      leaps: 2725,
-      redSolars: 69,
-      blueSolars: 579}
-  }
-
-  // Push placeholder goals to char 2
-  char2.goals.push({
-    name: "Adv 21-30",
-    values: {
-      silver: 19665071,
-      gold: 473413,
-      shards: 2006944,
-      fusions: 4025,
-      reds: 0,
-      blues: 236707,
-      leaps: 4261,
-      redSolars: 0, 
-      blueSolars: 855
-    }
-  });
-  char2.goals.push({
-    name: "Adv 31-40",
-    values: {
-      silver: 23430545,
-      gold: 568095,
-      shards: 2593650,
-      fusions: 4498,
-      reds: 0,
-      blues: 284048,
-      leaps: 5445,
-      redSolars: 0,
-      blueSolars: 1026
-    }
-  });
-  
-  chars.push(char2);*/
-
   return chars;
+}
+
+export function saveChars(){
+  window.localStorage.setItem('chars', JSON.stringify(chars));
 }
 
 export function loadRosterMats(): Materials{
