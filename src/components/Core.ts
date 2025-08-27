@@ -1,6 +1,5 @@
 /** Stores information about a character. */
 export interface Character{
-  index: number; // Index of character.
   name: string; // Name of character.
   ilvl: string; // Item level of character.
   class: string; // Class of character.
@@ -28,6 +27,10 @@ export interface Materials{
   blueSolars: number;
 }
 
+export function initMaterials(): Materials{
+  return {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0};
+}
+
 var chars: Character[]; // Stored character data
 
 export function loadChars(): Character[]{
@@ -40,7 +43,6 @@ export function loadChars(): Character[]{
   // If no stored characters were found, load placeholder character.
   chars = []; // Initialize chars array
   let char1: Character = {
-    index: 0,
     name: "Stormvex",
     ilvl: "1727",
     class: "Aeromancer",
@@ -88,7 +90,6 @@ export function loadChars(): Character[]{
   });
   
   chars.push(char1);
-
   return chars;
 }
 

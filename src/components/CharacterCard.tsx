@@ -1,7 +1,7 @@
 import './CharacterCard.css';
 
-import {type Character, type Goal, type Materials, loadRosterMats, saveChars} from '../components/Core';
-import {type ChangeEvent, type JSX, useState} from 'react';
+import {type Character, type Goal, type Materials, initMaterials, loadRosterMats, saveChars} from '../components/Core';
+import {type ChangeEvent, type JSX, type RefObject, useRef, useState} from 'react';
 
 import gold from '../assets/gold.png';
 import silver from '../assets/silver.png';
@@ -16,47 +16,45 @@ import t4_shard from '../assets/t4_shard.png';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 
-
-var goalsTotal: Goal; // Initialized by initGoalTable, but not part of state
-var matsTotal: Materials; // Initialized by initMatsTable, but not part of state
-
-
 export function CharacterCard(char: Character): JSX.Element{
+  const goalsTotal: RefObject<Goal> = useRef({name: "Total", values: initMaterials()});
+  const matsTotal: RefObject<Materials> = useRef(initMaterials());
+
   const [goalTable, setGoals] = useState(initGoalTable);
   const [matsTable, setMats] = useState(initMatsTable);
   const [remTable, setRem] = useState(initRemTable);
 
   function initGoalTable(): JSX.Element[]{
     let workingTable: JSX.Element[] = []; // Initialize table and goalsTotal
-    goalsTotal = {name: "Total", values: {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0}};
+    goalsTotal.current = {name: "Total", values: initMaterials()};
     
     char.goals.forEach((goal: Goal, index: number) => {
       // Build a row for each goal and push it to the table
       workingTable.push(<tr key={index}>{goalRow({goal: goal, isTotal: false})}</tr>);
       // Accumulate each goal's individual values into goalsTotal
       for (let [key, value] of Object.entries(goal.values))
-        goalsTotal.values[key] += value;
+        goalsTotal.current.values[key] += value;
     });
     if (char.goals.length > 1) // Build total row
-      workingTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, isTotal: true})}</tr>);
+      workingTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal.current, isTotal: true})}</tr>);
     
     return workingTable; // Return table to state initializer
   }
 
   function initMatsTable(): JSX.Element[]{
-    let workingTable: JSX.Element[] = []; // Initialize table, matsTotal
-    matsTotal = {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0};
+    let workingTable: JSX.Element[] = []; // Initialize table and matsTotal
+    matsTotal.current = initMaterials();
     let rosterMats: Materials = loadRosterMats();
 
     // Accumulate total materials
     for (let [key, value] of Object.entries(rosterMats))
-      matsTotal[key] = char.boundMats[key] + value;
-    matsTotal["silver"] = rosterMats["silver"];
+      matsTotal.current[key] = char.boundMats[key] + value;
+    matsTotal.current["silver"] = rosterMats["silver"];
 
     // Build and push each owned materials row
     workingTable.push(<tr key="boundMats">{matsRow({mats: char.boundMats, name: "Bound"})}</tr>);
     workingTable.push(<tr key="rosterMats">{matsRow({mats: rosterMats, name: "Roster"})}</tr>);
-    workingTable.push(<tr className="bold" key="totalMats">{matsRow({mats: matsTotal, name: "Total"})}</tr>);
+    workingTable.push(<tr className="bold" key="totalMats">{matsRow({mats: matsTotal.current, name: "Total"})}</tr>);
     
     return workingTable; // Return table to state initializer
   }
@@ -66,12 +64,12 @@ export function CharacterCard(char: Character): JSX.Element{
 
     char.goals.forEach((goal: Goal, index: number) => {
       // Build rows for each goal and push it to the tables
-      remTable.push(<tr key={index}>{goalRow({goal: goal, isTotal: false, subtract: matsTotal})}</tr>);
+      remTable.push(<tr key={index}>{goalRow({goal: goal, isTotal: false, subtract: matsTotal.current})}</tr>);
       remBoundTable.push(<tr key={index}>{goalRow({goal: goal, isTotal: false, subtract: char.boundMats})}</tr>);
     });
     if (char.goals.length > 1){ // Build total rows
-      remTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, isTotal: true, subtract: matsTotal})}</tr>);
-      remBoundTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal, isTotal: true, subtract: char.boundMats})}</tr>);
+      remTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal.current, isTotal: true, subtract: matsTotal.current})}</tr>);
+      remBoundTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal.current, isTotal: true, subtract: char.boundMats})}</tr>);
     }
     
     return [remTable, remBoundTable]; // Return table to state initializer
@@ -80,10 +78,10 @@ export function CharacterCard(char: Character): JSX.Element{
   function addGoal(){
     if (char.goals.length == 10) // Limit goals to 10
       return;
-    let blankGoal: Goal = {name: "(Goal Name)", values: {silver: 0, gold: 0, shards: 0, fusions: 0, reds: 0, blues: 0, leaps: 0, redSolars: 0, blueSolars: 0}};
-    char.goals.push(blankGoal); // Adds blank goal after existing goals
+    char.goals.push({name: "(Goal Name)", values: initMaterials()});
     setGoals(initGoalTable()); // Update the goal table
     setRem(initRemTable()); // Update remaining materials tables
+    saveChars(); // Save updated character data
   }
 
   function removeGoal(){
@@ -92,6 +90,7 @@ export function CharacterCard(char: Character): JSX.Element{
     char.goals.pop(); // Removes last goal
     setGoals(initGoalTable()); // Update the goal table
     setRem(initRemTable()); // Update remaining materials tables
+    saveChars(); // Save updated character data
   }
 
   function handleGoalChange(e: ChangeEvent<HTMLInputElement>, key: string, goal: Goal){
@@ -114,11 +113,11 @@ export function CharacterCard(char: Character): JSX.Element{
     if (sanitizeInput(e, char.boundMats[key])){ // Checks valid numeric input
       /* Size of this section is static, so only the total row needs updating,
          and re-initialization can be avoided for performance reasons. */
-      matsTotal[key] += Number(e.target.value) - char.boundMats[key];
+      matsTotal.current[key] += Number(e.target.value) - char.boundMats[key];
       char.boundMats[key] = Number(e.target.value); // Update char data
       
       // Replace existing total row in matsTable with newly generated total row
-      let matsTotalRow = <tr className="bold" key="totalMats">{matsRow({mats: matsTotal, name: "Total"})}</tr>;
+      let matsTotalRow = <tr className="bold" key="totalMats">{matsRow({mats: matsTotal.current, name: "Total"})}</tr>;
       setMats([...matsTable.slice(0, -1), matsTotalRow]); // Update mats table
       setRem(initRemTable); // Update remaining materials tables
       saveChars(); // Save updated character data
@@ -227,7 +226,6 @@ export function CharacterCard(char: Character): JSX.Element{
     </Table>
   );
 }
-
 
 function sanitizeInput(e: ChangeEvent<HTMLInputElement>, prevValue: number): boolean{
   if (e.target.value == "") // Input sanitization: allow deleting last digit
