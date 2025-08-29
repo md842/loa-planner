@@ -1,5 +1,7 @@
+import {type Character} from '../components/core/types';
+import {loadChars} from '../components/core/character-data';
+
 import {CharacterCard} from '../components/CharacterCard';
-import {type Character, loadChars} from '../components/Core';
 
 export default function Home(){
   let chars: Character[] = loadChars(); // Load all characters

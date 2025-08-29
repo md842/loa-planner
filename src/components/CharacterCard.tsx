@@ -1,7 +1,10 @@
 import './CharacterCard.css';
 
-import {type Character, type Goal, type Materials, initMaterials, loadRosterMats, saveChars, saveCharSettings} from '../components/Core';
 import {type ChangeEvent, type JSX, type RefObject, useRef, useState} from 'react';
+
+import {type Character, type Goal, initGoal, type Materials, initMaterials} from './core/types';
+import {saveChars, saveCharParams} from './core/character-data';
+import {loadRosterMats} from './core/roster-storage';
 
 import gold from '../assets/gold.png';
 import silver from '../assets/silver.png';
@@ -92,11 +95,10 @@ export function CharacterCard(char: Character): JSX.Element{
   function addGoal(){
     if (char.goals.length == 10) // Limit goals to 10
       return;
-    char.goals.push({name: "(Goal Name)", values: initMaterials()});
+    char.goals.push(initGoal()); // Adds a blank goal
     setGoals(initGoalTable()); // Update the goal table
     setRem(initRemTable()); // Update remaining materials tables
-    saveChars(); // Save updated character data directly (bypass saveChanges())
-  }
+  } // Don't save character data; changing anything in the new goal will save.
 
   function removeGoal(){
     if (char.goals.length == 1) // Must have at least 1 goal
@@ -162,7 +164,7 @@ export function CharacterCard(char: Character): JSX.Element{
       // Update (re-render) character info in top left of table
       setCharState({name: name, ilvl: ilvl, class: charClass, usesClassColor: usesClassColor, color: color});
       // Save updated character data
-      saveCharSettings(char.index, name, ilvl, charClass, usesClassColor, color);
+      saveCharParams(char.index, name, ilvl, charClass, usesClassColor, color);
       setModalVis(false); // Close modal
     }
 
