@@ -1,29 +1,47 @@
 /* Table color formatting */
 
 :root{ /* Sets the table's theme color (other colors are derived from this) */
-  --color: var(--bs-blue);
+  --table-color: #777; /* Placeholder, overwritten by char.color */
 }
 
 .table > :not(caption) > * > * { /* Override Bootstrap table selector */
-  background-color: var(--color); /* Override background color */
+  background-color: var(--table-color); /* Override background color */
   /* Override text color within table so dark mode doesn't impact visibility */
   color: #212529; /* Set light mode default text color */
 }
 
 td, th{ /* Set border color to the table's theme color */
-  border: 1px solid var(--color);
+  border: 1px solid var(--table-color);
 }
 
 .section-title{ /* Sets derived color for section titles */
-  background-color: color-mix(in srgb, var(--color) 75%, white 25%) !important;
+  background-color: color-mix(in srgb, var(--table-color) 75%, white 25%) !important;
 }
 
 .read-only{ /* Sets derived color for read-only fields */
-  background-color: color-mix(in srgb, var(--color) 50%, white 50%) !important;
+  background-color: color-mix(in srgb, var(--table-color) 50%, white 50%) !important;
 }
 
 .writeable{ /* Sets derived color for writeable fields */
-  background-color: color-mix(in srgb, var(--color) 25%, white 75%) !important;
+  background-color: color-mix(in srgb, var(--table-color) 25%, white 75%) !important;
+}
+
+/* Settings button formatting */
+
+.settings-btn{
+  padding: 0px;
+  position: relative;
+  top: -0.5em; /* Align settings button with the top of the cell */
+  --bs-btn-color: #212529; /* Set light mode default text color */
+  --bs-btn-hover-color: var(--bs-gray-dark);
+}
+
+.settings-btn .bi-gear-fill{ /* Dark/light mode button */
+  font-size: 1.5em; /* Set icon size */
+}
+
+form .btn{ /* Separate form buttons in CharSettings modal */
+  margin-right: 0.5em;
 }
 
 /* Goal buttons formatting */
@@ -39,7 +57,8 @@ td, th{ /* Set border color to the table's theme color */
 }
 
 .section-title.goal-btns button{
-  background-color: var(--color);
+  background-color: var(--table-color);
+  border: 1px solid var(--table-color);
   color: #212529; /* Set light mode default text color */
   margin-left: 0.5em; /* Separate buttons */
   line-height: 1em; /* Reduce button height to fit in row */

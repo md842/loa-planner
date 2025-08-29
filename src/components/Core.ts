@@ -1,19 +1,22 @@
-/** Stores information about a character. */
+/* Stores information about a character. */
 export interface Character{
+  index: number; // Index of character, used for data organization
   name: string; // Name of character.
   ilvl: string; // Item level of character.
   class: string; // Class of character.
+  usesClassColor: boolean; // If false, character uses a custom color.
+  color: string; // The character's custom color.
   goals: Goal[]; // Array of goals belonging to character.
   boundMats: Materials; // Bound materials belonging to character.
 }
 
-/** Interface for character goal data. */
+/* Interface for character goal data. */
 export interface Goal{
   name: string;
   values: Materials;
 }
 
-/** Helps with type checking by providing a uniform index signature. **/
+/* Helps with type checking by providing a uniform index signature. */
 export interface Materials{
   [key: string]: number; // Index signature
   silver: number;
@@ -43,9 +46,12 @@ export function loadChars(): Character[]{
   // If no stored characters were found, load placeholder character.
   chars = []; // Initialize chars array
   let char1: Character = {
+    index: 0,
     name: "Stormvex",
     ilvl: "1727",
     class: "Aeromancer",
+    usesClassColor: false,
+    color: "#0d6efd",
     goals: [],
     boundMats: {
       silver: NaN,
@@ -105,6 +111,16 @@ export function saveChars(){
   console.log("Saved", temp.length, "B,", totalSaved, "B total");
 
   window.localStorage.setItem('chars', temp);
+}
+
+export function saveCharSettings(index: number, name: string, ilvl: string, charClass: string, usesClassColor: boolean, color: string){
+  let char: Character = chars[index];
+  char.name = name;
+  char.ilvl = ilvl;
+  char.class = charClass;
+  char.usesClassColor = usesClassColor;
+  char.color = color;
+  saveChars(); // Save updated character data
 }
 
 export function loadRosterMats(): Materials{

@@ -1,6 +1,6 @@
 import './CharacterCard.css';
 
-import {type Character, type Goal, type Materials, initMaterials, loadRosterMats, saveChars} from '../components/Core';
+import {type Character, type Goal, type Materials, initMaterials, loadRosterMats, saveChars, saveCharSettings} from '../components/Core';
 import {type ChangeEvent, type JSX, type RefObject, useRef, useState} from 'react';
 
 import gold from '../assets/gold.png';
@@ -14,16 +14,29 @@ import t4_redSolar from '../assets/t4_redsolar.png';
 import t4_shard from '../assets/t4_shard.png';
 
 import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+import InputGroup from 'react-bootstrap/InputGroup';
+import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
 
 export function CharacterCard(char: Character): JSX.Element{
   const changed: RefObject<boolean> = useRef(false); // true: unsaved changes
+
+  // Refs used in initRemTable()
   const goalsTotal: RefObject<Goal> = useRef({name: "Total", values: initMaterials()});
   const matsTotal: RefObject<Materials> = useRef(initMaterials());
 
+  // Table state variables
   const [goalTable, setGoals] = useState(initGoalTable);
   const [matsTable, setMats] = useState(initMatsTable);
   const [remTable, setRem] = useState(initRemTable);
+
+  // Load initial character info into state so SettingsModal can change them
+  const [charState, setCharState] = useState({name: char.name, ilvl: char.ilvl, class: char.class, usesClassColor: char.usesClassColor, color: char.color});
+  const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
+
+  // Set table color to the character's saved color
+  document.documentElement.style.setProperty("--table-color", charState.color);
 
   function initGoalTable(): JSX.Element[]{
     let workingTable: JSX.Element[] = []; // Initialize table and goalsTotal
@@ -132,6 +145,72 @@ export function CharacterCard(char: Character): JSX.Element{
     }
   }
 
+  function SettingsModal(){
+    const [colorPickerDisabled, setColorPickerDisabled] = useState(charState.usesClassColor);
+
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>){
+      // Extract form information
+      let target: HTMLFormElement = e.target as HTMLFormElement;
+      let name: string = (target[0] as HTMLFormElement).value;
+      let ilvl: string = (target[1] as HTMLFormElement).value;
+      let charClass: string = (target[2] as HTMLFormElement).value;
+      let usesClassColor: boolean = (target[3] as HTMLFormElement).checked;
+      let color: string = (target[4] as HTMLFormElement).value;
+
+      // TODO: Implement class colors
+
+      // Update (re-render) character info in top left of table
+      setCharState({name: name, ilvl: ilvl, class: charClass, usesClassColor: usesClassColor, color: color});
+      // Save updated character data
+      saveCharSettings(char.index, name, ilvl, charClass, usesClassColor, color);
+      setModalVis(false); // Close modal
+    }
+
+    return(
+      <Modal show={modalVis} centered>
+        <Modal.Header>
+          <Modal.Title>Character Settings</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={(e) => handleSubmit(e)}>
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon3">Name</InputGroup.Text>
+              <Form.Control defaultValue={charState.name}/>
+            </InputGroup>
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon3">Item Level</InputGroup.Text>
+              <Form.Control defaultValue={charState.ilvl} type="number" step="0.01"/>
+            </InputGroup>
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon3">Class</InputGroup.Text>
+              <Form.Select defaultValue={charState.class}> {/* TODO: Populate with all classes */}
+                <option value="Aeromancer">Aeromancer</option>
+                <option value="Glaivier">Glaivier</option>
+              </Form.Select>
+            </InputGroup>
+            <Form.Check
+              className="mb-3"
+              type="checkbox"
+              label="Use class color"
+              defaultChecked={charState.usesClassColor}
+              onChange={(e) => setColorPickerDisabled(e.target.checked)}
+            />
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon3">Custom color</InputGroup.Text>
+              <Form.Control
+                type="color"
+                defaultValue={charState.color}
+                disabled={colorPickerDisabled}
+              />
+            </InputGroup>
+            <Button variant="primary" type="submit">Save</Button>
+            <Button variant="primary" onClick={() => setModalVis(false)}>Cancel</Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
+    );
+  }
+
   /**
    * Generate a table row for the "Goals" or "Remaining materials" sections.
    * @param  {Goal}           goal      The goal being used to generate the row.
@@ -222,40 +301,49 @@ export function CharacterCard(char: Character): JSX.Element{
   }
 
   return(
-    <Table hover>
-      <thead>
-        <tr>
-          <th>{char.name}<br/>{char.ilvl} {char.class}</th>
-          <th>Gold Value</th>
-          <th><img src={silver}/></th>
-          <th><img src={gold}/></th>
-          <th><img src={t4_shard}/></th>
-          <th><img src={t4_fusion}/></th>
-          <th><img src={t4_red}/></th>
-          <th><img src={t4_blue}/></th>
-          <th><img src={t4_leap}/></th>
-          <th><img src={t4_redSolar}/></th>
-          <th><img src={t4_blueSolar}/></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr className="bold">
-          <td className="section-title goals" colSpan={1}>Goals</td>
-          <td className="section-title goal-btns" colSpan={10}>
-            <Button variant="primary" onClick={addGoal}>Add Goal</Button>
-            <Button variant="primary" onClick={removeGoal}>Remove Goal</Button>
-          </td>
-        </tr>
-        {goalTable}
-        <tr className="bold"><td className="section-title" colSpan={11}>Owned materials</td></tr>
-        {matsTable}
-        <tr><th colSpan={11}>&nbsp;</th></tr>{/* Blank row as spacer */}
-        <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining materials"}</td></tr>
-        {remTable[0]}
-        <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining bound materials"}</td></tr>
-        {remTable[1]}
-      </tbody>
-    </Table>
+    <>
+      <SettingsModal/> {/* Hidden until settings-btn onClick sets modalVis to true*/}
+      <Table hover>
+        <thead>
+          <tr>
+            <th>
+              <Button className="settings-btn" variant="link" onClick={() => setModalVis(true)}>
+                <i className="bi bi-gear-fill"/>
+              </Button>
+              <br/>
+              {charState.name}
+            </th>
+            <th>Gold Value</th>
+            <th><img src={silver}/></th>
+            <th><img src={gold}/></th>
+            <th><img src={t4_shard}/></th>
+            <th><img src={t4_fusion}/></th>
+            <th><img src={t4_red}/></th>
+            <th><img src={t4_blue}/></th>
+            <th><img src={t4_leap}/></th>
+            <th><img src={t4_redSolar}/></th>
+            <th><img src={t4_blueSolar}/></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr className="bold">
+            <td className="section-title goals" colSpan={1}>Goals</td>
+            <td className="section-title goal-btns" colSpan={10}>
+              <Button variant="primary" onClick={addGoal}>Add Goal</Button>
+              <Button variant="primary" onClick={removeGoal}>Remove Goal</Button>
+            </td>
+          </tr>
+          {goalTable}
+          <tr className="bold"><td className="section-title" colSpan={11}>Owned materials</td></tr>
+          {matsTable}
+          <tr><th colSpan={11}>&nbsp;</th></tr>{/* Blank row as spacer */}
+          <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining materials"}</td></tr>
+          {remTable[0]}
+          <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining bound materials"}</td></tr>
+          {remTable[1]}
+        </tbody>
+      </Table>
+    </>
   );
 }
 
