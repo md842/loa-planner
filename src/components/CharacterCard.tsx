@@ -17,6 +17,7 @@ import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 
 export function CharacterCard(char: Character): JSX.Element{
+  const changed: RefObject<boolean> = useRef(false); // true: unsaved changes
   const goalsTotal: RefObject<Goal> = useRef({name: "Total", values: initMaterials()});
   const matsTotal: RefObject<Materials> = useRef(initMaterials());
 
@@ -81,7 +82,7 @@ export function CharacterCard(char: Character): JSX.Element{
     char.goals.push({name: "(Goal Name)", values: initMaterials()});
     setGoals(initGoalTable()); // Update the goal table
     setRem(initRemTable()); // Update remaining materials tables
-    saveChars(); // Save updated character data
+    saveChars(); // Save updated character data directly (bypass saveChanges())
   }
 
   function removeGoal(){
@@ -90,7 +91,7 @@ export function CharacterCard(char: Character): JSX.Element{
     char.goals.pop(); // Removes last goal
     setGoals(initGoalTable()); // Update the goal table
     setRem(initRemTable()); // Update remaining materials tables
-    saveChars(); // Save updated character data
+    saveChars(); // Save updated character data directly (bypass saveChanges())
   }
 
   function handleGoalChange(e: ChangeEvent<HTMLInputElement>, key: string, goal: Goal){
@@ -99,13 +100,13 @@ export function CharacterCard(char: Character): JSX.Element{
     if (key == "name"){ // No input sanitization needed for name string
       goal.name = e.target.value; // Update char data
       setRem(initRemTable()); // Update remaining materials tables
-      saveChars(); // Save updated character data
+      changed.current = true; // Character data will be saved on next focus out
     }
     else if (sanitizeInput(e, goal.values[key])){ // Checks valid numeric input
       goal.values[key] = Number(e.target.value); // Update char data
       setGoals(initGoalTable()); // Update goal table
       setRem(initRemTable()); // Update remaining materials tables
-      saveChars(); // Save updated character data
+      changed.current = true; // Character data will be saved on next focus out
     } // Reject non-numeric input outside of name field (do nothing)
   }
 
@@ -120,8 +121,15 @@ export function CharacterCard(char: Character): JSX.Element{
       let matsTotalRow = <tr className="bold" key="totalMats">{matsRow({mats: matsTotal.current, name: "Total"})}</tr>;
       setMats([...matsTable.slice(0, -1), matsTotalRow]); // Update mats table
       setRem(initRemTable); // Update remaining materials tables
-      saveChars(); // Save updated character data
+      changed.current = true; // Character data will be saved on next focus out
     } // Reject non-numeric input (do nothing)
+  }
+
+  function saveChanges(){
+    if (changed.current){ // Check for unsaved changes
+      saveChars(); // Save updated character data
+      changed.current = false; // Mark changes as committed
+    }
   }
 
   /**
@@ -139,7 +147,15 @@ export function CharacterCard(char: Character): JSX.Element{
     if (fnParams.isTotal || fnParams.subtract) // Read-only if total or "Remaining materials" row
       row.push(<td className="read-only" key="name"><input className="invis-input goal-name" value={fnParams.goal.name} disabled/></td>);
     else // Writeable if non-total "Goals" row
-      row.push(<td className="writeable" key="name"><input className="invis-input goal-name" defaultValue={fnParams.goal.name} onChange={(e) => handleGoalChange(e, "name", fnParams.goal)}/></td>);
+      row.push(<td className="writeable" key="name">
+                 <input
+                   className="invis-input goal-name"
+                   defaultValue={fnParams.goal.name}
+                   onBlur={saveChanges}
+                   onChange={(e) => handleGoalChange(e, "name", fnParams.goal)}
+                 />
+               </td>
+      );
     
     // Add calculated gold value to the table row for this goal
     row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value="Placeholder" disabled/></td>); // TODO: Calculate value using market data once implemented.
@@ -155,7 +171,15 @@ export function CharacterCard(char: Character): JSX.Element{
         if (fnParams.isTotal) // If total row, disable the input
           row.push(<td className="read-only" key={key}><input className="invis-input" value={value} disabled/></td>);
         else // If goal row, specify change handler
-          row.push(<td className="writeable" key={key}><input className="invis-input" defaultValue={value} onChange={(e) => handleGoalChange(e, key, fnParams.goal)}/></td>);
+          row.push(<td className="writeable" key={key}>
+                     <input
+                       className="invis-input"
+                       defaultValue={value}
+                       onBlur={saveChanges}
+                       onChange={(e) => handleGoalChange(e, key, fnParams.goal)}
+                     />
+                   </td>
+          );
       }
     });
     return row;
@@ -181,7 +205,15 @@ export function CharacterCard(char: Character): JSX.Element{
         if (key == "silver") // If bound silver, disable the input and replace value with "--"
           row.push(<td className="read-only" key={key}><input className="invis-input" value="--" disabled/></td>);
         else // If bound mat other than silver, specify change handler
-          row.push(<td className="writeable" key={key}><input className="invis-input" defaultValue={value} onChange={(e) => handleBoundMatChange(e, key)}/></td>);
+          row.push(<td className="writeable" key={key}>
+                     <input
+                       className="invis-input"
+                       defaultValue={value}
+                       onBlur={saveChanges}
+                       onChange={(e) => handleBoundMatChange(e, key)}
+                     />
+                   </td>
+          );
       }
       else // If total or roster, disable the input
         row.push(<td className="read-only" key={key}><input className="invis-input" value={value} disabled/></td>);

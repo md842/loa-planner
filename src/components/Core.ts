@@ -93,8 +93,18 @@ export function loadChars(): Character[]{
   return chars;
 }
 
+/* I have some concerns about how much data is being saved with the current
+   implementation, so tracking how much is being saved over the course of a 
+   testing session. May need to implement saving of individual characters
+   and/or saving less often (on focus instead of on change?) to reduce. */
+let totalSaved: number = 0;
+
 export function saveChars(){
-  window.localStorage.setItem('chars', JSON.stringify(chars));
+  let temp: string = JSON.stringify(chars);
+  totalSaved += temp.length;
+  console.log("Saved", temp.length, "B,", totalSaved, "B total");
+
+  window.localStorage.setItem('chars', temp);
 }
 
 export function loadRosterMats(): Materials{
