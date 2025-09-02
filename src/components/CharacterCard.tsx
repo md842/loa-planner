@@ -160,7 +160,96 @@ export function CharacterCard(char: Character): JSX.Element{
       let usesClassColor: boolean = (target[3] as HTMLFormElement).checked;
       let color: string = (target[4] as HTMLFormElement).value;
 
-      // TODO: Implement class colors
+      if (usesClassColor){
+        switch(charClass){ // Override custom color with class color
+          case "Aeromancer":
+            color = "rgb(8, 75, 163)";
+            break;
+          case "Arcanist":
+            color = "rgb(179, 137, 21)";
+            break;
+          case "Artillerist":
+            color = "rgb(51, 103, 11)";
+            break;
+          case "Artist":
+            color = "rgb(163, 74, 240)";
+            break;
+          case "Bard":
+            color = "rgb(103, 69, 152)";
+            break;
+          case "Berserker":
+            color = "rgb(238, 46, 72)";
+            break;
+          case "Breaker":
+            color = "rgb(77, 227, 209)";
+            break;
+          case "Deadeye":
+            color = "rgb(68, 66, 168)";
+            break;
+          case "Deathblade":
+            color = "rgb(169, 26, 22)";
+            break;
+          case "Destroyer":
+            color = "rgb(123, 154, 162)";
+            break;
+          case "Glaivier":
+            color = "rgb(246, 218, 106)";
+            break;
+          case "Gunlancer":
+            color = "rgb(225, 144, 126)";
+            break;
+          case "Gunslinger":
+            color = "rgb(107, 206, 194)";
+            break;
+          case "Machinist":
+            color = "rgb(59, 66, 146)";
+            break;
+          case "Paladin":
+            color = "rgb(255, 153, 0)";
+            break;
+          case "Reaper":
+            color = "rgb(16, 150, 24)";
+            break;
+          case "Scrapper":
+            color = "rgb(153, 0, 153)";
+            break;
+          case "Shadowhunter":
+            color = "rgb(0, 153, 198)";
+            break;
+          case "Sharpshooter":
+            color = "rgb(221, 68, 119)";
+            break;
+          case "Slayer":
+            color = "rgb(219, 106, 66)";
+            break;
+          case "Sorceress":
+            color = "rgb(102, 170, 0)";
+            break;
+          case "Souleater":
+            color = "rgb(193, 110, 208)";
+            break;
+          case "Soulfist":
+            color = "rgb(49, 99, 149)";
+            break;
+          case "Striker":
+            color = "rgb(153, 68, 153)";
+            break;
+          case "Summoner":
+            color = "rgb(34, 170, 153)";
+            break;
+          case "Valkyrie":
+            color = "rgb(255, 191, 0)";
+            break;
+          case "Wardancer":
+            color = "rgb(170, 170, 17)";
+            break;
+          case "Wildsoul":
+            color = "rgb(58, 148, 94)";
+            break;
+          default:
+            color = "#777";
+        }
+      }
 
       // Update (re-render) character info in top left of table
       setCharState({name: name, ilvl: ilvl, class: charClass, usesClassColor: usesClassColor, color: color});
@@ -188,7 +277,33 @@ export function CharacterCard(char: Character): JSX.Element{
               <InputGroup.Text id="basic-addon3">Class</InputGroup.Text>
               <Form.Select defaultValue={charState.class}> {/* TODO: Populate with all classes */}
                 <option value="Aeromancer">Aeromancer</option>
+                <option value="Arcanist">Arcanist</option>
+                <option value="Artillerist">Artillerist</option>
+                <option value="Artist">Artist</option>
+                <option value="Bard">Bard</option>
+                <option value="Berserker">Berserker</option>
+                <option value="Breaker">Breaker</option>
+                <option value="Deadeye">Deadeye</option>
+                <option value="Deathblade">Deathblade</option>
+                <option value="Destroyer">Destroyer</option>
                 <option value="Glaivier">Glaivier</option>
+                <option value="Gunlancer">Gunlancer</option>
+                <option value="Gunslinger">Gunslinger</option>
+                <option value="Machinist">Machinist</option>
+                <option value="Paladin">Paladin</option>
+                <option value="Reaper">Reaper</option>
+                <option value="Scrapper">Scrapper</option>
+                <option value="Shadowhunter">Shadowhunter</option>
+                <option value="Sharpshooter">Sharpshooter</option>
+                <option value="Slayer">Slayer</option>
+                <option value="Sorceress">Sorceress</option>
+                <option value="Souleater">Souleater</option>
+                <option value="Soulfist">Soulfist</option>
+                <option value="Striker">Striker</option>
+                <option value="Summoner">Summoner</option>
+                <option value="Valkyrie">Valkyrie</option>
+                <option value="Wardancer">Wardancer</option>
+                <option value="Wildsoul">Wildsoul</option>
               </Form.Select>
             </InputGroup>
             <Form.Check
