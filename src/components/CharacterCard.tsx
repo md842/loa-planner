@@ -436,7 +436,7 @@ export function CharacterCard(char: Character): JSX.Element{
   }
 
   return(
-    <>
+    <div style={{"--table-color": charState.color} as React.CSSProperties}>
       <SettingsModal/> {/* Hidden until setModalVis(true) onClick*/}
       <div className="settings-tab">
         <Button variant="link" onClick={() => setModalVis(true)}>
@@ -485,7 +485,7 @@ export function CharacterCard(char: Character): JSX.Element{
           {remTable[1]}
         </tbody>
       </Table>
-    </>
+    </div>
   );
 }
 

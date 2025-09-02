@@ -1,9 +1,5 @@
 /* Table color formatting */
 
-:root{ /* Sets the table's theme color (other colors are derived from this) */
-  --table-color: #777; /* Placeholder, overwritten by char.color */
-}
-
 .table > :not(caption) > * > * { /* Override Bootstrap table selector */
   background-color: var(--table-color); /* Override background color */
   /* Override text color within table so dark mode doesn't impact visibility */
