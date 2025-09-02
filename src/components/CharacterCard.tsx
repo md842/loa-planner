@@ -4,6 +4,7 @@ import {type ChangeEvent, type JSX, type RefObject, useRef, useState} from 'reac
 
 import {type Character, type Goal, initGoal, type Materials, initMaterials} from './core/types';
 import {saveChars, saveCharParams} from './core/character-data';
+import {goldValue} from './core/market-data';
 import {loadRosterMats} from './core/roster-storage';
 
 import gold from '../assets/gold.png';
@@ -26,7 +27,7 @@ export function CharacterCard(char: Character): JSX.Element{
   const changed: RefObject<boolean> = useRef(false); // true: unsaved changes
 
   // Refs used in initRemTable()
-  const goalsTotal: RefObject<Goal> = useRef({name: "Total", values: initMaterials()});
+  const goalsTotal: RefObject<Goal> = useRef({name: "Total", mats: initMaterials()});
   const matsTotal: RefObject<Materials> = useRef(initMaterials());
 
   // Table state variables
@@ -43,14 +44,14 @@ export function CharacterCard(char: Character): JSX.Element{
 
   function initGoalTable(): JSX.Element[]{
     let workingTable: JSX.Element[] = []; // Initialize table and goalsTotal
-    goalsTotal.current = {name: "Total", values: initMaterials()};
+    goalsTotal.current = {name: "Total", mats: initMaterials()};
     
     char.goals.forEach((goal: Goal, index: number) => {
       // Build a row for each goal and push it to the table
       workingTable.push(<tr key={index}>{goalRow({goal: goal, isTotal: false})}</tr>);
       // Accumulate each goal's individual values into goalsTotal
-      for (let [key, value] of Object.entries(goal.values))
-        goalsTotal.current.values[key] += value;
+      for (let [key, value] of Object.entries(goal.mats))
+        goalsTotal.current.mats[key] += value;
     });
     if (char.goals.length > 1) // Build total row
       workingTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotal.current, isTotal: true})}</tr>);
@@ -117,8 +118,8 @@ export function CharacterCard(char: Character): JSX.Element{
       setRem(initRemTable()); // Update remaining materials tables
       changed.current = true; // Character data will be saved on next focus out
     }
-    else if (sanitizeInput(e, goal.values[key])){ // Checks valid numeric input
-      goal.values[key] = Number(e.target.value); // Update char data
+    else if (sanitizeInput(e, goal.mats[key])){ // Checks valid numeric input
+      goal.mats[key] = Number(e.target.value); // Update char data
       setGoals(initGoalTable()); // Update goal table
       setRem(initRemTable()); // Update remaining materials tables
       changed.current = true; // Character data will be saved on next focus out
@@ -237,31 +238,36 @@ export function CharacterCard(char: Character): JSX.Element{
                  />
                </td>
       );
+
+    let mats: Materials = initMaterials(); // Create new Materials object
+    if (fnParams.subtract){ // If "Remaining materials" row,
+      for (let [key] of Object.entries(mats)){
+        if (fnParams.goal.mats[key] == null || fnParams.subtract[key] == null)
+          mats[key] = NaN; // Bound silver is stored as null, should be NaN
+        else // Subtract owned mats from goal mats
+          mats[key] = Math.max(0, fnParams.goal.mats[key] - fnParams.subtract[key]);
+      }
+    }
+    else // If "Goals" row, use goal mats directly
+      mats = fnParams.goal.mats;
     
     // Add calculated gold value to the table row for this goal
-    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value="Placeholder" disabled/></td>); // TODO: Calculate value using market data once implemented.
+    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(mats)} disabled/></td>); // TODO: Calculate value using market data once implemented.
 
     // Build the rest of the table row for this goal by pushing values as <td>
-    Object.entries(fnParams.goal.values).forEach(([key, value]) => {
-      if (fnParams.subtract){ // Row is in the "Remaining materials" section
-        value = Math.max(0, value - fnParams.subtract[key]) // Must be >= 0
-        // Always read only. Ternary expression replaces NaN with "--"
+    Object.entries(mats).forEach(([key, value]) => {
+      if (fnParams.isTotal || fnParams.subtract) // Read-only if total or "Remaining materials" row
         row.push(<td className="read-only" key={key}><input className="invis-input" value={Number.isNaN(value) ? "--" : value} disabled/></td>);
-      }
-      else{ // Row is in the "Goals" section.
-        if (fnParams.isTotal) // If total row, disable the input
-          row.push(<td className="read-only" key={key}><input className="invis-input" value={value} disabled/></td>);
-        else // If goal row, specify change handler
-          row.push(<td className="writeable" key={key}>
-                     <input
-                       className="invis-input"
-                       defaultValue={value}
-                       onBlur={saveChanges}
-                       onChange={(e) => handleGoalChange(e, key, fnParams.goal)}
-                     />
-                   </td>
-          );
-      }
+      else // If goal row, specify change handler
+        row.push(<td className="writeable" key={key}>
+                   <input
+                     className="invis-input"
+                     defaultValue={value}
+                     onBlur={saveChanges}
+                     onChange={(e) => handleGoalChange(e, key, fnParams.goal)}
+                   />
+                 </td>
+        );
     });
     return row;
   }
@@ -278,7 +284,7 @@ export function CharacterCard(char: Character): JSX.Element{
 
     // Add goal name and calculated gold value to the table row for this goal
     row.push(<td className="read-only" key="name"><input className="invis-input bold" value={fnParams.name} disabled/></td>);
-    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value="Placeholder" disabled/></td>); // TODO: Calculate value using market data once implemented.
+    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(fnParams.mats)} disabled/></td>); // TODO: Calculate value using market data once implemented.
 
     // Build the rest of the table row for this goal by pushing values as <td>
     Object.entries(fnParams.mats).forEach(([key, value]) => {

@@ -28,12 +28,12 @@ export function initCharacter(): Character{
 /* Interface for character goal data. */
 export interface Goal{
   name: string;
-  values: Materials; // Uniform index signature helps with type checking.
+  mats: Materials; // Uniform index signature helps with type checking.
 }
 
 /* Initializes and returns a default Goal object. */
 export function initGoal(): Goal{
-  return {name: "(Goal Name)", values: initMaterials()};
+  return {name: "(Goal Name)", mats: initMaterials()};
 }
 
 
