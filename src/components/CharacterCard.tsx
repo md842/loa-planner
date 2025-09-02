@@ -329,6 +329,18 @@ export function CharacterCard(char: Character): JSX.Element{
     );
   }
 
+  function swapUp(){
+    console.log("swapUp called (not yet implemented)");
+  }
+
+  function swapDown(){
+    console.log("swapDown called (not yet implemented)");
+  }
+
+  function deleteChar(){
+    console.log("deleteChar called (not yet implemented)");
+  }
+
   /**
    * Generate a table row for the "Goals" or "Remaining materials" sections.
    * @param  {Goal}           goal      The goal being used to generate the row.
@@ -425,17 +437,25 @@ export function CharacterCard(char: Character): JSX.Element{
 
   return(
     <>
-      <SettingsModal/> {/* Hidden until settings-btn onClick sets modalVis to true*/}
+      <SettingsModal/> {/* Hidden until setModalVis(true) onClick*/}
+      <div className="settings-tab">
+        <Button variant="link" onClick={() => setModalVis(true)}>
+          <i className="bi bi-gear-fill"/>
+        </Button>
+        <Button variant="link" onClick={swapUp}>
+          <i className="bi bi-chevron-up"/>
+        </Button>
+        <Button variant="link" onClick={swapDown}>
+          <i className="bi bi-chevron-down"/>
+        </Button>
+        <Button variant="link" onClick={deleteChar}>
+          <i className="bi bi-trash3-fill"/>
+        </Button>
+      </div>
       <Table hover>
         <thead>
           <tr>
-            <th>
-              <Button className="settings-btn" variant="link" onClick={() => setModalVis(true)}>
-                <i className="bi bi-gear-fill"/>
-              </Button>
-              <br/>
-              {charState.name}
-            </th>
+            <th>{charState.name}<br/>{charState.ilvl} {charState.class}</th>
             <th>Gold Value</th>
             <th><img src={silver}/></th>
             <th><img src={gold}/></th>
@@ -459,7 +479,6 @@ export function CharacterCard(char: Character): JSX.Element{
           {goalTable}
           <tr className="bold"><td className="section-title" colSpan={11}>Owned materials</td></tr>
           {matsTable}
-          <tr><th colSpan={11}>&nbsp;</th></tr>{/* Blank row as spacer */}
           <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining materials"}</td></tr>
           {remTable[0]}
           <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining bound materials"}</td></tr>

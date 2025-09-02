@@ -26,18 +26,27 @@ td, th{ /* Set border color to the table's theme color */
   background-color: color-mix(in srgb, var(--table-color) 25%, white 75%) !important;
 }
 
-/* Settings button formatting */
+/* Settings tab formatting */
 
-.settings-btn{
-  padding: 0px;
-  position: relative;
-  top: -0.5em; /* Align settings button with the top of the cell */
-  --bs-btn-color: #212529; /* Set light mode default text color */
-  --bs-btn-hover-color: var(--bs-gray-dark);
+.settings-tab{
+  position: absolute; /* Anchor to top-left of table */
+  left: calc(10% - 2.5em - 1px); /* 10% margin - width of tab - table border */
+
+  background-color: var(--table-color);
+
+  display: flex;
+  flex-direction: column; /* Display buttons vertically */
+
+  border-radius: 0.5em 0 0 0.5em; /* top-left, top-right, bottom-right, bottom-left */
+  padding: 0.5em;
 }
 
-.settings-btn .bi-gear-fill{ /* Dark/light mode button */
+.settings-tab .btn{ /* All buttons on settings tab */
+  --bs-btn-color: #212529; /* Set light mode default text color */
+  --bs-btn-hover-color: var(--bs-gray-dark);
+
   font-size: 1.5em; /* Set icon size */
+  padding: 0px;
 }
 
 form .btn{ /* Separate form buttons in CharSettings modal */
