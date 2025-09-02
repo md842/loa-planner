@@ -9,15 +9,21 @@ let chars: Character[] = []; // Store character data at module level
 let totalSaved: number = 0; // This can be deleted later.
 
 /** Adds a new blank character to the end of the character data. */
-export function addChar(): Character[]{
+export function addChar(): boolean{
+  if (chars.length == 10) // Limit characters to 10
+    return false;
   chars.push(initCharacter());
-  return [...chars]; // Return chars as a new array to trigger re-render.
+  return true; // Adding character succeeded
 } // Don't save character data; changing anything in the new char will save.
 
 /** Deletes the character with the specified index. */
-export function delChar(index: number): Character[]{
+export function delChar(index: number){
   chars.splice(index, 1); // Remove the specified character
-  saveChars(); // Save updated character data
+  saveChars(); // Save updated character data to local storage
+}
+
+/** Placeholder */
+export function getChars(): Character[]{
   return [...chars]; // Return chars as a new array to trigger re-render.
 }
 
@@ -50,4 +56,16 @@ export function saveCharParams(index: number, name: string, ilvl: string, charCl
   char.usesClassColor = usesClassColor;
   char.color = color;
   saveChars(); // Save updated character data to local storage
+}
+
+/** Swaps a character with the previous character. */
+export function swapChar(index: number, direction: number): boolean{
+  if ((index == 0 && direction == -1) || // First char and direction is up
+      ((index == chars.length - 1) && direction == 1)) // Last char and direction is down
+    return false; // Return without swapping
+
+  // Perform swap in specified direction using array destructuring
+  [chars[index], chars[index + direction]] = [chars[index + direction], chars[index]];
+  saveChars(); // Save updated character data to local storage
+  return true; // Swapping characters succeeded
 }

@@ -28,11 +28,12 @@ interface CharacterCardProps{
   char: Character;
   index: number; // Index of character, used for data organization
   handleDelete: (index: number) => void;
+  handleSwap: (index: number, direction: number) => void;
 }
 
 /** Constructs a Table element given a Character object specified by params. */
 export function CharacterCard(props: CharacterCardProps): JSX.Element{
-  let {char, index, handleDelete} = props; // Unpack props
+  let {char, index, handleDelete, handleSwap} = props; // Unpack props
 
   // Ref used by saveChanges(). true: unsaved changes to commit
   const changed: RefObject<boolean> = useRef(false);
@@ -340,14 +341,6 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
     );
   }
 
-  function swapUp(){
-    console.log("swapUp called (not yet implemented)");
-  }
-
-  function swapDown(){
-    console.log("swapDown called (not yet implemented)");
-  }
-
   /**
    * Generate a table row for the "Goals" or "Remaining materials" sections.
    * @param  {Goal}           goal      The goal being used to generate the row.
@@ -449,10 +442,10 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
         <Button variant="link" onClick={() => setModalVis(true)}>
           <i className="bi bi-gear-fill"/>
         </Button>
-        <Button variant="link" onClick={swapUp}>
+        <Button variant="link" onClick={() => handleSwap(index, -1)}> {/* direction -1 represents up */}
           <i className="bi bi-chevron-up"/>
         </Button>
-        <Button variant="link" onClick={swapDown}>
+        <Button variant="link" onClick={() => handleSwap(index, 1)}> {/* direction 1 represents down */}
           <i className="bi bi-chevron-down"/>
         </Button>
         <Button variant="link" onClick={() => handleDelete(index)}>
