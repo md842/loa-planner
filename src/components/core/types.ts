@@ -1,6 +1,5 @@
 /* Stores information about a character. */
 export interface Character{
-  index: number; // Index of character, used for data organization
   name: string; // Name of character.
   ilvl: string; // Item level of character.
   class: string; // Class of character.
@@ -11,9 +10,8 @@ export interface Character{
 }
 
 /* Initializes and returns a default Character object. */
-export function initCharacter(index: number): Character{
+export function initCharacter(): Character{
   return {
-    index: index,
     name: "(Name)",
     ilvl: "(Ilvl)",
     class: "(Class)",

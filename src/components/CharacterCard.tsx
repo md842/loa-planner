@@ -23,8 +23,19 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
 
-export function CharacterCard(char: Character): JSX.Element{
-  const changed: RefObject<boolean> = useRef(false); // true: unsaved changes
+/** Props interface for CharacterCard(). */
+interface CharacterCardProps{
+  char: Character;
+  index: number; // Index of character, used for data organization
+  handleDelete: (index: number) => void;
+}
+
+/** Constructs a Table element given a Character object specified by params. */
+export function CharacterCard(props: CharacterCardProps): JSX.Element{
+  let {char, index, handleDelete} = props; // Unpack props
+
+  // Ref used by saveChanges(). true: unsaved changes to commit
+  const changed: RefObject<boolean> = useRef(false);
 
   // Refs used in initRemTable()
   const goalsTotal: RefObject<Goal> = useRef({name: "Total", mats: initMaterials()});
@@ -254,7 +265,7 @@ export function CharacterCard(char: Character): JSX.Element{
       // Update (re-render) character info in top left of table
       setCharState({name: name, ilvl: ilvl, class: charClass, usesClassColor: usesClassColor, color: color});
       // Save updated character data
-      saveCharParams(char.index, name, ilvl, charClass, usesClassColor, color);
+      saveCharParams(index, name, ilvl, charClass, usesClassColor, color);
       setModalVis(false); // Close modal
     }
 
@@ -335,10 +346,6 @@ export function CharacterCard(char: Character): JSX.Element{
 
   function swapDown(){
     console.log("swapDown called (not yet implemented)");
-  }
-
-  function deleteChar(){
-    console.log("deleteChar called (not yet implemented)");
   }
 
   /**
@@ -448,7 +455,7 @@ export function CharacterCard(char: Character): JSX.Element{
         <Button variant="link" onClick={swapDown}>
           <i className="bi bi-chevron-down"/>
         </Button>
-        <Button variant="link" onClick={deleteChar}>
+        <Button variant="link" onClick={() => handleDelete(index)}>
           <i className="bi bi-trash3-fill"/>
         </Button>
       </div>
