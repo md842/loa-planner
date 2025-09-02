@@ -11,13 +11,13 @@ export interface Character{
 }
 
 /* Initializes and returns a default Character object. */
-export function initCharacter(): Character{
+export function initCharacter(index: number): Character{
   return {
-    index: 0,
+    index: index,
     name: "(Name)",
-    ilvl: "0",
-    class: "",
-    usesClassColor: false,
+    ilvl: "(Ilvl)",
+    class: "(Class)",
+    usesClassColor: true,
     color: "#777",
     goals: [initGoal()],
     boundMats: {...initMaterials(), silver: NaN} // Bound silver does not exist

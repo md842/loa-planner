@@ -8,6 +8,11 @@ var chars: Character[]; // Store character data at module level
    even individual fields to reduce (will increase complexity of loadChars). */
 let totalSaved: number = 0; // This can be deleted later.
 
+export function addChar(): Character[]{
+  chars.push(initCharacter(chars.length)); // Use chars.length as index
+  return chars; // Return chars to state setter
+}
+
 /* Loads character data from local storage if available, else initialize. */
 export function loadChars(): Character[]{
   // Attempt to load character data from local storage
@@ -16,7 +21,7 @@ export function loadChars(): Character[]{
   if (storedChars) // Character data exists in local storage
     chars = JSON.parse(storedChars); // Initialize chars with local stored data
   else // Character data does not exist in local storage
-    chars = [initCharacter()]; // Initialize chars with blank character
+    chars = [initCharacter(0)]; // Initialize chars with blank character
 
   return chars; // Return character data array
 }
