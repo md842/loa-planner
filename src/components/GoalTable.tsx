@@ -1,4 +1,4 @@
-import './CharacterCard.css';
+import './GoalTable.css';
 
 import {type ChangeEvent, type JSX, type RefObject, useRef, useState} from 'react';
 
