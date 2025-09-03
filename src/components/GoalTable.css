@@ -1,0 +1,102 @@
+/* Table color formatting */
+
+.table > :not(caption) > * > * { /* Override Bootstrap table selector */
+  background-color: var(--table-color); /* Override background color */
+  /* Override text color within table so dark mode doesn't impact visibility */
+  color: #212529; /* Set light mode default text color */
+}
+
+td, th{ /* Set border color to the table's theme color */
+  border: 1px solid var(--table-color);
+}
+
+.section-title{ /* Sets derived color for section titles */
+  background-color: color-mix(in srgb, var(--table-color) 75%, white 25%) !important;
+}
+
+.read-only{ /* Sets derived color for read-only fields */
+  background-color: color-mix(in srgb, var(--table-color) 50%, white 50%) !important;
+}
+
+.writeable{ /* Sets derived color for writeable fields */
+  background-color: color-mix(in srgb, var(--table-color) 25%, white 75%) !important;
+}
+
+/* Settings tab formatting */
+
+.settings-tab{
+  position: absolute; /* Anchor to top-left of table */
+  left: calc(10% - 2.5em - 1px); /* 10% margin - width of tab - table border */
+
+  background-color: var(--table-color);
+
+  display: flex;
+  flex-direction: column; /* Display buttons vertically */
+
+  border-radius: 0.5em 0 0 0.5em; /* top-left, top-right, bottom-right, bottom-left */
+  padding: 0.5em;
+}
+
+.settings-tab .btn{ /* All buttons on settings tab */
+  --bs-btn-color: #212529; /* Set light mode default text color */
+  --bs-btn-hover-color: var(--bs-gray-dark);
+
+  font-size: 1.5em; /* Set icon size */
+  padding: 0px;
+}
+
+form .btn{ /* Separate form buttons in CharSettings modal */
+  margin-right: 0.5em;
+}
+
+/* Goal buttons formatting */
+
+.section-title.goals{
+  border-right: none; /* Hide extra border to the right of "Goals" */
+}
+
+.section-title.goal-btns{
+  border-left: none; /* Hide extra border to the right of "Goals" */
+  text-align: right;
+  padding: calc(0.375em - 1px); /* Reduce padding according to button height to maintain row size */
+}
+
+.section-title.goal-btns button{
+  background-color: var(--table-color);
+  border: 1px solid var(--table-color);
+  color: #212529; /* Set light mode default text color */
+  margin-left: 0.5em; /* Separate buttons */
+  line-height: 1em; /* Reduce button height to fit in row */
+}
+
+/* Input formatting */
+
+.invis-input{
+  /* Hide the visual aspects of the input element */
+  background: none;
+  border: none;
+  padding: 0;
+
+  /* Override text color within table so dark mode doesn't impact visibility */
+  color: #212529; /* Set light mode default text color */
+
+  /* Fill parent element */
+  width: 100%;
+
+  /* Inherit global font weight specified in App.css */
+  font-weight: inherit;
+}
+
+.invis-input.goal-name{
+  min-width: 100px;
+}
+
+input:disabled{ /* Disabled input has same text color as surroundings */
+  color: unset;
+}
+
+/* Other formatting */
+
+.bold{ /* Custom bold for gold value and total row */
+  font-weight: 400;
+}
