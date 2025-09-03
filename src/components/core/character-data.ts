@@ -1,12 +1,19 @@
 import {type Character, initCharacter} from './types';
 
-let chars: Character[] = []; // Store character data at module level
+let chars: Character[] = []; // Initialize character data at module level
+// Attempt to load character data from local storage
+const storedChars = window.localStorage.getItem('chars');
+if (storedChars) // Character data exists in local storage
+  chars = JSON.parse(storedChars); // Initialize chars with local stored data
+
+console.log("Initialized", chars.length, "characters.");
 
 /* I have some concerns about how much data is being saved with the current
    implementation, so tracking how much is being saved over the course of a 
    testing session. May need to implement saving of individual characters or
    even individual fields to reduce (will increase complexity of loadChars). */
 let totalSaved: number = 0; // This can be deleted later.
+
 
 /** Adds a new blank character to the end of the character data. */
 export function addChar(): boolean{
@@ -22,20 +29,9 @@ export function delChar(index: number){
   saveChars(); // Save updated character data to local storage
 }
 
-/** Placeholder */
+/** Returns the contents of chars in a new array to a state setter. */
 export function getChars(): Character[]{
-  return [...chars]; // Return chars as a new array to trigger re-render.
-}
-
-/** Loads character data from local storage if available, else initialize. */
-export function loadChars(): Character[]{
-  // Attempt to load character data from local storage
-  const storedChars = window.localStorage.getItem('chars');
-
-  if (storedChars) // Character data exists in local storage
-    chars = JSON.parse(storedChars); // Initialize chars with local stored data
-
-  return chars; // Return character data array
+  return [...chars]; // Returning as a new array triggers re-render.
 }
 
 /** Saves current character data to local storage. */
