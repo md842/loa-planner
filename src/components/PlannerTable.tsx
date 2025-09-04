@@ -2,21 +2,12 @@ import './PlannerTable.css';
 
 import {type JSX, type RefObject, useRef, useState} from 'react';
 
+import {TableHeader} from './tables/TableHeader';
 import {GoalTable} from './tables/GoalTable';
 import {MatsTable} from './tables/MatsTable';
 import {RemTable} from './tables/RemTable';
 
 import {type Goal, type Materials, initMaterials} from './core/types';
-
-import gold from '../assets/gold.png';
-import silver from '../assets/silver.png';
-import t4_blue from '../assets/t4_blue.png';
-import t4_blueSolar from '../assets/t4_bluesolar.png';
-import t4_fusion from '../assets/t4_fusion.png';
-import t4_leap from '../assets/t4_leap.png';
-import t4_red from '../assets/t4_red.png';
-import t4_redSolar from '../assets/t4_redsolar.png';
-import t4_shard from '../assets/t4_shard.png';
 
 import Table from 'react-bootstrap/Table';
 
@@ -54,21 +45,7 @@ export function PlannerTable(props: PlannerTableProps): JSX.Element{
 
   return(
     <Table hover>
-      <thead>
-        <tr>
-          {title}
-          <th>Gold Value</th>
-          <th><img src={silver}/></th>
-          <th><img src={gold}/></th>
-          <th><img src={t4_shard}/></th>
-          <th><img src={t4_fusion}/></th>
-          <th><img src={t4_red}/></th>
-          <th><img src={t4_blue}/></th>
-          <th><img src={t4_leap}/></th>
-          <th><img src={t4_redSolar}/></th>
-          <th><img src={t4_blueSolar}/></th>
-        </tr>
-      </thead>
+      <TableHeader title={title}/>
       <tbody>
         {goalsTable}
         {matsTable}

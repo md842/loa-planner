@@ -1,5 +1,6 @@
 import {useState} from 'react';
 
+import {AggregateCard} from '../components/AggregateCard';
 import {CharacterCard} from '../components/CharacterCard';
 import {type Character} from '../components/core/types';
 import {addChar, delChar, getChars, swapChar} from '../components/core/character-data';
@@ -27,6 +28,7 @@ export default function Home(){
 
 	return(
     <main>
+      <AggregateCard chars={chars}/>
       {chars.map((char: Character, index: number) => {
         return( /* Create card for each character */
           <CharacterCard
