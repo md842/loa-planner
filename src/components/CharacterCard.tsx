@@ -2,7 +2,7 @@ import './CharacterCard.css';
 
 import {type JSX, useState} from 'react';
 
-import {GoalTable} from '../components/GoalTable';
+import {PlannerTable} from '../components/PlannerTable';
 import {type Character} from './core/types';
 import {saveCharParams} from './core/character-data';
 
@@ -153,7 +153,7 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
           <i className="bi bi-trash3-fill"/>
         </Button>
       </div>
-      <GoalTable
+      <PlannerTable
         title={<th>{charState.name}<br/>{charState.ilvl} {charState.class}</th>}
         goals={char.goals}
         boundMats={char.boundMats}
