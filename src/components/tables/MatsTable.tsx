@@ -1,4 +1,4 @@
-import {type ChangeEvent, type JSX, type RefObject, useRef, useState} from 'react';
+import {type ChangeEvent, type JSX, type RefObject} from 'react';
 
 import {type Materials, initMaterials} from '../core/types';
 import {saveChars} from '../core/character-data';
@@ -8,26 +8,22 @@ import {loadRosterMats} from '../core/roster-storage';
 /** Props interface for MatsTable. */
 interface MatsTableProps{
   matsTotalRef: RefObject<Materials>;
-  boundMats: Materials; // If defined, this RemTable is for a character. If undefined, this GoalTable is for an aggregate.
-  setRem: React.Dispatch<React.SetStateAction<JSX.Element>>;
-  initRem: () => JSX.Element;
+  boundMats?: Materials; // If defined, this RemTable is for a character. If undefined, this GoalTable is for an aggregate.
+  setMats: () => void;
+  setRem: () => void;
 }
+
+let changed: boolean = false;
 
 /** Constructs a Table element given a Character object specified by params. */
 export function MatsTable(props: MatsTableProps): JSX.Element{
-  let {matsTotalRef, boundMats, setRem, initRem} = props; // Unpack props
+  let {matsTotalRef, boundMats, setMats, setRem} = props; // Unpack props
 
   console.log("MatsTable rendering.");
 
-  // Ref used by saveChanges(). true: unsaved changes to commit
-  const changed: RefObject<boolean> = useRef(false);
+  let matsTable: JSX.Element[] = []; // Initialize table and matsTotal
 
-  // Table state variables
-  const [matsTable, setMats] = useState(initMatsTable);
-
-  function initMatsTable(): JSX.Element[]{
-    let workingTable: JSX.Element[] = []; // Initialize table and matsTotal
-
+  if (boundMats){
     matsTotalRef.current = initMaterials();
     let rosterMats: Materials = loadRosterMats();
 
@@ -37,12 +33,12 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
     matsTotalRef.current["silver"] = rosterMats["silver"];
 
     // Build and push each owned materials row
-    workingTable.push(<tr key="boundMats">{matsRow({mats: boundMats, name: "Bound"})}</tr>);
-    workingTable.push(<tr key="rosterMats">{matsRow({mats: rosterMats, name: "Roster"})}</tr>);
-    workingTable.push(<tr className="bold" key="totalMats">{matsRow({mats: matsTotalRef.current, name: "Total"})}</tr>);
-    
-    return workingTable; // Return table to state initializer
+    matsTable.push(<tr key="boundMats">{matsRow({mats: boundMats, name: "Bound"})}</tr>);
+    matsTable.push(<tr key="rosterMats">{matsRow({mats: rosterMats, name: "Roster"})}</tr>);
+    matsTable.push(<tr className="bold" key="totalMats">{matsRow({mats: matsTotalRef.current, name: "Total"})}</tr>);
   }
+  else
+    return <></>;
 
   function handleBoundMatChange(e: ChangeEvent<HTMLInputElement>, key: string){
     if (boundMats){
@@ -53,18 +49,19 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
         boundMats[key] = Number(e.target.value); // Update char data
         
         // Replace existing total row in matsTable with newly generated total row
-        let matsTotalRow = <tr className="bold" key="totalMats">{matsRow({mats: matsTotalRef.current, name: "Total"})}</tr>;
-        setMats([...matsTable.slice(0, -1), matsTotalRow]); // Update mats table
-        setRem(initRem); // Update remaining materials tables
-        changed.current = true; // Character data will be saved on next focus out
+        //let matsTotalRow = <tr className="bold" key="totalMats">{matsRow({mats: matsTotalRef.current, name: "Total"})}</tr>;
+        //matsTable = ([...matsTable.slice(0, -1), matsTotalRow]); // Update mats table
+        setMats();
+        changed = true; // Character data will be saved on next focus out
       } // Reject non-numeric input (do nothing)
     }
+    setRem(); // Update remaining materials tables
   }
 
   function saveChanges(){
-    if (changed.current){ // Check for unsaved changes
+    if (changed){ // Check for unsaved changes
       saveChars(); // Save updated character data
-      changed.current = false; // Mark changes as committed
+      changed = false; // Mark changes as committed
     }
   }
 

@@ -35,14 +35,19 @@ export function PlannerTable(props: PlannerTableProps): JSX.Element{
   const goalsTotal: RefObject<Goal> = useRef({name: "Total", mats: initMaterials()});
   const matsTotal: RefObject<Materials> = useRef(initMaterials());
 
+  function initGoals(){
+    return GoalTable({goals: goals, goalsTotalRef: goalsTotal, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem)});
+  }
+  function initMats(){
+    return MatsTable({matsTotalRef: matsTotal, boundMats: boundMats, setMats: () => setMats(initMats), setRem: () => setRem(initRem)});
+  }
   function initRem(){
     return RemTable({goals: goals, goalsTotalRef: goalsTotal, matsTotalRef: matsTotal, boundMats: boundMats});
   }
 
-  // Table state variables
-  const [, setRem] = useState(initRem);
-
-  console.log("PlannerTable rendering.");
+  const [goalsTable, setGoals] = useState(initGoals);
+  const [matsTable, setMats] = useState(initMats);
+  const [remTable, setRem] = useState(initRem);
 
   // Ref used by saveChanges(). true: unsaved changes to commit
   //const changed: RefObject<boolean> = useRef(false);
@@ -65,25 +70,9 @@ export function PlannerTable(props: PlannerTableProps): JSX.Element{
         </tr>
       </thead>
       <tbody>
-        <GoalTable
-          goals={goals}
-          goalsTotalRef={goalsTotal}
-          setRem={setRem}
-          initRem={initRem}
-        />
-        {(boundMats) &&
-        <MatsTable
-          matsTotalRef={matsTotal}
-          boundMats={boundMats}
-          setRem={setRem}
-          initRem={initRem}
-        />}
-        <RemTable
-          goals={goals}
-          goalsTotalRef={goalsTotal}
-          matsTotalRef={matsTotal}
-          boundMats={boundMats}
-        />
+        {goalsTable}
+        {matsTable}
+        {remTable}
       </tbody>
     </Table>
   );

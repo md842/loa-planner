@@ -1,4 +1,4 @@
-import {type ChangeEvent, type JSX, type RefObject, useRef, useState} from 'react';
+import {type ChangeEvent, type JSX, type RefObject} from 'react';
 
 import {type Goal, initGoal, initMaterials} from '../core/types';
 import {saveChars} from '../core/character-data';
@@ -10,53 +10,46 @@ import Button from 'react-bootstrap/Button';
 interface GoalTableProps{
   goals: Goal[]; // The goals for this RemTable.
   goalsTotalRef: RefObject<Goal>;
-  setRem: React.Dispatch<React.SetStateAction<JSX.Element>>;
-  initRem: () => JSX.Element;
+  setGoals: () => void;
+  setRem: () => void;
 }
+
+let changed: boolean = false;
 
 /** Constructs a Table element given a Character object specified by params. */
 export function GoalTable(props: GoalTableProps): JSX.Element{
-  let {goals, goalsTotalRef, setRem, initRem} = props; // Unpack props
+  let {goals, goalsTotalRef, setGoals, setRem} = props; // Unpack props
 
   console.log("GoalTable rendering.");
 
-  // Ref used by saveChanges(). true: unsaved changes to commit
-  const changed: RefObject<boolean> = useRef(false);
+  let goalTable: JSX.Element[] = []; // Initialize table and goalsTotal
+  goalsTotalRef.current = {name: "Total", mats: initMaterials()};
+  
+  goals.forEach((goal: Goal, index: number) => {
+    // Build a row for each goal and push it to the table
+    goalTable.push(<tr key={index}>{goalRow({goal: goal, isTotal: false})}</tr>);
+    // Accumulate each goal's individual values into goalsTotal
+    for (let [key, value] of Object.entries(goal.mats))
+      goalsTotalRef.current.mats[key] += value;
+  });
+  if (goals.length > 1) // Build total row
+    goalTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotalRef.current, isTotal: true})}</tr>);
 
-  // Table state variables
-  const [goalTable, setGoals] = useState(initGoalTable);
-
-  function initGoalTable(): JSX.Element[]{
-    let workingTable: JSX.Element[] = []; // Initialize table and goalsTotal
-    goalsTotalRef.current = {name: "Total", mats: initMaterials()};
-    
-    goals.forEach((goal: Goal, index: number) => {
-      // Build a row for each goal and push it to the table
-      workingTable.push(<tr key={index}>{goalRow({goal: goal, isTotal: false})}</tr>);
-      // Accumulate each goal's individual values into goalsTotal
-      for (let [key, value] of Object.entries(goal.mats))
-        goalsTotalRef.current.mats[key] += value;
-    });
-    if (goals.length > 1) // Build total row
-      workingTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotalRef.current, isTotal: true})}</tr>);
-    
-    return workingTable; // Return table to state initializer
-  }
 
   function addGoal(){
     if (goals.length == 10) // Limit goals to 10
       return;
     goals.push(initGoal()); // Adds a blank goal
-    setGoals(initGoalTable); // Update the goal table
-    setRem(initRem); // Update remaining materials tables
+    setGoals(); // Update the goal table
+    setRem(); // Update remaining materials tables
   } // Don't save character data; changing anything in the new goal will save.
 
   function removeGoal(){
     if (goals.length == 1) // Must have at least 1 goal
       return;
     goals.pop(); // Removes last goal
-    setGoals(initGoalTable); // Update the goal table
-    setRem(initRem); // Update remaining materials tables
+    setGoals(); // Update the goal table
+    setRem(); // Update remaining materials tables
     saveChars(); // Save updated character data directly (bypass saveChanges())
   }
 
@@ -65,21 +58,21 @@ export function GoalTable(props: GoalTableProps): JSX.Element{
        the asynchronous nature of state. Thus, re-initialization is used. */
     if (key == "name"){ // No input sanitization needed for name string
       goal.name = e.target.value; // Update char data
-      setRem(initRem); // Update remaining materials tables
-      changed.current = true; // Character data will be saved on next focus out
+      setRem(); // Update remaining materials tables
+      changed = true; // Character data will be saved on next focus out
     }
     else if (sanitizeInput(e, goal.mats[key])){ // Checks valid numeric input
       goal.mats[key] = Number(e.target.value); // Update char data
-      setGoals(initGoalTable); // Update goal table
-      setRem(initRem); // Update remaining materials tables
-      changed.current = true; // Character data will be saved on next focus out
+      setGoals(); // Update goal table
+      setRem(); // Update remaining materials tables
+      changed = true; // Character data will be saved on next focus out
     } // Reject non-numeric input outside of name field (do nothing)
   }
 
   function saveChanges(){
-    if (changed.current){ // Check for unsaved changes
+    if (changed){ // Check for unsaved changes
       saveChars(); // Save updated character data
-      changed.current = false; // Mark changes as committed
+      changed = false; // Mark changes as committed
     }
   }
 
