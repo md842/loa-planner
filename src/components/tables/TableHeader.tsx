@@ -15,7 +15,7 @@ interface TableHeaderProps{
   title: JSX.Element;
 }
 
-/** Constructs a Table element given a Character object specified by params. */
+/** Constructs the header row of the parent table. */
 export function TableHeader(props: TableHeaderProps): JSX.Element{
   return(
     <thead>

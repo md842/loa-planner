@@ -16,7 +16,7 @@ interface AggregateTableProps{
   chars: Character[];
 }
 
-/** Constructs the table for roster goal aggregates. */
+/** Constructs the table for the roster goal aggregates. */
 export function AggregateTable(props: AggregateTableProps): JSX.Element{
   let {chars} = props; // Unpack props
 

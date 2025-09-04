@@ -1,26 +1,25 @@
 import {type ChangeEvent, type JSX, type RefObject} from 'react';
 
+import {sanitizeInput, saveChanges} from './common';
 import {type Goal, initGoal, initMaterials} from '../core/types';
-import {saveChars} from '../core/character-data';
 import {goldValue} from '../core/market-data';
 
 import Button from 'react-bootstrap/Button';
 
 /** Props interface for GoalTable. */
 interface GoalTableProps{
-  goals: Goal[]; // The goals for this GoalTable.
-  goalsTotalRef: RefObject<Goal>;
-  setGoals: () => void;
-  setRem: () => void;
+  goals: Goal[]; // The character goals or goal aggregates for this GoalTable
+  goalsTotalRef: RefObject<Goal>; // Passed to RemTable to avoid re-calculation
+  setGoals: () => void; // Reference to parent component's state setter
+  setRem: () => void; // Reference to parent component's state setter
 }
 
+// If true, changes will be committed by saveChanges() on next onBlur event.
 let changed: boolean = false;
 
-/** Constructs a Table element given a Character object specified by params. */
+/** Constructs the "Goals" section of the parent table. */
 export function GoalTable(props: GoalTableProps): JSX.Element{
   let {goals, goalsTotalRef, setGoals, setRem} = props; // Unpack props
-
-  console.log("GoalTable rendering.");
 
   let goalTable: JSX.Element[] = []; // Initialize table and goalsTotal
   goalsTotalRef.current = {name: "Total", mats: initMaterials()};
@@ -40,40 +39,31 @@ export function GoalTable(props: GoalTableProps): JSX.Element{
     if (goals.length == 10) // Limit goals to 10
       return;
     goals.push(initGoal()); // Adds a blank goal
-    setGoals(); // Update the goal table
-    setRem(); // Update remaining materials tables
+    setGoals(); // Update goals table
+    setRem(); // Update remaining materials table(s)
   } // Don't save character data; changing anything in the new goal will save.
 
   function removeGoal(){
     if (goals.length == 1) // Must have at least 1 goal
       return;
     goals.pop(); // Removes last goal
-    setGoals(); // Update the goal table
-    setRem(); // Update remaining materials tables
-    saveChars(); // Save updated character data directly (bypass saveChanges())
+    setGoals(); // Update goals table
+    setRem(); // Update remaining materials table(s)
+    saveChanges(true); // Save updated character data
   }
 
   function handleGoalChange(e: ChangeEvent<HTMLInputElement>, key: string, goal: Goal){
-    /* Sizes of these sections are dynamic, so row slicing is unreliable due to
-       the asynchronous nature of state. Thus, re-initialization is used. */
     if (key == "name"){ // No input sanitization needed for name string
       goal.name = e.target.value; // Update char data
-      setRem(); // Update remaining materials tables
+      setRem(); // Update remaining materials table(s)
       changed = true; // Character data will be saved on next focus out
     }
-    else if (sanitizeInput(e, goal.mats[key])){ // Checks valid numeric input
+    else if (sanitizeInput(e, goal.mats[key])){ // Valid numeric input
       goal.mats[key] = Number(e.target.value); // Update char data
-      setGoals(); // Update goal table
-      setRem(); // Update remaining materials tables
+      setGoals(); // Update goals table
+      setRem(); // Update remaining materials table(s)
       changed = true; // Character data will be saved on next focus out
     } // Reject non-numeric input outside of name field (do nothing)
-  }
-
-  function saveChanges(){
-    if (changed){ // Check for unsaved changes
-      saveChars(); // Save updated character data
-      changed = false; // Mark changes as committed
-    }
   }
 
   /**
@@ -93,7 +83,7 @@ export function GoalTable(props: GoalTableProps): JSX.Element{
                  <input
                    className="invis-input goal-name"
                    defaultValue={fnParams.goal.name}
-                   onBlur={saveChanges}
+                   onBlur={() => {saveChanges(changed); changed = false}}
                    onChange={(e) => handleGoalChange(e, "name", fnParams.goal)}
                  />
                </td>
@@ -111,7 +101,7 @@ export function GoalTable(props: GoalTableProps): JSX.Element{
                    <input
                      className="invis-input"
                      defaultValue={value}
-                     onBlur={saveChanges}
+                     onBlur={() => {saveChanges(changed); changed = false}}
                      onChange={(e) => handleGoalChange(e, key, fnParams.goal)}
                    />
                  </td>
@@ -132,17 +122,4 @@ export function GoalTable(props: GoalTableProps): JSX.Element{
       {goalTable}
     </>
   );
-}
-
-function sanitizeInput(e: ChangeEvent<HTMLInputElement>, prevValue: number): boolean{
-  if (e.target.value == "") // Input sanitization: allow deleting last digit
-    e.target.value = "0"; // Set empty input to 0
-  
-  let input: number = Number(e.target.value);
-  if (Number.isNaN(input)){ // Input sanitization: Reject non-numeric input
-    e.target.value = String(prevValue); // Overwrite invalid value
-    return false; // Input is invalid
-  }
-  e.target.value = String(input); // Input sanitization: Clear leading 0s
-  return true; // Input is valid
 }

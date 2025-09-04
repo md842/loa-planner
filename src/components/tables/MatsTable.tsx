@@ -1,28 +1,26 @@
 import {type ChangeEvent, type JSX, type RefObject} from 'react';
 
+import {sanitizeInput, saveChanges} from './common';
 import {type Materials, initMaterials} from '../core/types';
-import {saveChars} from '../core/character-data';
 import {goldValue} from '../core/market-data';
 import {loadRosterMats} from '../core/roster-storage';
 
 /** Props interface for MatsTable. */
 interface MatsTableProps{
-  matsTotalRef: RefObject<Materials>;
-  boundMats: Materials;
-  setMats: () => void;
-  setRem: () => void;
+  boundMats: Materials; // Bound materials owned by the character for which this table is being generated
+  matsTotalRef: RefObject<Materials>; // Passed to RemTable to avoid re-calculation
+  setMats: () => void; // Reference to parent component's state setter
+  setRem: () => void; // Reference to parent component's state setter
 }
 
+// If true, changes will be committed by saveChanges() on next onBlur event.
 let changed: boolean = false;
 
-/** Constructs a Table element given a Character object specified by params. */
+/** Constructs the "Owned materials" section of the parent table. */
 export function MatsTable(props: MatsTableProps): JSX.Element{
-  let {matsTotalRef, boundMats, setMats, setRem} = props; // Unpack props
-
-  console.log("MatsTable rendering.");
+  let {boundMats, matsTotalRef, setMats, setRem} = props; // Unpack props
 
   let matsTable: JSX.Element[] = []; // Initialize table and matsTotal
-
   matsTotalRef.current = initMaterials();
   let rosterMats: Materials = loadRosterMats();
 
@@ -31,28 +29,20 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
     matsTotalRef.current[key] = boundMats[key] + value;
   matsTotalRef.current["silver"] = rosterMats["silver"];
 
-  // Build and push each owned materials row
+  // Build and push each owned materials row to the table
   matsTable.push(<tr key="boundMats">{matsRow({mats: boundMats, name: "Bound"})}</tr>);
   matsTable.push(<tr key="rosterMats">{matsRow({mats: rosterMats, name: "Roster"})}</tr>);
   matsTable.push(<tr className="bold" key="totalMats">{matsRow({mats: matsTotalRef.current, name: "Total"})}</tr>);
 
+
   function handleBoundMatChange(e: ChangeEvent<HTMLInputElement>, key: string){
-    if (sanitizeInput(e, boundMats[key])){ // Checks valid numeric input
-      /* Size of this section is static, so only the total row needs updating,
-        and re-initialization can be avoided for performance reasons. */
+    if (sanitizeInput(e, boundMats[key])){ // Valid numeric input
       matsTotalRef.current[key] += Number(e.target.value) - boundMats[key];
       boundMats[key] = Number(e.target.value); // Update char data
       setMats(); // Update owned materials table
-      setRem(); // Update remaining materials tables
+      setRem(); // Update remaining materials table(s)
       changed = true; // Character data will be saved on next focus out
     } // Reject non-numeric input (do nothing)
-  }
-
-  function saveChanges(){
-    if (changed){ // Check for unsaved changes
-      saveChars(); // Save updated character data
-      changed = false; // Mark changes as committed
-    }
   }
 
   /**
@@ -79,7 +69,7 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
                      <input
                        className="invis-input"
                        defaultValue={value}
-                       onBlur={saveChanges}
+                       onBlur={() => {saveChanges(changed); changed = false}}
                        onChange={(e) => handleBoundMatChange(e, key)}
                      />
                    </td>
@@ -97,17 +87,4 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
       {matsTable}
     </>
   );
-}
-
-function sanitizeInput(e: ChangeEvent<HTMLInputElement>, prevValue: number): boolean{
-  if (e.target.value == "") // Input sanitization: allow deleting last digit
-    e.target.value = "0"; // Set empty input to 0
-  
-  let input: number = Number(e.target.value);
-  if (Number.isNaN(input)){ // Input sanitization: Reject non-numeric input
-    e.target.value = String(prevValue); // Overwrite invalid value
-    return false; // Input is invalid
-  }
-  e.target.value = String(input); // Input sanitization: Clear leading 0s
-  return true; // Input is valid
 }

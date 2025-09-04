@@ -5,17 +5,15 @@ import {goldValue} from '../core/market-data';
 
 /** Props interface for RemTable. */
 interface RemTableProps{
-  goals: Goal[]; // The goals for this RemTable.
-  goalsTotalRef: RefObject<Goal>; // Calculated in GoalTable; passed as ref to RemTable to avoid re-calculation
-  matsTotalRef: RefObject<Materials>; // Calculated in MatsTable; passed as ref to RemTable to avoid re-calculation
-  boundMats?: Materials; // If defined, this RemTable is for a character. If undefined, this GoalTable is for an aggregate.
+  goals: Goal[]; // The character goals or goal aggregates for this RemTable
+  goalsTotalRef: RefObject<Goal>; // Calculated in GoalTable; passed to RemTable to avoid re-calculation
+  matsTotalRef: RefObject<Materials>; // Calculated in MatsTable; passed to RemTable to avoid re-calculation
+  boundMats?: Materials; // If defined, remBoundTable will be rendered.
 }
 
-/** Constructs a Table element given a Character object specified by params. */
+/** Constructs the "Remaining materials" section(s) of the parent table. */
 export function RemTable(props: RemTableProps): JSX.Element{
   let {goals, goalsTotalRef, matsTotalRef, boundMats} = props; // Unpack props
-
-  console.log("RemTable rendering.");
 
   let remTable: JSX.Element[] = [], remBoundTable: JSX.Element[] = []; // Initialize tables
 
