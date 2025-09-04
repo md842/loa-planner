@@ -8,7 +8,7 @@ import {loadRosterMats} from '../core/roster-storage';
 /** Props interface for MatsTable. */
 interface MatsTableProps{
   matsTotalRef: RefObject<Materials>;
-  boundMats?: Materials; // If defined, this RemTable is for a character. If undefined, this GoalTable is for an aggregate.
+  boundMats: Materials;
   setMats: () => void;
   setRem: () => void;
 }
@@ -23,39 +23,29 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
 
   let matsTable: JSX.Element[] = []; // Initialize table and matsTotal
 
-  if (boundMats){
-    matsTotalRef.current = initMaterials();
-    let rosterMats: Materials = loadRosterMats();
+  matsTotalRef.current = initMaterials();
+  let rosterMats: Materials = loadRosterMats();
 
-    // Accumulate total materials
-    for (let [key, value] of Object.entries(rosterMats))
-      matsTotalRef.current[key] = boundMats[key] + value;
-    matsTotalRef.current["silver"] = rosterMats["silver"];
+  // Accumulate total materials
+  for (let [key, value] of Object.entries(rosterMats))
+    matsTotalRef.current[key] = boundMats[key] + value;
+  matsTotalRef.current["silver"] = rosterMats["silver"];
 
-    // Build and push each owned materials row
-    matsTable.push(<tr key="boundMats">{matsRow({mats: boundMats, name: "Bound"})}</tr>);
-    matsTable.push(<tr key="rosterMats">{matsRow({mats: rosterMats, name: "Roster"})}</tr>);
-    matsTable.push(<tr className="bold" key="totalMats">{matsRow({mats: matsTotalRef.current, name: "Total"})}</tr>);
-  }
-  else
-    return <></>;
+  // Build and push each owned materials row
+  matsTable.push(<tr key="boundMats">{matsRow({mats: boundMats, name: "Bound"})}</tr>);
+  matsTable.push(<tr key="rosterMats">{matsRow({mats: rosterMats, name: "Roster"})}</tr>);
+  matsTable.push(<tr className="bold" key="totalMats">{matsRow({mats: matsTotalRef.current, name: "Total"})}</tr>);
 
   function handleBoundMatChange(e: ChangeEvent<HTMLInputElement>, key: string){
-    if (boundMats){
-      if (sanitizeInput(e, boundMats[key])){ // Checks valid numeric input
-        /* Size of this section is static, so only the total row needs updating,
-          and re-initialization can be avoided for performance reasons. */
-        matsTotalRef.current[key] += Number(e.target.value) - boundMats[key];
-        boundMats[key] = Number(e.target.value); // Update char data
-        
-        // Replace existing total row in matsTable with newly generated total row
-        //let matsTotalRow = <tr className="bold" key="totalMats">{matsRow({mats: matsTotalRef.current, name: "Total"})}</tr>;
-        //matsTable = ([...matsTable.slice(0, -1), matsTotalRow]); // Update mats table
-        setMats();
-        changed = true; // Character data will be saved on next focus out
-      } // Reject non-numeric input (do nothing)
-    }
-    setRem(); // Update remaining materials tables
+    if (sanitizeInput(e, boundMats[key])){ // Checks valid numeric input
+      /* Size of this section is static, so only the total row needs updating,
+        and re-initialization can be avoided for performance reasons. */
+      matsTotalRef.current[key] += Number(e.target.value) - boundMats[key];
+      boundMats[key] = Number(e.target.value); // Update char data
+      setMats(); // Update owned materials table
+      setRem(); // Update remaining materials tables
+      changed = true; // Character data will be saved on next focus out
+    } // Reject non-numeric input (do nothing)
   }
 
   function saveChanges(){

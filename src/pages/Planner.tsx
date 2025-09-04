@@ -1,7 +1,10 @@
+import '../components/tables/Table.css';
+import '../components/SettingsTab.css';
+
 import {useState} from 'react';
 
-import {AggregateCard} from '../components/AggregateCard';
-import {CharacterCard} from '../components/CharacterCard';
+import {AggregateTable} from '../components/AggregateTable';
+import {CharacterTable} from '../components/CharacterTable';
 import {type Character} from '../components/core/types';
 import {addChar, delChar, getChars, swapChar} from '../components/core/character-data';
 
@@ -28,10 +31,10 @@ export default function Home(){
 
 	return(
     <main>
-      <AggregateCard chars={chars}/>
+      <AggregateTable chars={chars}/>
       {chars.map((char: Character, index: number) => {
-        return( /* Create card for each character */
-          <CharacterCard
+        return( /* Create table for each character */
+          <CharacterTable
             key={char.name + index}
             {...
               {

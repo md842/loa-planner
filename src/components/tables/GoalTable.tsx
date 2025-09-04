@@ -6,9 +6,9 @@ import {goldValue} from '../core/market-data';
 
 import Button from 'react-bootstrap/Button';
 
-/** Props interface for RemTable. */
+/** Props interface for GoalTable. */
 interface GoalTableProps{
-  goals: Goal[]; // The goals for this RemTable.
+  goals: Goal[]; // The goals for this GoalTable.
   goalsTotalRef: RefObject<Goal>;
   setGoals: () => void;
   setRem: () => void;

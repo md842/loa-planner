@@ -1,28 +1,46 @@
-import './AggregateCard.css';
+import {type JSX, type RefObject, useRef, useState} from 'react';
 
-import {type JSX, useState} from 'react';
+import {TableHeader} from './tables/TableHeader';
+import {GoalTable} from './tables/GoalTable';
+import {RemTable} from './tables/RemTable';
 
-import {PlannerTable} from '../components/PlannerTable';
-import {type Character} from './core/types';
+import {type Character, type Goal, type Materials, initMaterials} from './core/types';
 
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
+import Table from 'react-bootstrap/Table';
 
-/** Props interface for CharacterCard(). */
-interface AggregateCardProps{
+/** Props interface for AggregateTable. */
+interface AggregateTableProps{
   chars: Character[];
-  //handleSwap: (index: number, direction: number) => void;
 }
 
-/** Constructs a Table element given a Character object specified by params. */
-export function AggregateCard(props: AggregateCardProps): JSX.Element{
+/** Constructs the table for roster goal aggregates. */
+export function AggregateTable(props: AggregateTableProps): JSX.Element{
   let {chars} = props; // Unpack props
 
   const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
 
+  // Refs used in RemTable
+  const goalsTotal: RefObject<Goal> = useRef({name: "Total", mats: initMaterials()});
+  const matsTotal: RefObject<Materials> = useRef(initMaterials());
+
+  // Set up table state variables
+  function initGoals(){
+    return GoalTable({goals: chars[0].goals, goalsTotalRef: goalsTotal, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem)});
+  }
+  function initRem(){
+    return RemTable({goals: chars[0].goals, goalsTotalRef: goalsTotal, matsTotalRef: matsTotal});
+  }
+  
+  // Table state variables
+  const [goalsTable, setGoals] = useState(initGoals);
+  const [remTable, setRem] = useState(initRem);
+
   function SettingsModal(){
     function handleSubmit(e: React.FormEvent<HTMLFormElement>){
+      console.log("Event:", e);
       setModalVis(false); // Close modal
     }
 
@@ -55,10 +73,13 @@ export function AggregateCard(props: AggregateCardProps): JSX.Element{
           <i className="bi bi-chevron-down"/>
         </Button>
       </div>
-      <PlannerTable
-        title={<th>Roster Goals</th>}
-        goals={chars[0].goals}
-      />
+      <Table hover>
+        <TableHeader title={<th>Roster Goals</th>}/>
+        <tbody>
+          {goalsTable}
+          {remTable}
+        </tbody>
+      </Table>
     </div>
   );
 }
