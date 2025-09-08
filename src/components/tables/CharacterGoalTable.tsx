@@ -8,7 +8,7 @@ import Button from 'react-bootstrap/Button';
 
 /** Props interface for GoalTable. */
 interface GoalTableProps{
-  goals: Goal[]; // The character goals or goal aggregates for this GoalTable
+  goals: Goal[]; // The character goals for this GoalTable
   goalsTotalRef: RefObject<Goal>; // Passed to RemTable to avoid re-calculation
   setGoals: () => void; // Reference to parent component's state setter
   setRem: () => void; // Reference to parent component's state setter
@@ -18,7 +18,7 @@ interface GoalTableProps{
 let changed: boolean = false;
 
 /** Constructs the "Goals" section of the parent table. */
-export function GoalTable(props: GoalTableProps): JSX.Element{
+export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
   let {goals, goalsTotalRef, setGoals, setRem} = props; // Unpack props
 
   let goalTable: JSX.Element[] = []; // Initialize table and goalsTotal
@@ -31,7 +31,7 @@ export function GoalTable(props: GoalTableProps): JSX.Element{
     for (let [key, value] of Object.entries(goal.mats))
       goalsTotalRef.current.mats[key] += value;
   });
-  if (goals.length > 1) // Build total row
+  if (goals.length > 1) // Build total row for char with >1 goals
     goalTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotalRef.current, isTotal: true})}</tr>);
 
 
@@ -95,7 +95,7 @@ export function GoalTable(props: GoalTableProps): JSX.Element{
     // Build the rest of the table row for this goal by pushing values as <td>
     Object.entries(fnParams.goal.mats).forEach(([key, value]) => {
       if (fnParams.isTotal) // Read-only if total row
-        row.push(<td className="read-only" key={key}><input className="invis-input" value={Number.isNaN(value) ? "--" : value} disabled/></td>);
+        row.push(<td className="read-only" key={key}><input className="invis-input" value={value} disabled/></td>);
       else // If goal row, specify change handler
         row.push(<td className="writeable" key={key}>
                    <input

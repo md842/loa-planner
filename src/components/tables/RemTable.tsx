@@ -5,7 +5,7 @@ import {goldValue} from '../core/market-data';
 
 /** Props interface for RemTable. */
 interface RemTableProps{
-  goals: Goal[]; // The character goals or goal aggregates for this RemTable
+  goals: Goal[]; // The character goals or roster goals for this RemTable
   goalsTotalRef: RefObject<Goal>; // Calculated in GoalTable; passed to RemTable to avoid re-calculation
   matsTotalRef: RefObject<Materials>; // Calculated in MatsTable; passed to RemTable to avoid re-calculation
   boundMats?: Materials; // If defined, remBoundTable will be rendered.
@@ -19,23 +19,23 @@ export function RemTable(props: RemTableProps): JSX.Element{
 
   goals.forEach((goal: Goal, index: number) => {
     // Build rows for each goal and push it to the tables
-    remTable.push(<tr key={index}>{remRow({goal: goal, isTotal: false, subtract: matsTotalRef.current})}</tr>);
+    remTable.push(<tr key={index}>{remRow({goal: goal, isBound: false, subtract: matsTotalRef.current})}</tr>);
     if (boundMats) // Character table; initialize remBoundTable.
-      remBoundTable.push(<tr key={index}>{remRow({goal: goal, isTotal: false, subtract: boundMats})}</tr>);
+      remBoundTable.push(<tr key={index}>{remRow({goal: goal, isBound: true, subtract: boundMats})}</tr>);
   });
   if (boundMats && goals.length > 1){ // Character table; build total rows.
-    remTable.push(<tr className="bold" key="totalGoals">{remRow({goal: goalsTotalRef.current, isTotal: true, subtract: matsTotalRef.current})}</tr>);
-    remBoundTable.push(<tr className="bold" key="totalGoals">{remRow({goal: goalsTotalRef.current, isTotal: true, subtract: boundMats})}</tr>);
-  } // If aggregate table, total rows are not needed.
+    remTable.push(<tr className="bold" key="totalGoals">{remRow({goal: goalsTotalRef.current, isBound: false, subtract: matsTotalRef.current})}</tr>);
+    remBoundTable.push(<tr className="bold" key="totalGoals">{remRow({goal: goalsTotalRef.current, isBound: true, subtract: boundMats})}</tr>);
+  } // If roster goal table, total rows are not needed.
 
   /**
    * Generate a table row for the "Remaining materials" sections.
    * @param  {Goal}           goal      The goal being used to generate the row.
-   * @param  {boolean}        isTotal   If true, this row represents a section total.
+   * @param  {boolean}        isBound   If true, disable silver (bound silver does not exist).
    * @param  {Materials}      subtract  The materials to subtract from the goal.
    * @return {JSX.Element[]}            The generated table row.
    */
-  function remRow(fnParams: {goal: Goal, isTotal: boolean, subtract: Materials}): JSX.Element[]{
+  function remRow(fnParams: {goal: Goal, isBound: boolean, subtract: Materials}): JSX.Element[]{
     let row: JSX.Element[] = []; // Initialize table row for this goal
 
     // Add goal name to the table row for this goal
@@ -43,10 +43,7 @@ export function RemTable(props: RemTableProps): JSX.Element{
 
     let mats: Materials = initMaterials(); // Create new Materials object
     for (let [key] of Object.entries(mats)){
-      if (fnParams.goal.mats[key] == null || fnParams.subtract[key] == null)
-        mats[key] = NaN; // Bound silver is stored as null, should be NaN
-      else // Subtract owned mats from goal mats
-        mats[key] = Math.max(0, fnParams.goal.mats[key] - fnParams.subtract[key]);
+      mats[key] = Math.max(0, fnParams.goal.mats[key] - fnParams.subtract[key]);
     }
     
     // Add calculated gold value to the table row for this goal
@@ -54,7 +51,10 @@ export function RemTable(props: RemTableProps): JSX.Element{
 
     // Build the rest of the table row for this goal by pushing values as <td>
     Object.entries(mats).forEach(([key, value]) => {
-      row.push(<td className="read-only" key={key}><input className="invis-input" value={Number.isNaN(value) ? "--" : value} disabled/></td>);
+      if (fnParams.isBound && key == "silver") // If bound silver, disable the input and replace value with "--"
+        row.push(<td className="read-only" key={key}><input className="invis-input" value="--" disabled/></td>);
+      else
+        row.push(<td className="read-only" key={key}><input className="invis-input" value={value} disabled/></td>);
     });
     return row;
   }

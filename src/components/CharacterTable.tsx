@@ -1,7 +1,7 @@
 import {type JSX, type RefObject, useRef, useState} from 'react';
 
 import {TableHeader} from './tables/TableHeader';
-import {GoalTable} from './tables/GoalTable';
+import {CharacterGoalTable} from './tables/CharacterGoalTable';
 import {MatsTable} from './tables/MatsTable';
 import {RemTable} from './tables/RemTable';
 
@@ -39,7 +39,7 @@ export function CharacterTable(props: CharacterTableProps): JSX.Element{
 
   // Set up table state variables
   function initGoals(){
-    return GoalTable({goals: char.goals, goalsTotalRef: goalsTotal, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem)});
+    return CharacterGoalTable({goals: char.goals, goalsTotalRef: goalsTotal, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem)});
   }
   function initMats(){
     return MatsTable({matsTotalRef: matsTotal, boundMats: char.boundMats, setMats: () => setMats(initMats), setRem: () => setRem(initRem)});

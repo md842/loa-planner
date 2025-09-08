@@ -1,7 +1,7 @@
 import {type ChangeEvent, type JSX, type RefObject} from 'react';
 
 import {sanitizeInput, saveChanges} from './common';
-import {type Materials, initMaterials} from '../core/types';
+import {type Materials, addMaterials, initMaterials} from '../core/types';
 import {goldValue} from '../core/market-data';
 import {loadRosterMats} from '../core/roster-storage';
 
@@ -24,10 +24,7 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
   matsTotalRef.current = initMaterials();
   let rosterMats: Materials = loadRosterMats();
 
-  // Accumulate total materials
-  for (let [key, value] of Object.entries(rosterMats))
-    matsTotalRef.current[key] = boundMats[key] + value;
-  matsTotalRef.current["silver"] = rosterMats["silver"];
+  matsTotalRef.current = addMaterials(rosterMats, boundMats); // Total mats
 
   // Build and push each owned materials row to the table
   matsTable.push(<tr key="boundMats">{matsRow({mats: boundMats, name: "Bound"})}</tr>);

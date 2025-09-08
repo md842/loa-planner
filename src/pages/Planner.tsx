@@ -3,7 +3,7 @@ import '../components/SettingsTab.css';
 
 import {useState} from 'react';
 
-import {AggregateTable} from '../components/AggregateTable';
+import {RosterTable} from '../components/RosterTable';
 import {CharacterTable} from '../components/CharacterTable';
 import {type Character} from '../components/core/types';
 import {addChar, delChar, getChars, swapChar} from '../components/core/character-data';
@@ -31,7 +31,7 @@ export default function Home(){
 
 	return(
     <main>
-      <AggregateTable chars={chars}/>
+      <RosterTable chars={chars}/>
       {chars.map((char: Character, index: number) => {
         return( /* Create table for each character */
           <CharacterTable
