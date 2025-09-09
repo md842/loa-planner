@@ -1,26 +1,29 @@
-import './CharacterCard.css';
+import {type JSX, type RefObject, useRef, useState} from 'react';
 
-import {type JSX, useState} from 'react';
+import {TableHeader} from './tables/TableHeader';
+import {CharacterGoalTable} from './tables/CharacterGoalTable';
+import {MatsTable} from './tables/MatsTable';
+import {RemTable} from './tables/RemTable';
 
-import {GoalTable} from '../components/GoalTable';
-import {type Character} from './core/types';
+import {type Character, type Goal, type Materials, initMaterials} from './core/types';
 import {saveCharParams} from './core/character-data';
 
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
+import Table from 'react-bootstrap/Table';
 
-/** Props interface for CharacterCard(). */
-interface CharacterCardProps{
+/** Props interface for CharacterTable. */
+interface CharacterTableProps{
   char: Character;
   index: number; // Index of character, used for data organization
   handleDelete: (index: number) => void;
   handleSwap: (index: number, direction: number) => void;
 }
 
-/** Constructs a Table element given a Character object specified by params. */
-export function CharacterCard(props: CharacterCardProps): JSX.Element{
+/** Constructs a table for a single character. */
+export function CharacterTable(props: CharacterTableProps): JSX.Element{
   let {char, index, handleDelete, handleSwap} = props; // Unpack props
 
   // Load initial character info into state so SettingsModal can change them
@@ -29,6 +32,27 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
 
   // Set table color to the character's saved color
   document.documentElement.style.setProperty("--table-color", charState.color);
+
+  // Refs used in RemTable
+  const goalsTotal: RefObject<Goal> = useRef({name: "Total", mats: initMaterials()});
+  const matsTotal: RefObject<Materials> = useRef(initMaterials());
+
+  // Set up table state variables
+  function initGoals(){
+    return CharacterGoalTable({goals: char.goals, goalsTotalRef: goalsTotal, index: index, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem)});
+  }
+  function initMats(){
+    return MatsTable({matsTotalRef: matsTotal, boundMats: char.boundMats, setMats: () => setMats(initMats), setRem: () => setRem(initRem)});
+  }
+  function initRem(){
+    return RemTable({goals: char.goals, goalsTotalRef: goalsTotal, matsTotalRef: matsTotal, boundMats: char.boundMats});
+  }
+
+  // Table state variables
+  const [goalsTable, setGoals] = useState(initGoals);
+  const [matsTable, setMats] = useState(initMats);
+  const [remTable, setRem] = useState(initRem);
+
 
   function SettingsModal(){
     const [colorPickerDisabled, setColorPickerDisabled] = useState(charState.usesClassColor);
@@ -153,11 +177,14 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
           <i className="bi bi-trash3-fill"/>
         </Button>
       </div>
-      <GoalTable
-        title={<th>{charState.name}<br/>{charState.ilvl} {charState.class}</th>}
-        goals={char.goals}
-        boundMats={char.boundMats}
-      />
+      <Table hover>
+        <TableHeader title={<th>{charState.name}<br/>{charState.ilvl} {charState.class}</th>}/>
+        <tbody>
+          {goalsTable}
+          {matsTable}
+          {remTable}
+        </tbody>
+      </Table>
     </div>
   );
 }
