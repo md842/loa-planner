@@ -37,6 +37,8 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
   }
 
   function removeGoal(){
+    if (goals.length == 1) // Must have at least 1 goal
+      return;
     delRosterGoal(goals.length - 1); // Removes last roster goal
     setGoals(); // Update goals table
     setRem(); // Update remaining materials table(s)

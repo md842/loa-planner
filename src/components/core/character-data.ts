@@ -12,6 +12,8 @@ if (storedChars) // Character data exists in local storage
   chars = JSON.parse(storedChars); // Use local stored data
 if (storedRosterGoals) // Roster goal data exists in local storage
   rosterGoals = JSON.parse(storedRosterGoals); // Use local stored data
+else // Must have at least one roster goal, initialize one
+  rosterGoals = [initRosterGoal(chars)];
 
 console.log("Initialized", chars.length, "characters.");
 console.log("Initialized", rosterGoals.length, "roster goals.");
@@ -30,9 +32,9 @@ export function addChar(): boolean{
     return false; // Adding character failed
 
   chars.push(initCharacter()); // Add character
-  // Each roster goal's indices field must be expanded for new character.
+  // Each roster goal's goal indices field must be expanded for new character.
   rosterGoals.forEach((rosterGoal: RosterGoal) => {
-    rosterGoal.indices.push([]);
+    rosterGoal.goals.push([false]); // New char has one goal, default to false
   });
   saveChars(); // Save updated character data to local storage
   saveRosterGoals(); // Save updated roster goals to local storage
@@ -44,7 +46,7 @@ export function addRosterGoal(): boolean{
   if (rosterGoals.length == 10) // Limit roster goals to 10
     return false; // Adding roster goal failed
 
-  rosterGoals.push(initRosterGoal(chars.length)); // Add roster goal
+  rosterGoals.push(initRosterGoal(chars)); // Add roster goal
   return true; // Adding roster goal succeeded
 } // Don't save goal data; changing anything in new roster goal will save
 
@@ -54,7 +56,7 @@ export function delChar(index: number){
   chars.splice(index, 1); // Remove the specified character from chars
   // Remove the specified character from all roster goals
   rosterGoals.forEach((rosterGoal: RosterGoal) => {
-    rosterGoal.indices.splice(index, 1);
+    rosterGoal.goals.splice(index, 1);
   });
   saveChars(); // Save updated character data to local storage
   saveRosterGoals(); // Save updated roster goals to local storage
@@ -76,6 +78,19 @@ export function getChars(): Character[]{
 export function getRosterGoals(): RosterGoal[]{
   return [...rosterGoals]; // Returning as a new array triggers re-render.
 }
+
+
+/** Mutate corresponding entries in rosterGoals after a char goal operation. */
+export function mutateRosterGoal(charIndex: number, expand: boolean){
+  rosterGoals.forEach((rosterGoal: RosterGoal) => { // For each roster goal,
+    if (expand) // Expand roster goal entry for current character
+      rosterGoal.goals[charIndex].push(false); // Default to false
+    else // Contract roster goal entry for current character
+      rosterGoal.goals[charIndex].pop(); // Removes last item
+  });
+  saveChars(); // Save updated character data to local storage
+  saveRosterGoals(); // Save updated roster goals to local storage
+} // Must save to prevent desync of chars and rosterGoals.
 
 
 /** Saves current character data to local storage. */
@@ -125,8 +140,8 @@ export function swapChar(index: number, direction: number): boolean{
   [chars[index], chars[index + direction]] = [chars[index + direction], chars[index]];
   // Swap character order in each roster goal by swapping indices arrays
   rosterGoals.forEach((rosterGoal: RosterGoal) => {
-    [rosterGoal.indices[index], rosterGoal.indices[index + direction]] =
-      [rosterGoal.indices[index + direction], rosterGoal.indices[index]];
+    [rosterGoal.goals[index], rosterGoal.goals[index + direction]] =
+      [rosterGoal.goals[index + direction], rosterGoal.goals[index]];
   });
   saveChars(); // Save updated character data to local storage
   saveRosterGoals(); // Save updated roster goals to local storage

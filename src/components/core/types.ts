@@ -25,18 +25,22 @@ export function initCharacter(): Character{
 /** Roster goal data structure. */
 export interface RosterGoal{
   name: string; // Name of roster goal.
-  indices: number[][]; // Indices of goals to include from each character.
-                       // [[goals of chars[0]], [goals of chars[1]]]...]
+  goals: boolean[][]; // Indices of goals to include from each character.
+                     // [[goals of chars[0]], [goals of chars[1]]]...]
 }
 
 /** Initializes and returns a default RosterGoal object. */
-export function initRosterGoal(chars: number): RosterGoal{
+export function initRosterGoal(chars: Character[]): RosterGoal{
   let out: RosterGoal = {
     name: "(Goal Name)",
-    indices: []
+    goals: []
   };
-  for (let i = 0; i < chars; i++)
-    out.indices.push([]); // Add empty indices array for each character
+  for (let i = 0; i < chars.length; i++){ // For each character
+    let charGoals: boolean[] = []; // Initialize goals to false (not included)
+    for (let j = 0; j < chars[i].goals.length; j++)
+      charGoals.push(false); // Default to false
+    out.goals.push(charGoals); // Add empty indices array for each character
+  }
   return out;
 }
 

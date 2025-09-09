@@ -39,7 +39,7 @@ export function CharacterTable(props: CharacterTableProps): JSX.Element{
 
   // Set up table state variables
   function initGoals(){
-    return CharacterGoalTable({goals: char.goals, goalsTotalRef: goalsTotal, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem)});
+    return CharacterGoalTable({goals: char.goals, goalsTotalRef: goalsTotal, index: index, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem)});
   }
   function initMats(){
     return MatsTable({matsTotalRef: matsTotal, boundMats: char.boundMats, setMats: () => setMats(initMats), setRem: () => setRem(initRem)});
@@ -52,6 +52,7 @@ export function CharacterTable(props: CharacterTableProps): JSX.Element{
   const [goalsTable, setGoals] = useState(initGoals);
   const [matsTable, setMats] = useState(initMats);
   const [remTable, setRem] = useState(initRem);
+
 
   function SettingsModal(){
     const [colorPickerDisabled, setColorPickerDisabled] = useState(charState.usesClassColor);
