@@ -15,16 +15,18 @@ import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
 
 /** Props interface for RosterTable. */
-interface RosterTableProps{
+interface RosterCardProps{
   chars: Character[];
+  // Reference to parent component's state setter
+  setRosterOnTop: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 var rosterGoals: RosterGoal[]; // Used by initGoals, initRem, and SettingsModal
 let tableGoals: Goal[]; // Build tableGoals from rosterGoals
 
 /** Constructs the table for the roster goals. */
-export function RosterTable(props: RosterTableProps): JSX.Element{
-  let {chars} = props; // Unpack props
+export function RosterCard(props: RosterCardProps): JSX.Element{
+  let {chars, setRosterOnTop} = props; // Unpack props
 
   const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
 
@@ -95,7 +97,8 @@ export function RosterTable(props: RosterTableProps): JSX.Element{
           {props.goals.map((goal: Goal, goalIndex: number) => {
             return(<Form.Check
               className="mb-3"
-              key={goal.name}
+              style={{overflowWrap: "anywhere"} /* Long names wrap to new line */}
+              key={goal.name + goalIndex}
               type="checkbox"
               label={goal.name}
               defaultChecked={temp[curGoal].goals[props.charIndex][goalIndex]}
@@ -141,7 +144,7 @@ export function RosterTable(props: RosterTableProps): JSX.Element{
           <div className="d-flex flex-wrap">
             { /* Populate dropdown with character names and corresponding goals */
             chars.map((char: Character, charIndex: number) => {
-              return(<div className="mb-3 w-25" key={char.name}>
+              return(<div className="mb-3 w-25" key={char.name + charIndex}>
                 <h6 className="mb-3">{char.name}</h6>
                 <GoalCheckboxes goals={char.goals} charIndex={charIndex}/>
               </div>);
@@ -163,10 +166,10 @@ export function RosterTable(props: RosterTableProps): JSX.Element{
         <Button variant="link" onClick={() => setModalVis(true)}>
           <i className="bi bi-gear-fill"/>
         </Button>
-        <Button variant="link">
+        <Button variant="link" onClick={() => setRosterOnTop(true)}>
           <i className="bi bi-chevron-up"/>
         </Button>
-        <Button variant="link">
+        <Button variant="link" onClick={() => setRosterOnTop(false)}>
           <i className="bi bi-chevron-down"/>
         </Button>
       </div>

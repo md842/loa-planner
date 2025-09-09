@@ -47,7 +47,7 @@ export function RemTable(props: RemTableProps): JSX.Element{
     }
     
     // Add calculated gold value to the table row for this goal
-    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(mats)} disabled/></td>); // TODO: Calculate value using market data once implemented.
+    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(mats)} disabled/></td>);
 
     // Build the rest of the table row for this goal by pushing values as <td>
     Object.entries(mats).forEach(([key, value]) => {

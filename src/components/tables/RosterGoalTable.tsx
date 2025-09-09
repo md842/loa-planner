@@ -45,10 +45,14 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
   }
 
   function handleGoalChange(e: ChangeEvent<HTMLInputElement>, index: number){
-    setRosterGoalName(index, e.target.value); // Update roster goal name
-    setGoals(); // Update goals table
-    setRem(); // Update remaining materials table(s)
-    changed = true; // Roster goal data will be saved on next focus out
+    if (e.target.value.length < 30){ // Under length limit, accept input
+      setRosterGoalName(index, e.target.value); // Update roster goal name
+      setGoals(); // Update goals table
+      setRem(); // Update remaining materials table(s)
+      changed = true; // Roster goal data will be saved on next focus out
+    }
+    else // Over length limit, reject input
+      e.target.value = goals[index].name; // Resets field to last good value
   }
 
   /**
@@ -72,7 +76,7 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
     );
     
     // Add calculated gold value to the table row for this goal
-    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(fnParams.goal.mats)} disabled/></td>); // TODO: Calculate value using market data once implemented.
+    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(fnParams.goal.mats)} disabled/></td>);
 
     // Build the rest of the table row for this goal by pushing values as <td>
     Object.entries(fnParams.goal.mats).forEach(([key, value]) => {

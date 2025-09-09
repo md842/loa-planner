@@ -58,9 +58,13 @@ export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
 
   function handleGoalChange(e: ChangeEvent<HTMLInputElement>, key: string, goal: Goal){
     if (key == "name"){ // No input sanitization needed for name string
-      goal.name = e.target.value; // Update char data
-      setRem(); // Update remaining materials table(s)
-      changed = true; // Character data will be saved on next focus out
+      if (e.target.value.length < 30){ // Under length limit, accept input
+        goal.name = e.target.value; // Update char data
+        setRem(); // Update remaining materials table(s)
+        changed = true; // Character data will be saved on next focus out
+      }
+      else // Over length limit, reject input
+        e.target.value = goal.name; // Resets field to last good value
     }
     else if (sanitizeInput(e, goal.mats[key])){ // Valid numeric input
       goal.mats[key] = Number(e.target.value); // Update char data
@@ -94,7 +98,7 @@ export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
       );
     
     // Add calculated gold value to the table row for this goal
-    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(fnParams.goal.mats)} disabled/></td>); // TODO: Calculate value using market data once implemented.
+    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(fnParams.goal.mats)} disabled/></td>);
 
     // Build the rest of the table row for this goal by pushing values as <td>
     Object.entries(fnParams.goal.mats).forEach(([key, value]) => {

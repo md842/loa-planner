@@ -15,7 +15,7 @@ import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
 
 /** Props interface for CharacterTable. */
-interface CharacterTableProps{
+interface CharacterCardProps{
   char: Character;
   index: number; // Index of character, used for data organization
   handleDelete: (index: number) => void;
@@ -23,7 +23,7 @@ interface CharacterTableProps{
 }
 
 /** Constructs a table for a single character. */
-export function CharacterTable(props: CharacterTableProps): JSX.Element{
+export function CharacterCard(props: CharacterCardProps): JSX.Element{
   let {char, index, handleDelete, handleSwap} = props; // Unpack props
 
   // Load initial character info into state so SettingsModal can change them

@@ -54,7 +54,7 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
 
     // Add goal name and calculated gold value to the table row for this goal
     row.push(<td className="read-only" key="name"><input className="invis-input bold" value={fnParams.name} disabled/></td>);
-    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(fnParams.mats)} disabled/></td>); // TODO: Calculate value using market data once implemented.
+    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(fnParams.mats)} disabled/></td>);
 
     // Build the rest of the table row for this goal by pushing values as <td>
     Object.entries(fnParams.mats).forEach(([key, value]) => {
