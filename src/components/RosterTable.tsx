@@ -5,7 +5,7 @@ import {RosterGoalTable} from './tables/RosterGoalTable';
 import {RemTable} from './tables/RemTable';
 
 import {type Character, type Goal, type RosterGoal, type Materials, addMaterials, initMaterials, subMaterials} from './core/types';
-import {getRosterGoals, saveRosterGoals} from './core/character-data';
+import {getRosterGoals, setRosterGoals} from './core/character-data';
 import {loadRosterMats} from './core/roster-storage';
 
 import Button from 'react-bootstrap/Button';
@@ -19,8 +19,8 @@ interface RosterTableProps{
   chars: Character[];
 }
 
-var rosterGoals: RosterGoal[] = [];
-let goals: Goal[] = []; // Build table goals from rosterGoals
+var rosterGoals: RosterGoal[]; // Used by initGoals, initRem, and SettingsModal
+let tableGoals: Goal[]; // Build tableGoals from rosterGoals
 
 /** Constructs the table for the roster goals. */
 export function RosterTable(props: RosterTableProps): JSX.Element{
@@ -32,10 +32,13 @@ export function RosterTable(props: RosterTableProps): JSX.Element{
   const goalsTotal: RefObject<Goal> = useRef({name: "Total", mats: initMaterials()}); // Currently unused
   const matsTotal: RefObject<Materials> = useRef(initMaterials()); // Currently unused
 
-  // Set up table state variables
-  function initGoals(){
-    rosterGoals = getRosterGoals();
-    goals = []; // Build table goals from rosterGoals
+  // Table state variables
+  const [goalsTable, setGoals] = useState(initGoals);
+  const [remTable, setRem] = useState(initRem);
+
+  function initGoals(){ // goalsTable state initializer function
+    rosterGoals = getRosterGoals(); // Ensure rosterGoals value is up-to-date
+    tableGoals = []; // Build table goals from rosterGoals
 
     rosterGoals.forEach((rosterGoal: RosterGoal) => {
       // Build a Goal object for each roster goal
@@ -49,53 +52,53 @@ export function RosterTable(props: RosterTableProps): JSX.Element{
             goal.mats = addMaterials(goal.mats, chars[charIndex].goals[goalIndex].mats);
         });
       });
-      goals.push(goal); // Push Goal object for this roster goal to table params
+      tableGoals.push(goal); // Push Goal object for this roster goal to table params
     });
-    return RosterGoalTable({goals: goals, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem)});
+    return RosterGoalTable({goals: tableGoals, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem)});
   }
 
-  function initRem(){
-    let remGoals: Goal[] = []; // Build table goals from rosterGoals
+  function initRem(){ // remTable state initializer function
+    let remTableGoals: Goal[] = []; // Build remTableGoals from rosterGoals
 
     rosterGoals.forEach((rosterGoal: RosterGoal, index: number) => {
       // Build a Goal object for each roster goal
       let goal: Goal = {name: rosterGoal.name, mats: initMaterials()};
 
       // Copy mats from goal built in initGoals() and subtract roster mats
-      goal.mats = subMaterials(goals[index].mats, loadRosterMats());
+      goal.mats = subMaterials(tableGoals[index].mats, loadRosterMats());
 
       rosterGoal.goals.forEach((charGoals: boolean[], charIndex: number) => {
         if (charGoals.includes(true)) // Char charIndex is part of this roster goal
           // Subtract the character's bound mats from the goal
           goal.mats = subMaterials(goal.mats, chars[charIndex].boundMats);
       });
-      remGoals.push(goal); // Push Goal object for this roster goal to table params
+      remTableGoals.push(goal); // Push Goal object for this roster goal to table params
     });
     
-    return RemTable({goals: remGoals, goalsTotalRef: goalsTotal, matsTotalRef: matsTotal});
+    return RemTable({goals: remTableGoals, goalsTotalRef: goalsTotal, matsTotalRef: matsTotal});
   }
-  
-  // Table state variables
-  const [goalsTable, setGoals] = useState(initGoals);
-  const [remTable, setRem] = useState(initRem);
-
 
   function SettingsModal(){
-    const [curGoal, setCurGoal] = useState(0); // Controlled by dropdown
     rosterGoals = getRosterGoals(); // Ensure rosterGoals value is up-to-date
+    const [curGoal, setCurGoal] = useState(0); // Controlled by dropdown
+    const [temp] = useState(initTemp); // Stores uncommitted changes
 
-    function GoalCheckboxes(props: {char: Character, charIndex: number}): JSX.Element{
+    function initTemp(): RosterGoal[]{ // temp state initializer function
+      return JSON.parse(JSON.stringify(rosterGoals)); // Deep copy rosterGoals
+    }
+
+    function GoalCheckboxes(props: {goals: Goal[], charIndex: number}): JSX.Element{
       /* Separating checkbox rendering into its own component function allows
          defaultChecked to update when changing selected roster goal. */
       return(
         <>
-          {props.char.goals.map((goal: Goal, goalIndex: number) => {
+          {props.goals.map((goal: Goal, goalIndex: number) => {
             return(<Form.Check
               className="mb-3"
               key={goal.name}
               type="checkbox"
               label={goal.name}
-              defaultChecked={rosterGoals[curGoal].goals[props.charIndex][goalIndex]}
+              defaultChecked={temp[curGoal].goals[props.charIndex][goalIndex]}
               onChange={(e) => handleChange(e, props.charIndex, goalIndex)}
             />);
           })}
@@ -104,12 +107,13 @@ export function RosterTable(props: RosterTableProps): JSX.Element{
     }
 
     function handleChange(e: ChangeEvent<HTMLInputElement>, charIndex: number, goalIndex: number){
-      // Checkboxes directly manipulate boolean values in rosterGoals
-      rosterGoals[curGoal].goals[charIndex][goalIndex] = e.target.checked;
-      saveRosterGoals();
+      // Called when checkbox clicked. Directly manipulates bool values in temp
+      temp[curGoal].goals[charIndex][goalIndex] = e.target.checked;
     }
   
     function handleSubmit(){
+      // Called when "Save" button clicked
+      setRosterGoals(temp); // Commit changes in temp to rosterGoals
       setGoals(initGoals); // Update goals table
       setRem(initRem); // Update remaining materials table(s)
       setModalVis(false); // Close modal
@@ -133,13 +137,13 @@ export function RosterTable(props: RosterTableProps): JSX.Element{
               })}
             </Form.Select>
           </InputGroup>
-          <h6 className="mb-3">Select goals to include in this roster goal:</h6>
-          <div className="d-flex">
+          <h6 className="mb-4">Select character goals to include in the selected roster goal:</h6>
+          <div className="d-flex flex-wrap">
             { /* Populate dropdown with character names and corresponding goals */
             chars.map((char: Character, charIndex: number) => {
-              return(<div className="mx-3" key={char.name}>
+              return(<div className="mb-3 w-25" key={char.name}>
                 <h6 className="mb-3">{char.name}</h6>
-                <GoalCheckboxes char={char} charIndex={charIndex}/>
+                <GoalCheckboxes goals={char.goals} charIndex={charIndex}/>
               </div>);
             })}
           </div>

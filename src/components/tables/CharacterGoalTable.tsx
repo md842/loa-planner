@@ -2,10 +2,10 @@ import {type ChangeEvent, type JSX, type RefObject} from 'react';
 
 import {sanitizeInput, saveChanges} from './common';
 import {type Goal, initGoal, initMaterials} from '../core/types';
+import {expandRosterGoals} from '../core/character-data';
 import {goldValue} from '../core/market-data';
 
 import Button from 'react-bootstrap/Button';
-import { mutateRosterGoal } from '../core/character-data';
 
 /** Props interface for GoalTable. */
 interface GoalTableProps{
@@ -41,7 +41,7 @@ export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
     if (goals.length == 10) // Limit goals to 10
       return;
     goals.push(initGoal()); // Adds a blank goal
-    mutateRosterGoal(index, true);
+    expandRosterGoals(index, true);
     setGoals(); // Update goals table
     setRem(); // Update remaining materials table(s)
   } // Don't save character data; changing anything in the new goal will save.
@@ -50,7 +50,7 @@ export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
     if (goals.length == 1) // Must have at least 1 goal
       return;
     goals.pop(); // Removes last goal
-    mutateRosterGoal(index, false);
+    expandRosterGoals(index, false);
     setGoals(); // Update goals table
     setRem(); // Update remaining materials table(s)
     saveChanges(true); // Save updated character data

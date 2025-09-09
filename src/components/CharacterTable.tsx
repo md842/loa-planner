@@ -37,6 +37,11 @@ export function CharacterTable(props: CharacterTableProps): JSX.Element{
   const goalsTotal: RefObject<Goal> = useRef({name: "Total", mats: initMaterials()});
   const matsTotal: RefObject<Materials> = useRef(initMaterials());
 
+  // Table state variables
+  const [goalsTable, setGoals] = useState(initGoals);
+  const [matsTable, setMats] = useState(initMats);
+  const [remTable, setRem] = useState(initRem);
+
   // Set up table state variables
   function initGoals(){
     return CharacterGoalTable({goals: char.goals, goalsTotalRef: goalsTotal, index: index, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem)});
@@ -47,12 +52,6 @@ export function CharacterTable(props: CharacterTableProps): JSX.Element{
   function initRem(){
     return RemTable({goals: char.goals, goalsTotalRef: goalsTotal, matsTotalRef: matsTotal, boundMats: char.boundMats});
   }
-
-  // Table state variables
-  const [goalsTable, setGoals] = useState(initGoals);
-  const [matsTable, setMats] = useState(initMats);
-  const [remTable, setRem] = useState(initRem);
-
 
   function SettingsModal(){
     const [colorPickerDisabled, setColorPickerDisabled] = useState(charState.usesClassColor);
@@ -108,7 +107,6 @@ export function CharacterTable(props: CharacterTableProps): JSX.Element{
 
       // Update (re-render) character info in top left of table
       setCharState({name: name, ilvl: ilvl, class: charClass, usesClassColor: usesClassColor, color: color});
-      // Save updated character data
       saveCharParams(index, name, ilvl, charClass, usesClassColor, color);
       setModalVis(false); // Close modal
     }
