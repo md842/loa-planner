@@ -1,10 +1,10 @@
-import {type ChangeEvent, type JSX, type RefObject, useEffect, useRef, useState} from 'react';
+import {type ChangeEvent, type JSX, useEffect, useState} from 'react';
 
 import {TableHeader} from './tables/TableHeader';
 import {RosterGoalTable} from './tables/RosterGoalTable';
 import {RemTable} from './tables/RemTable';
 
-import {type Character, type Goal, type RosterGoal, type Materials, addMaterials, initMaterials, subMaterials} from './core/types';
+import {type Character, type Goal, type Materials, addMaterials, initMaterials, subMaterials, type RosterGoal} from './core/types';
 import {getRosterGoals, setRosterGoals} from './core/character-data';
 import {loadRosterMats} from './core/roster-storage';
 
@@ -24,7 +24,6 @@ interface RosterCardProps{
 }
 
 var rosterGoals: RosterGoal[]; // Used by initGoals, initRem, and SettingsModal
-let tableGoals: Goal[]; // Build tableGoals from rosterGoals
 
 /** Constructs the table for the roster goals. */
 export function RosterCard(props: RosterCardProps): JSX.Element{
@@ -45,14 +44,10 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
     setRem(initRem); // Update remaining materials table(s)
   }, [remUpdateSignal]);
 
-  // Refs used in RemTable
-  const goalsTotal: RefObject<Goal> = useRef({name: "Total", mats: initMaterials()}); // Currently unused
-  const matsTotal: RefObject<Materials> = useRef(initMaterials()); // Currently unused
-
 
   function initGoals(): JSX.Element{ // goalsTable state initializer function
     rosterGoals = getRosterGoals(); // Ensure rosterGoals value is up-to-date
-    tableGoals = []; // Build table goals from rosterGoals
+    let tableGoals: Goal[] = []; // Build table goals from rosterGoals
 
     rosterGoals.forEach((rosterGoal: RosterGoal) => {
       // Build a Goal object for each roster goal
@@ -68,28 +63,44 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
       });
       tableGoals.push(goal); // Push Goal object for this roster goal to table params
     });
-    return RosterGoalTable({goals: tableGoals, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem)});
+
+    return RosterGoalTable({
+      goals: tableGoals,
+      setGoals: () => setGoals(initGoals),
+      setRem: () => setRem(initRem)
+    });
   }
 
   function initRem(): JSX.Element{ // remTable state initializer function
+    rosterGoals = getRosterGoals(); // Ensure rosterGoals value is up-to-date
     let remTableGoals: Goal[] = []; // Build remTableGoals from rosterGoals
 
-    rosterGoals.forEach((rosterGoal: RosterGoal, index: number) => {
-      // Build a Goal object for each roster goal
-      let goal: Goal = {name: rosterGoal.name, mats: initMaterials()};
+    rosterGoals.forEach((rosterGoal: RosterGoal) => {
+      let remTableGoal: Goal = {name: rosterGoal.name, mats: initMaterials()};
 
-      // Copy mats from goal built in initGoals() and subtract roster mats
-      goal.mats = subMaterials(tableGoals[index].mats, loadRosterMats());
-
+      /* For each character, determine the remaining bound materials required
+         to finish all the character goals included in this rosterGoal. */
       rosterGoal.goals.forEach((charGoals: boolean[], charIndex: number) => {
-        if (charGoals.includes(true)) // Char charIndex is part of this roster goal
-          // Subtract the character's bound mats from the goal
-          goal.mats = subMaterials(goal.mats, chars[charIndex].boundMats);
+        let charRemBound: Materials = initMaterials();
+
+        // For current char, sum its char goals included in this rosterGoal.
+        charGoals.forEach((goalIncluded: boolean, goalIndex: number) => {
+          if (goalIncluded)
+            charRemBound = addMaterials(charRemBound, chars[charIndex].goals[goalIndex].mats);
+        });
+        /* Subtract current char's bound materials from the sum of its included
+           goals. Fine if no char goals included, subMaterials floors to 0. */
+        charRemBound = subMaterials(charRemBound, chars[charIndex].boundMats);
+        // Add charRemBound to the remTableGoal for this rosterGoal.
+        remTableGoal.mats = addMaterials(remTableGoal.mats, charRemBound);
       });
-      remTableGoals.push(goal); // Push Goal object for this roster goal to table params
+      // Finally, subtract roster mats from the sum of all charRemBound.
+      remTableGoal.mats = subMaterials(remTableGoal.mats, loadRosterMats());
+
+      remTableGoals.push(remTableGoal); // Push completed remTableGoal
     });
     
-    return RemTable({goals: remTableGoals, goalsTotalRef: goalsTotal, matsTotalRef: matsTotal});
+    return RemTable({goals: remTableGoals});
   }
 
   function SettingsModal(){

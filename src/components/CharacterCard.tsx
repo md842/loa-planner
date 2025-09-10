@@ -47,13 +47,32 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
 
   // Set up table state variables
   function initGoals(){
-    return CharacterGoalTable({goals: char.goals, goalsTotalRef: goalsTotal, index: index, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem), updateRosterGoals: updateRosterGoals, updateRosterRem: updateRosterRem});
+    return CharacterGoalTable({
+      goals: char.goals,
+      goalsTotalRef: goalsTotal,
+      index: index,
+      setGoals: () => setGoals(initGoals),
+      setRem: () => setRem(initRem),
+      updateRosterGoals: updateRosterGoals,
+      updateRosterRem: updateRosterRem
+    });
   }
   function initMats(){
-    return MatsTable({matsTotalRef: matsTotal, boundMats: char.boundMats, setMats: () => setMats(initMats), setRem: () => setRem(initRem), updateRosterRem: updateRosterRem});
+    return MatsTable({
+      matsTotalRef: matsTotal,
+      boundMats: char.boundMats,
+      setMats: () => setMats(initMats),
+      setRem: () => setRem(initRem),
+      updateRosterRem: updateRosterRem
+    });
   }
   function initRem(){
-    return RemTable({goals: char.goals, goalsTotalRef: goalsTotal, matsTotalRef: matsTotal, boundMats: char.boundMats});
+    return RemTable({
+      goals: char.goals,
+      goalsTotalRef: goalsTotal,
+      matsTotalRef: matsTotal,
+      boundMats: char.boundMats
+    });
   }
 
   function SettingsModal(){
