@@ -18,13 +18,16 @@ import Table from 'react-bootstrap/Table';
 interface CharacterCardProps{
   char: Character;
   index: number; // Index of character, used for data organization
+  // References to parent component state/state setters
   handleDelete: (index: number) => void;
   handleSwap: (index: number, direction: number) => void;
+  updateRosterGoals: () => void;
+  updateRosterRem: () => void;
 }
 
 /** Constructs a table for a single character. */
 export function CharacterCard(props: CharacterCardProps): JSX.Element{
-  let {char, index, handleDelete, handleSwap} = props; // Unpack props
+  let {char, index, handleDelete, handleSwap, updateRosterGoals, updateRosterRem} = props; // Unpack props
 
   // Load initial character info into state so SettingsModal can change them
   const [charState, setCharState] = useState({name: char.name, ilvl: char.ilvl, class: char.class, usesClassColor: char.usesClassColor, color: char.color});
@@ -44,10 +47,10 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
 
   // Set up table state variables
   function initGoals(){
-    return CharacterGoalTable({goals: char.goals, goalsTotalRef: goalsTotal, index: index, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem)});
+    return CharacterGoalTable({goals: char.goals, goalsTotalRef: goalsTotal, index: index, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem), updateRosterGoals: updateRosterGoals, updateRosterRem: updateRosterRem});
   }
   function initMats(){
-    return MatsTable({matsTotalRef: matsTotal, boundMats: char.boundMats, setMats: () => setMats(initMats), setRem: () => setRem(initRem)});
+    return MatsTable({matsTotalRef: matsTotal, boundMats: char.boundMats, setMats: () => setMats(initMats), setRem: () => setRem(initRem), updateRosterRem: updateRosterRem});
   }
   function initRem(){
     return RemTable({goals: char.goals, goalsTotalRef: goalsTotal, matsTotalRef: matsTotal, boundMats: char.boundMats});

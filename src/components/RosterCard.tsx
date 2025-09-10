@@ -1,4 +1,4 @@
-import {type ChangeEvent, type JSX, type RefObject, useRef, useState} from 'react';
+import {type ChangeEvent, type JSX, type RefObject, useEffect, useRef, useState} from 'react';
 
 import {TableHeader} from './tables/TableHeader';
 import {RosterGoalTable} from './tables/RosterGoalTable';
@@ -17,8 +17,10 @@ import Table from 'react-bootstrap/Table';
 /** Props interface for RosterTable. */
 interface RosterCardProps{
   chars: Character[];
-  // Reference to parent component's state setter
-  setRosterOnTop: React.Dispatch<React.SetStateAction<boolean>>;
+  // References to parent component state/state setters
+  goalsUpdateSignal: unknown[];
+  remUpdateSignal: unknown[];
+  setOnTop: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 var rosterGoals: RosterGoal[]; // Used by initGoals, initRem, and SettingsModal
@@ -26,19 +28,29 @@ let tableGoals: Goal[]; // Build tableGoals from rosterGoals
 
 /** Constructs the table for the roster goals. */
 export function RosterCard(props: RosterCardProps): JSX.Element{
-  let {chars, setRosterOnTop} = props; // Unpack props
+  let {chars, goalsUpdateSignal, remUpdateSignal, setOnTop} = props; // Unpack props
+
+  /* Table state variables. useEffect runs once on mount, so initialize state
+     with empty fragments to avoid wasting initial renders. */
+  const [goalsTable, setGoals] = useState(<></>);
+  const [remTable, setRem] = useState(<></>);
 
   const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
+
+  useEffect(() => { // Re-initializes goalsTable state when signal changes
+    setGoals(initGoals); // Update goals table
+  }, [goalsUpdateSignal]);
+
+  useEffect(() => { // Re-initializes remTable state when signal changes
+    setRem(initRem); // Update remaining materials table(s)
+  }, [remUpdateSignal]);
 
   // Refs used in RemTable
   const goalsTotal: RefObject<Goal> = useRef({name: "Total", mats: initMaterials()}); // Currently unused
   const matsTotal: RefObject<Materials> = useRef(initMaterials()); // Currently unused
 
-  // Table state variables
-  const [goalsTable, setGoals] = useState(initGoals);
-  const [remTable, setRem] = useState(initRem);
 
-  function initGoals(){ // goalsTable state initializer function
+  function initGoals(): JSX.Element{ // goalsTable state initializer function
     rosterGoals = getRosterGoals(); // Ensure rosterGoals value is up-to-date
     tableGoals = []; // Build table goals from rosterGoals
 
@@ -59,7 +71,7 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
     return RosterGoalTable({goals: tableGoals, setGoals: () => setGoals(initGoals), setRem: () => setRem(initRem)});
   }
 
-  function initRem(){ // remTable state initializer function
+  function initRem(): JSX.Element{ // remTable state initializer function
     let remTableGoals: Goal[] = []; // Build remTableGoals from rosterGoals
 
     rosterGoals.forEach((rosterGoal: RosterGoal, index: number) => {
@@ -110,12 +122,12 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
     }
 
     function handleChange(e: ChangeEvent<HTMLInputElement>, charIndex: number, goalIndex: number){
-      // Called when checkbox clicked. Directly manipulates bool values in temp
+      // Called when checkbox is clicked. Directly manipulates booleans in temp
       temp[curGoal].goals[charIndex][goalIndex] = e.target.checked;
     }
   
     function handleSubmit(){
-      // Called when "Save" button clicked
+      // Called when "Save" button is clicked
       setRosterGoals(temp); // Commit changes in temp to rosterGoals
       setGoals(initGoals); // Update goals table
       setRem(initRem); // Update remaining materials table(s)
@@ -166,10 +178,10 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
         <Button variant="link" onClick={() => setModalVis(true)}>
           <i className="bi bi-gear-fill"/>
         </Button>
-        <Button variant="link" onClick={() => setRosterOnTop(true)}>
+        <Button variant="link" onClick={() => setOnTop(true)}>
           <i className="bi bi-chevron-up"/>
         </Button>
-        <Button variant="link" onClick={() => setRosterOnTop(false)}>
+        <Button variant="link" onClick={() => setOnTop(false)}>
           <i className="bi bi-chevron-down"/>
         </Button>
       </div>

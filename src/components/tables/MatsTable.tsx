@@ -9,8 +9,10 @@ import {loadRosterMats} from '../core/roster-storage';
 interface MatsTableProps{
   boundMats: Materials; // Bound materials owned by the character for which this table is being generated
   matsTotalRef: RefObject<Materials>; // Passed to RemTable to avoid re-calculation
-  setMats: () => void; // Reference to parent component's state setter
-  setRem: () => void; // Reference to parent component's state setter
+  // References to parent component state/state setters
+  setMats: () => void;
+  setRem: () => void;
+  updateRosterRem: () => void;
 }
 
 // If true, changes will be committed by saveChanges() on next onBlur event.
@@ -18,7 +20,9 @@ let changed: boolean = false;
 
 /** Constructs the "Owned materials" section of the parent table. */
 export function MatsTable(props: MatsTableProps): JSX.Element{
-  let {boundMats, matsTotalRef, setMats, setRem} = props; // Unpack props
+  let {boundMats, matsTotalRef, setMats, setRem, updateRosterRem} = props; // Unpack props
+
+  console.log("MatsTable rendering");
 
   let matsTable: JSX.Element[] = []; // Initialize table and matsTotal
   matsTotalRef.current = initMaterials();
@@ -38,6 +42,7 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
       boundMats[key] = Number(e.target.value); // Update char data
       setMats(); // Update owned materials table
       setRem(); // Update remaining materials table(s)
+      updateRosterRem(); // Send signal to update RosterCard remTable
       changed = true; // Character data will be saved on next focus out
     } // Reject non-numeric input (do nothing)
   }

@@ -9,8 +9,9 @@ import Button from 'react-bootstrap/Button';
 /** Props interface for RosterGoalTable. */
 interface RosterGoalTableProps{
   goals: Goal[]; // The roster goals for this GoalTable
-  setGoals: () => void; // Reference to parent component's state setter
-  setRem: () => void; // Reference to parent component's state setter
+  // References to parent component state/state setters
+  setGoals: () => void;
+  setRem: () => void;
 }
 
 // If true, changes will be committed by saveChanges() on next onBlur event.
@@ -19,6 +20,8 @@ let changed: boolean = false;
 /** Constructs the "Roster Goals" section of the parent table. */
 export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
   let {goals, setGoals, setRem} = props; // Unpack props
+
+  console.log("RosterGoalTable rendering");
 
   let goalTable: JSX.Element[] = []; // Initialize table
   
@@ -47,7 +50,6 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
   function handleGoalChange(e: ChangeEvent<HTMLInputElement>, index: number){
     if (e.target.value.length < 30){ // Under length limit, accept input
       setRosterGoalName(index, e.target.value); // Update roster goal name
-      setGoals(); // Update goals table
       setRem(); // Update remaining materials table(s)
       changed = true; // Roster goal data will be saved on next focus out
     }

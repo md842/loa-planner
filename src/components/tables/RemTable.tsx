@@ -15,6 +15,8 @@ interface RemTableProps{
 export function RemTable(props: RemTableProps): JSX.Element{
   let {goals, goalsTotalRef, matsTotalRef, boundMats} = props; // Unpack props
 
+  console.log("RemTable rendering");
+
   let remTable: JSX.Element[] = [], remBoundTable: JSX.Element[] = []; // Initialize tables
 
   goals.forEach((goal: Goal, index: number) => {

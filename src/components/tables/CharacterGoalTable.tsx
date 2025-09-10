@@ -12,8 +12,11 @@ interface GoalTableProps{
   goals: Goal[]; // The character goals for this GoalTable
   goalsTotalRef: RefObject<Goal>; // Passed to RemTable to avoid re-calculation
   index: number;
-  setGoals: () => void; // Reference to parent component's state setter
-  setRem: () => void; // Reference to parent component's state setter
+  // References to parent component state/state setters
+  setGoals: () => void;
+  setRem: () => void;
+  updateRosterGoals: () => void;
+  updateRosterRem: () => void;
 }
 
 // If true, changes will be committed by saveChanges() on next onBlur event.
@@ -21,7 +24,9 @@ let changed: boolean = false;
 
 /** Constructs the "Goals" section of the parent table. */
 export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
-  let {goals, goalsTotalRef, index, setGoals, setRem} = props; // Unpack props
+  let {goals, goalsTotalRef, index, setGoals, setRem, updateRosterGoals, updateRosterRem} = props; // Unpack props
+
+  console.log("CharacterGoalTable rendering");
 
   let goalTable: JSX.Element[] = []; // Initialize table and goalsTotal
   goalsTotalRef.current = {name: "Total", mats: initMaterials()};
@@ -70,6 +75,8 @@ export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
       goal.mats[key] = Number(e.target.value); // Update char data
       setGoals(); // Update goals table
       setRem(); // Update remaining materials table(s)
+      updateRosterGoals(); // Send signal to update RosterCard goalsTable
+      updateRosterRem(); // Send signal to update RosterCard remTable
       changed = true; // Character data will be saved on next focus out
     } // Reject non-numeric input outside of name field (do nothing)
   }

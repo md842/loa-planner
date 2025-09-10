@@ -1,13 +1,13 @@
 import {type Materials} from './types';
 
 let marketPrices = {
-  shards: 0.63,
-  fusions: 65,
-  reds: 1.56,
-  blues: 0.03,
-  leaps: 7,
+  shards: 0.6,
+  fusions: 84,
+  reds: 1.05,
+  blues: 0.04,
+  leaps: 6,
   redSolars: 350,
-  blueSolars: 164
+  blueSolars: 195
 };
 
 export function goldValue(mats: Materials): number{
