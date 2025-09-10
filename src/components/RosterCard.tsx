@@ -23,7 +23,9 @@ interface RosterCardProps{
   setOnTop: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-var rosterGoals: RosterGoal[]; // Used by initGoals, initRem, and SettingsModal
+// Initialized by calcTableGoals(), used by initGoals and initRem
+var tableGoals: Goal[];
+var remTableGoals: Goal[];
 
 /** Constructs the table for the roster goals. */
 export function RosterCard(props: RosterCardProps): JSX.Element{
@@ -45,48 +47,28 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
   }, [remUpdateSignal]);
 
 
-  function initGoals(): JSX.Element{ // goalsTable state initializer function
-    rosterGoals = getRosterGoals(); // Ensure rosterGoals value is up-to-date
-    let tableGoals: Goal[] = []; // Build table goals from rosterGoals
+  /** Calculates table goals for RosterCard given saved roster goal data. */
+  function calculateTableGoals(){
+    let rosterGoals: RosterGoal[] = getRosterGoals();
+    tableGoals = [], remTableGoals = []; // Initialize table goal arrays
 
     rosterGoals.forEach((rosterGoal: RosterGoal) => {
-      // Build a Goal object for each roster goal
-      let goal: Goal = {name: rosterGoal.name, mats: initMaterials()};
-
-      rosterGoal.goals.forEach((charGoals: boolean[], charIndex: number) => {
-        // Get indices of goals to include for each char (chars[charIndex])
-        charGoals.forEach((goalIncluded: boolean, goalIndex: number) => {
-          // Add specified goal mats to table goal for this roster goal
-          if (goalIncluded)
-            goal.mats = addMaterials(goal.mats, chars[charIndex].goals[goalIndex].mats);
-        });
-      });
-      tableGoals.push(goal); // Push Goal object for this roster goal to table params
-    });
-
-    return RosterGoalTable({
-      goals: tableGoals,
-      setGoals: () => setGoals(initGoals),
-      setRem: () => setRem(initRem)
-    });
-  }
-
-  function initRem(): JSX.Element{ // remTable state initializer function
-    rosterGoals = getRosterGoals(); // Ensure rosterGoals value is up-to-date
-    let remTableGoals: Goal[] = []; // Build remTableGoals from rosterGoals
-
-    rosterGoals.forEach((rosterGoal: RosterGoal) => {
+      // Calculate a tableGoal and remTableGoal for each roster goal
+      let tableGoal: Goal = {name: rosterGoal.name, mats: initMaterials()};
       let remTableGoal: Goal = {name: rosterGoal.name, mats: initMaterials()};
 
-      /* For each character, determine the remaining bound materials required
-         to finish all the character goals included in this rosterGoal. */
       rosterGoal.goals.forEach((charGoals: boolean[], charIndex: number) => {
+        /* For each character, determine the remaining bound materials required
+           to finish all the character goals included in this rosterGoal. */
         let charRemBound: Materials = initMaterials();
 
-        // For current char, sum its char goals included in this rosterGoal.
         charGoals.forEach((goalIncluded: boolean, goalIndex: number) => {
-          if (goalIncluded)
+          if (goalIncluded){
+            // Accumulate all characters' included goals in tableGoal.mats
+            tableGoal.mats = addMaterials(tableGoal.mats, chars[charIndex].goals[goalIndex].mats);
+            // Accumulate current character's included goals in charRemBound
             charRemBound = addMaterials(charRemBound, chars[charIndex].goals[goalIndex].mats);
+          }
         });
         /* Subtract current char's bound materials from the sum of its included
            goals. Fine if no char goals included, subMaterials floors to 0. */
@@ -94,17 +76,33 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
         // Add charRemBound to the remTableGoal for this rosterGoal.
         remTableGoal.mats = addMaterials(remTableGoal.mats, charRemBound);
       });
-      // Finally, subtract roster mats from the sum of all charRemBound.
+      // Finally, subtract roster mats from the sum of all charRemBounds.
       remTableGoal.mats = subMaterials(remTableGoal.mats, loadRosterMats());
 
+      tableGoals.push(tableGoal); // Push completed tableGoal
       remTableGoals.push(remTableGoal); // Push completed remTableGoal
     });
-    
-    return RemTable({goals: remTableGoals});
+  } /* Must be called in both initGoals and initRem because MatsTable can call
+       initRem without calling initGoal. */
+
+  // Table state initializer functions
+  function initGoals(): JSX.Element{
+    calculateTableGoals(); // Re-calculate table goals
+    return RosterGoalTable({
+      goals: tableGoals,
+      setGoals: () => setGoals(initGoals),
+      setRem: () => setRem(initRem)
+    });
+  }
+  function initRem(): JSX.Element{
+    calculateTableGoals(); // Re-calculate table goals
+    return RemTable({
+      goals: remTableGoals
+    });
   }
 
   function SettingsModal(){
-    rosterGoals = getRosterGoals(); // Ensure rosterGoals value is up-to-date
+    let rosterGoals: RosterGoal[] = getRosterGoals();
     const [curGoal, setCurGoal] = useState(0); // Controlled by dropdown
     const [temp] = useState(initTemp); // Stores uncommitted changes
 

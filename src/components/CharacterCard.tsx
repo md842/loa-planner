@@ -45,7 +45,7 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
   const [matsTable, setMats] = useState(initMats);
   const [remTable, setRem] = useState(initRem);
 
-  // Set up table state variables
+  // Table state initializer functions
   function initGoals(){
     return CharacterGoalTable({
       goals: char.goals,
