@@ -1,5 +1,7 @@
 import {type JSX, type RefObject} from 'react';
 
+import {Cell} from './Cell';
+
 import {type Goal, type Materials, subMaterials} from '../core/types';
 import {goldValue} from '../core/market-data';
 
@@ -43,19 +45,18 @@ export function RemTable(props: RemTableProps): JSX.Element{
     let row: JSX.Element[] = []; // Initialize table row for this goal
 
     // Add goal name to the table row for this goal
-    row.push(<td className="read-only" key="name"><input className="invis-input goal-name" value={fnParams.goal.name} disabled/></td>);
+    row.push(<Cell key="name" className="goal-name" value={fnParams.goal.name}/>);
 
     // Subtract specified materials (if defined) from goal materials
     let mats: Materials = (fnParams.subtract) ? subMaterials(fnParams.goal.mats, fnParams.subtract) : fnParams.goal.mats;
     
     // Add calculated gold value to the table row for this goal
-    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(mats)} disabled/></td>);
+    row.push(<Cell key="goldValue" className="bold" value={goldValue(mats)}/>);
 
-    // Build the rest of the table row for this goal by pushing values as <td>
+    // Build rest of row for this goal by pushing values as Cells
     Object.entries(mats).forEach(([key, value]) => {
-      // If bound silver, replace value with "--" (bound silver does not exist)
-      row.push(<td className="read-only" key={key}><input className="invis-input" value={(fnParams.isBound && key == "silver") ? "--" : value} disabled/></td>);
-    });
+      row.push(<Cell key={key} value={(fnParams.isBound && key == "silver") ? "--" : value}/>);
+    }); // Always read-only, do not specify change handlers
     return row;
   }
 

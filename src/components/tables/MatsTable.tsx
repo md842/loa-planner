@@ -1,5 +1,7 @@
 import {type ChangeEvent, type JSX, type RefObject} from 'react';
 
+import {Cell} from './Cell';
+
 import {sanitizeInput, saveChanges} from './common';
 import {type Materials, addMaterials, initMaterials} from '../core/types';
 import {goldValue} from '../core/market-data';
@@ -58,27 +60,24 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
     let row: JSX.Element[] = []; // Initialize table row for this goal
 
     // Add goal name and calculated gold value to the table row for this goal
-    row.push(<td className="read-only" key="name"><input className="invis-input bold" value={fnParams.name} disabled/></td>);
-    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(fnParams.mats)} disabled/></td>);
+    row.push(<Cell key="name" className="bold" value={fnParams.name}/>);
+    row.push(<Cell key="goldValue" className="bold" value={goldValue(fnParams.mats)}/>);
 
-    // Build the rest of the table row for this goal by pushing values as <td>
+    // Build rest of row for this goal by pushing values as Cells
     Object.entries(fnParams.mats).forEach(([key, value]) => {
       if (fnParams.name == "Bound"){
-        if (key == "silver") // If bound silver, disable the input and replace value with "--"
-          row.push(<td className="read-only" key={key}><input className="invis-input" value="--" disabled/></td>);
-        else // If bound mat other than silver, specify change handler
-          row.push(<td className="writeable" key={key}>
-                     <input
-                       className="invis-input"
-                       defaultValue={value}
-                       onBlur={() => {saveChanges(changed); changed = false}}
-                       onChange={(e) => handleBoundMatChange(e, key)}
-                     />
-                   </td>
+        if (key == "silver") // If bound silver, replace the input with "--"
+          row.push(<Cell key={key} value="--"/>);
+        else // Always writeable if bound mat other than silver
+          row.push(
+            <Cell key={key} value={value}
+              onBlur={() => {saveChanges(changed); changed = false}}
+              onChange={(e) => handleBoundMatChange(e, key)}
+            /> // Specify change handlers for writeable field
           );
       }
-      else // If total or roster, disable the input
-        row.push(<td className="read-only" key={key}><input className="invis-input" value={value} disabled/></td>);
+      else // Always read-only if total or roster mats
+        row.push(<Cell key={key} value={value}/>);
     });
     return row;
   }

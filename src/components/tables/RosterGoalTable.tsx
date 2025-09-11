@@ -1,5 +1,7 @@
 import {type ChangeEvent, type JSX} from 'react';
 
+import {Cell} from './Cell';
+
 import {type Goal} from '../core/types';
 import {addRosterGoal, delRosterGoal, saveRosterGoals, setRosterGoalName} from '../core/character-data';
 import {goldValue} from '../core/market-data';
@@ -66,24 +68,20 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
   function goalRow(fnParams: {goal: Goal, index: number}): JSX.Element[]{
     let row: JSX.Element[] = []; // Initialize table row for this goal
 
-    // Add writeable name to the table row for this roster goal
-    row.push(<td className="writeable" key="name">
-               <input
-                 className="invis-input goal-name"
-                 defaultValue={fnParams.goal.name}
-                 onBlur={() => {if (changed){saveRosterGoals()}; changed = false}}
-                 onChange={(e) => handleGoalChange(e, fnParams.index)}
-               />
-             </td>
+    row.push( // Add writeable name to the table row for this roster goal
+      <Cell key="name" value={fnParams.goal.name} className="goal-name"
+        onBlur={() => {if (changed){saveRosterGoals()}; changed = false}}
+        onChange={(e) => handleGoalChange(e, fnParams.index)}
+      /> // Always writeable, specify change handlers for writeable field
     );
     
     // Add calculated gold value to the table row for this goal
-    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(fnParams.goal.mats)} disabled/></td>);
+    row.push(<Cell key="goldValue" className="bold" value={goldValue(fnParams.goal.mats)}/>);
 
-    // Build the rest of the table row for this goal by pushing values as <td>
+    // Build rest of row for this goal by pushing values as Cells
     Object.entries(fnParams.goal.mats).forEach(([key, value]) => {
-      row.push(<td className="read-only" key={key}><input className="invis-input" value={value} disabled/></td>);
-    });
+      row.push(<Cell key={key} value={value}/>);
+    }); // Always read-only, do not specify change handlers
     return row;
   }
 

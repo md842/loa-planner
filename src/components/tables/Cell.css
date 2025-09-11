@@ -1,0 +1,35 @@
+/* Table color formatting */
+
+.read-only{ /* Sets derived color for read-only fields */
+  background-color: color-mix(in srgb, var(--table-color) 50%, white 50%) !important;
+}
+
+.writeable{ /* Sets derived color for writeable fields */
+  background-color: color-mix(in srgb, var(--table-color) 25%, white 75%) !important;
+}
+
+/* Cell formatting */
+
+.cell{
+  /* Hide the visual aspects of the input element */
+  background: none;
+  border: none;
+  padding: 0;
+
+  /* Override text color within table so dark mode doesn't impact visibility */
+  color: #212529; /* Set light mode default text color */
+
+  /* Fill parent element */
+  width: 100%;
+
+  /* Inherit global font weight specified in App.css */
+  font-weight: inherit;
+}
+
+.cell.goal-name{
+  min-width: 100px;
+}
+
+input:disabled{ /* Disabled input has same text color as surroundings */
+  color: unset;
+}

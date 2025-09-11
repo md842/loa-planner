@@ -1,5 +1,7 @@
 import {type ChangeEvent, type JSX, type RefObject} from 'react';
 
+import {Cell} from './Cell';
+
 import {sanitizeInput, saveChanges} from './common';
 import {type Goal, initGoal, initMaterials} from '../core/types';
 import {expandRosterGoals} from '../core/character-data';
@@ -90,37 +92,23 @@ export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
   function goalRow(fnParams: {goal: Goal, isTotal: boolean}): JSX.Element[]{
     let row: JSX.Element[] = []; // Initialize table row for this goal
 
-    // Add goal name to the table row for this goal
-    if (fnParams.isTotal) // Read-only if total row
-      row.push(<td className="read-only" key="name"><input className="invis-input goal-name" value={fnParams.goal.name} disabled/></td>);
-    else // Writeable if non-total "Goals" row
-      row.push(<td className="writeable" key="name">
-                 <input
-                   className="invis-input goal-name"
-                   defaultValue={fnParams.goal.name}
-                   onBlur={() => {saveChanges(changed); changed = false}}
-                   onChange={(e) => handleGoalChange(e, "name", fnParams.goal)}
-                 />
-               </td>
-      );
+    row.push( // Add goal name field to the table row for this goal
+      <Cell key="name" value={fnParams.goal.name} className="goal-name"
+        onBlur={(fnParams.isTotal) ? undefined : () => {saveChanges(changed); changed = false}}
+        onChange={(fnParams.isTotal) ? undefined : (e) => handleGoalChange(e, "name", fnParams.goal)}
+      /> // If not total row, specify change handlers for writeable field
+    );
     
     // Add calculated gold value to the table row for this goal
-    row.push(<td className="read-only" key="goldValue"><input className="invis-input bold" value={goldValue(fnParams.goal.mats)} disabled/></td>);
+    row.push(<Cell key="goldValue" className="bold" value={goldValue(fnParams.goal.mats)}/>);
 
-    // Build the rest of the table row for this goal by pushing values as <td>
     Object.entries(fnParams.goal.mats).forEach(([key, value]) => {
-      if (fnParams.isTotal) // Read-only if total row
-        row.push(<td className="read-only" key={key}><input className="invis-input" value={value} disabled/></td>);
-      else // If goal row, specify change handler
-        row.push(<td className="writeable" key={key}>
-                   <input
-                     className="invis-input"
-                     defaultValue={value}
-                     onBlur={() => {saveChanges(changed); changed = false}}
-                     onChange={(e) => handleGoalChange(e, key, fnParams.goal)}
-                   />
-                 </td>
-        );
+      row.push( // Build rest of row for this goal by pushing values as Cells
+        <Cell key={key} value={value}
+          onBlur={(fnParams.isTotal) ? undefined : () => {saveChanges(changed); changed = false}}
+          onChange={(fnParams.isTotal) ? undefined : (e) => handleGoalChange(e, key, fnParams.goal)}
+        /> // If not total row, specify change handlers for writeable field
+      );
     });
     return row;
   }
