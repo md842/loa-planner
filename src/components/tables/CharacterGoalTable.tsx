@@ -35,13 +35,13 @@ export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
   
   goals.forEach((goal: Goal, index: number) => {
     // Build a row for each goal and push it to the table
-    goalTable.push(<tr key={index}>{goalRow({goal: goal, isTotal: false})}</tr>);
+    goalTable.push(<tr key={index}>{goalRow({goal: goal})}</tr>);
     // Accumulate each goal's individual values into goalsTotal
     for (let [key, value] of Object.entries(goal.mats))
       goalsTotalRef.current.mats[key] += value;
   });
   if (goals.length > 1) // Build total row for char with >1 goals
-    goalTable.push(<tr className="bold" key="totalGoals">{goalRow({goal: goalsTotalRef.current, isTotal: true})}</tr>);
+    goalTable.push(<tr className="bold" key="totalGoals">{goalRow({total: true, goal: goalsTotalRef.current})}</tr>);
 
 
   function addGoal(){
@@ -85,32 +85,33 @@ export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
 
   /**
    * Generate a table row for the "Goals" section.
+   * @param  {boolean}        total     If true, this row represents a section total.
    * @param  {Goal}           goal      The goal being used to generate the row.
-   * @param  {boolean}        isTotal   If true, this row represents a section total.
    * @return {JSX.Element[]}            The generated table row.
    */
-  function goalRow(fnParams: {goal: Goal, isTotal: boolean}): JSX.Element[]{
-    let row: JSX.Element[] = []; // Initialize table row for this goal
+  function goalRow(props: {total?: boolean, goal: Goal}): JSX.Element[]{
+    let {total, goal} = props;  // Unpack props
+    let cells: JSX.Element[] = []; // Initialize table row for this goal
 
-    row.push( // Add goal name field to the table row for this goal
-      <Cell key="name" value={fnParams.goal.name} className="goal-name"
-        onBlur={(fnParams.isTotal) ? undefined : () => {saveChanges(changed); changed = false}}
-        onChange={(fnParams.isTotal) ? undefined : (e) => handleGoalChange(e, "name", fnParams.goal)}
+    cells.push( // Add goal name field to the table row for this goal
+      <Cell key="name" value={goal.name} className="first-col"
+        onBlur={total ? undefined : () => {saveChanges(changed); changed = false}}
+        onChange={total ? undefined : (e) => handleGoalChange(e, "name", goal)}
       /> // If not total row, specify change handlers for writeable field
     );
     
     // Add calculated gold value to the table row for this goal
-    row.push(<Cell key="goldValue" className="bold" value={goldValue(fnParams.goal.mats)}/>);
+    cells.push(<Cell bold key="goldValue" value={goldValue(goal.mats)}/>);
 
-    Object.entries(fnParams.goal.mats).forEach(([key, value]) => {
-      row.push( // Build rest of row for this goal by pushing values as Cells
+    Object.entries(goal.mats).forEach(([key, value]) => {
+      cells.push( // Build rest of row for this goal by pushing values as Cells
         <Cell key={key} value={value}
-          onBlur={(fnParams.isTotal) ? undefined : () => {saveChanges(changed); changed = false}}
-          onChange={(fnParams.isTotal) ? undefined : (e) => handleGoalChange(e, key, fnParams.goal)}
+          onBlur={total ? undefined : () => {saveChanges(changed); changed = false}}
+          onChange={total ? undefined : (e) => handleGoalChange(e, key, goal)}
         /> // If not total row, specify change handlers for writeable field
       );
     });
-    return row;
+    return cells;
   }
 
   return(

@@ -1,5 +1,5 @@
+import './Planner.css';
 import '../components/tables/common.css';
-import '../components/SettingsTab.css';
 
 import {useState} from 'react';
 

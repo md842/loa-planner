@@ -26,10 +26,14 @@
   font-weight: inherit;
 }
 
-.cell.goal-name{
-  min-width: 100px;
+.cell.first-col{
+  min-width: 8em;
 }
 
 input:disabled{ /* Disabled input has same text color as surroundings */
   color: unset;
+}
+
+.bold{ /* Custom bold font weight for gold value and total cells */
+  font-weight: 400;
 }

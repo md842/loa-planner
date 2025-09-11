@@ -23,41 +23,43 @@ export function RemTable(props: RemTableProps): JSX.Element{
 
   goals.forEach((goal: Goal, index: number) => {
     // Build rows for each goal and push them to the tables
-    remTable.push(<tr key={index}>{remRow({goal: goal, isBound: false, subtract: (matsTotalRef) ? matsTotalRef.current : undefined})}</tr>);
+    remTable.push(<RemRow key={index} goal={goal} subtract={(matsTotalRef) ? matsTotalRef.current : undefined}/>);
     if (boundMats) // Character table; initialize remBoundTable.
-      remBoundTable.push(<tr key={index}>{remRow({goal: goal, isBound: true, subtract: boundMats})}</tr>);
+      remBoundTable.push(<RemRow bound key={index} goal={goal} subtract={boundMats}/>);
   });
 
   // If all defined, this RemTable is for a character. Build total rows if multiple goals.
   if (goalsTotalRef && matsTotalRef && boundMats && goals.length > 1){
-    remTable.push(<tr className="bold" key="totalGoals">{remRow({goal: goalsTotalRef.current, isBound: false, subtract: matsTotalRef.current})}</tr>);
-    remBoundTable.push(<tr className="bold" key="totalGoals">{remRow({goal: goalsTotalRef.current, isBound: true, subtract: boundMats})}</tr>);
+    remTable.push(<RemRow total key="totalGoals" goal={goalsTotalRef.current} subtract={matsTotalRef.current}/>);
+    remBoundTable.push(<RemRow bound total key="totalGoals" goal={goalsTotalRef.current} subtract={boundMats}/>);
   } // If roster RemTable, total rows are not needed.
 
   /**
    * Generate a table row for the "Remaining materials" sections.
+   * @param  {boolean}        bound     If true, disable silver (bound silver does not exist).
+   * @param  {boolean}        total     If true, the entire row uses bold font weight.
    * @param  {Goal}           goal      The goal being used to generate the row.
-   * @param  {boolean}        isBound   If true, disable silver (bound silver does not exist).
    * @param  {Materials}      subtract  The materials to subtract from the goal.
    * @return {JSX.Element[]}            The generated table row.
    */
-  function remRow(fnParams: {goal: Goal, isBound: boolean, subtract?: Materials}): JSX.Element[]{
-    let row: JSX.Element[] = []; // Initialize table row for this goal
+  function RemRow(props: {bound?: boolean, total?: boolean, goal: Goal, subtract?: Materials}): JSX.Element{
+    let cells: JSX.Element[] = []; // Initialize table row for this goal
 
     // Add goal name to the table row for this goal
-    row.push(<Cell key="name" className="goal-name" value={fnParams.goal.name}/>);
+    cells.push(<Cell key="name" className="first-col" value={props.goal.name}/>);
 
     // Subtract specified materials (if defined) from goal materials
-    let mats: Materials = (fnParams.subtract) ? subMaterials(fnParams.goal.mats, fnParams.subtract) : fnParams.goal.mats;
+    let mats: Materials = (props.subtract) ? subMaterials(props.goal.mats, props.subtract) : props.goal.mats;
     
     // Add calculated gold value to the table row for this goal
-    row.push(<Cell key="goldValue" className="bold" value={goldValue(mats)}/>);
+    cells.push(<Cell bold key="goldValue" value={goldValue(mats)}/>);
 
     // Build rest of row for this goal by pushing values as Cells
     Object.entries(mats).forEach(([key, value]) => {
-      row.push(<Cell key={key} value={(fnParams.isBound && key == "silver") ? "--" : value}/>);
+      cells.push(<Cell key={key} value={(props.bound && key == "silver") ? "--" : value}/>);
     }); // Always read-only, do not specify change handlers
-    return row;
+
+    return <tr className={(props.total) ? "bold" : undefined}>{cells}</tr>;
   }
 
   return(

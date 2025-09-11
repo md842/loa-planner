@@ -65,24 +65,25 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
    * @param  {number}         index     The index of the goal being used to generate the row.
    * @return {JSX.Element[]}            The generated table row.
    */
-  function goalRow(fnParams: {goal: Goal, index: number}): JSX.Element[]{
-    let row: JSX.Element[] = []; // Initialize table row for this goal
+  function goalRow(props: {goal: Goal, index: number}): JSX.Element[]{
+    let {goal, index} = props;  // Unpack props
+    let cells: JSX.Element[] = []; // Initialize table row for this goal
 
-    row.push( // Add writeable name to the table row for this roster goal
-      <Cell key="name" value={fnParams.goal.name} className="goal-name"
+    cells.push( // Add writeable name to the table row for this roster goal
+      <Cell key="name" value={goal.name} className="first-col"
         onBlur={() => {if (changed){saveRosterGoals()}; changed = false}}
-        onChange={(e) => handleGoalChange(e, fnParams.index)}
+        onChange={(e) => handleGoalChange(e, index)}
       /> // Always writeable, specify change handlers for writeable field
     );
     
     // Add calculated gold value to the table row for this goal
-    row.push(<Cell key="goldValue" className="bold" value={goldValue(fnParams.goal.mats)}/>);
+    cells.push(<Cell bold key="goldValue" value={goldValue(goal.mats)}/>);
 
     // Build rest of row for this goal by pushing values as Cells
-    Object.entries(fnParams.goal.mats).forEach(([key, value]) => {
-      row.push(<Cell key={key} value={value}/>);
+    Object.entries(goal.mats).forEach(([key, value]) => {
+      cells.push(<Cell key={key} value={value}/>);
     }); // Always read-only, do not specify change handlers
-    return row;
+    return cells;
   }
 
   return(

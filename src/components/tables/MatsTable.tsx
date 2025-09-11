@@ -56,20 +56,21 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
    *                                "Bound" is writeable other than "silver", the rest are read-only.
    * @return {JSX.Element[]}        The generated table row.
    */
-  function matsRow(fnParams: {mats: Materials, name: string}): JSX.Element[]{
-    let row: JSX.Element[] = []; // Initialize table row for this goal
+  function matsRow(props: {mats: Materials, name: string}): JSX.Element[]{
+    let {mats, name} = props; // Unpack props
+    let cells: JSX.Element[] = []; // Initialize table row for this goal
 
     // Add goal name and calculated gold value to the table row for this goal
-    row.push(<Cell key="name" className="bold" value={fnParams.name}/>);
-    row.push(<Cell key="goldValue" className="bold" value={goldValue(fnParams.mats)}/>);
+    cells.push(<Cell bold key="name" className="first-col" value={name}/>);
+    cells.push(<Cell bold key="goldValue" value={goldValue(mats)}/>);
 
     // Build rest of row for this goal by pushing values as Cells
-    Object.entries(fnParams.mats).forEach(([key, value]) => {
-      if (fnParams.name == "Bound"){
+    Object.entries(mats).forEach(([key, value]) => {
+      if (name == "Bound"){
         if (key == "silver") // If bound silver, replace the input with "--"
-          row.push(<Cell key={key} value="--"/>);
+          cells.push(<Cell key={key} value="--"/>);
         else // Always writeable if bound mat other than silver
-          row.push(
+          cells.push(
             <Cell key={key} value={value}
               onBlur={() => {saveChanges(changed); changed = false}}
               onChange={(e) => handleBoundMatChange(e, key)}
@@ -77,9 +78,9 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
           );
       }
       else // Always read-only if total or roster mats
-        row.push(<Cell key={key} value={value}/>);
+        cells.push(<Cell key={key} value={value}/>);
     });
-    return row;
+    return cells;
   }
 
   return(

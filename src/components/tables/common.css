@@ -33,9 +33,3 @@ td, th{ /* Set border color to the table's theme color */
   margin-left: 0.5em; /* Separate buttons */
   line-height: 1em; /* Reduce button height to fit in row */
 }
-
-/* Other formatting */
-
-.bold{ /* Custom bold for gold value and total row */
-  font-weight: 400;
-}

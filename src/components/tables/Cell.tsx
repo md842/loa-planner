@@ -4,8 +4,8 @@ import {type JSX} from 'react';
 
 /** Props interface for Cell. */
 interface CellProps{
+  bold?: boolean; // If true, the cell uses bold font weight.
   value: string | number; // read-only value or writeable defaultValue
-
   className?: string; // Class names to append to common class name "cell"
   onBlur?: React.FocusEventHandler<HTMLInputElement>; // Focus out handler
   onChange?: React.ChangeEventHandler<HTMLInputElement>; // Change handler
@@ -13,13 +13,13 @@ interface CellProps{
 
 /** Constructs the "Remaining materials" section(s) of the parent table. */
 export function Cell(props: CellProps): JSX.Element{
-  let {value, className, onBlur, onChange} = props; // Unpack props
+  let {bold, value, className, onBlur, onChange} = props; // Unpack props
 
   /* If onChange is defined, the cell is writeable. */
   return(
     <td className={(onChange) ? "writeable" : "read-only"}>
       <input
-        className={"cell" + ((className) ? " " + className : "")}
+        className={"cell" + ((bold) ? " bold" : "") + ((className) ? " " + className : "")}
         defaultValue={(onChange) ? value : undefined
           /* Writeable cells must use defaultValue for user input to be 
              visible when onChange doesn't re-render the table (goal name). */}
