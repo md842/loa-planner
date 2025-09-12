@@ -1,6 +1,6 @@
 import {type ChangeEvent} from 'react';
 
-import {saveChars} from '../core/character-data';
+import {saveChars} from '../../core/character-data';
 
 /** Prevents unnecessary saving of character data when no changes were made. */
 export function saveChanges(changed: boolean){

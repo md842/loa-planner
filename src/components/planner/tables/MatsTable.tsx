@@ -3,9 +3,9 @@ import {type ChangeEvent, type JSX, type RefObject} from 'react';
 import {Cell} from './Cell';
 
 import {sanitizeInput, saveChanges} from './common';
-import {type Materials, addMaterials, initMaterials} from '../core/types';
-import {goldValue} from '../core/market-data';
-import {loadRosterMats} from '../core/roster-storage';
+import {type Materials, addMaterials, initMaterials} from '../../core/types';
+import {goldValue} from '../../core/market-data';
+import {getRosterMats} from '../../core/roster-storage-data';
 
 /** Props interface for MatsTable. */
 interface MatsTableProps{
@@ -28,7 +28,7 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
 
   let matsTable: JSX.Element[] = []; // Initialize table and matsTotal
   matsTotalRef.current = initMaterials();
-  let rosterMats: Materials = loadRosterMats();
+  let rosterMats: Materials = getRosterMats();
 
   matsTotalRef.current = addMaterials(rosterMats, boundMats); // Total mats
 

@@ -2,8 +2,8 @@ import {type JSX, type RefObject} from 'react';
 
 import {Cell} from './Cell';
 
-import {type Goal, type Materials, subMaterials} from '../core/types';
-import {goldValue} from '../core/market-data';
+import {type Goal, type Materials, subMaterials} from '../../core/types';
+import {goldValue} from '../../core/market-data';
 
 /** Props interface for RemTable. */
 interface RemTableProps{

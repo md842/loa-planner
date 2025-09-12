@@ -3,9 +3,9 @@ import {type ChangeEvent, type JSX, type RefObject} from 'react';
 import {Cell} from './Cell';
 
 import {sanitizeInput, saveChanges} from './common';
-import {type Goal, initGoal, initMaterials} from '../core/types';
-import {expandRosterGoals} from '../core/character-data';
-import {goldValue} from '../core/market-data';
+import {type Goal, initGoal, initMaterials} from '../../core/types';
+import {expandRosterGoals} from '../../core/character-data';
+import {goldValue} from '../../core/market-data';
 
 import Button from 'react-bootstrap/Button';
 

@@ -1,3 +1,7 @@
+.planner-tabs{
+  padding: 0% 10%; /* top/bottom, left/right */
+}
+
 .settings-tab{
   position: absolute; /* Anchor to top-left of table */
   left: calc(10% - 2.5em - 1px); /* 10% margin - width of tab - table border */

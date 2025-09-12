@@ -4,9 +4,9 @@ import {TableHeader} from './tables/TableHeader';
 import {RosterGoalTable} from './tables/RosterGoalTable';
 import {RemTable} from './tables/RemTable';
 
-import {type Character, type Goal, type Materials, addMaterials, initMaterials, subMaterials, type RosterGoal} from './core/types';
-import {getRosterGoals, setRosterGoals} from './core/character-data';
-import {loadRosterMats} from './core/roster-storage';
+import {type Character, type Goal, type Materials, addMaterials, initMaterials, subMaterials, type RosterGoal} from '../core/types';
+import {getRosterGoals, setRosterGoals} from '../core/character-data';
+import {getRosterMats} from '../core/roster-storage-data';
 
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -77,7 +77,7 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
         remTableGoal.mats = addMaterials(remTableGoal.mats, charRemBound);
       });
       // Finally, subtract roster mats from the sum of all charRemBounds.
-      remTableGoal.mats = subMaterials(remTableGoal.mats, loadRosterMats());
+      remTableGoal.mats = subMaterials(remTableGoal.mats, getRosterMats());
 
       tableGoals.push(tableGoal); // Push completed tableGoal
       remTableGoals.push(remTableGoal); // Push completed remTableGoal

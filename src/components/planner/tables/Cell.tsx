@@ -5,7 +5,7 @@ import {type JSX} from 'react';
 /** Props interface for Cell. */
 interface CellProps{
   bold?: boolean; // If true, the cell uses bold font weight.
-  value: string | number; // read-only value or writeable defaultValue
+  value: string | number | undefined; // read-only value or writeable defaultValue
   className?: string; // Class names to append to common class name "cell"
   onBlur?: React.FocusEventHandler<HTMLInputElement>; // Focus out handler
   onChange?: React.ChangeEventHandler<HTMLInputElement>; // Change handler

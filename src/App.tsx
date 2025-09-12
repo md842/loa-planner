@@ -6,7 +6,7 @@ import {createBrowserRouter, Outlet, RouterProvider} from "react-router-dom";
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 
-import Planner from './pages/Planner';
+import {Planner} from './pages/Planner';
 //import Calculators from './pages/Calculators';
 //import PlannedFeatures from './pages/PlannedFeatures';
 import NoPage from './pages/NoPage'; // 404

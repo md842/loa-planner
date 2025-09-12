@@ -5,8 +5,8 @@ import {CharacterGoalTable} from './tables/CharacterGoalTable';
 import {MatsTable} from './tables/MatsTable';
 import {RemTable} from './tables/RemTable';
 
-import {type Character, type Goal, type Materials, initMaterials} from './core/types';
-import {saveCharParams} from './core/character-data';
+import {type Character, type Goal, type Materials, initMaterials} from '../core/types';
+import {saveCharParams} from '../core/character-data';
 
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';

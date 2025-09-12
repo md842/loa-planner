@@ -2,9 +2,9 @@ import {type ChangeEvent, type JSX} from 'react';
 
 import {Cell} from './Cell';
 
-import {type Goal} from '../core/types';
-import {addRosterGoal, delRosterGoal, saveRosterGoals, setRosterGoalName} from '../core/character-data';
-import {goldValue} from '../core/market-data';
+import {type Goal} from '../../core/types';
+import {addRosterGoal, delRosterGoal, saveRosterGoals, setRosterGoalName} from '../../core/character-data';
+import {goldValue} from '../../core/market-data';
 
 import Button from 'react-bootstrap/Button';
 

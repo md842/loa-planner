@@ -1,14 +1,14 @@
 import {type JSX} from 'react';
 
-import gold from '../../assets/gold.png';
-import silver from '../../assets/silver.png';
-import t4_blue from '../../assets/t4_blue.png';
-import t4_blueSolar from '../../assets/t4_bluesolar.png';
-import t4_fusion from '../../assets/t4_fusion.png';
-import t4_leap from '../../assets/t4_leap.png';
-import t4_red from '../../assets/t4_red.png';
-import t4_redSolar from '../../assets/t4_redsolar.png';
-import t4_shard from '../../assets/t4_shard.png';
+import gold from '../../../assets/gold.png';
+import silver from '../../../assets/silver.png';
+import t4_blue from '../../../assets/t4_blue.png';
+import t4_blueSolar from '../../../assets/t4_bluesolar.png';
+import t4_fusion from '../../../assets/t4_fusion.png';
+import t4_leap from '../../../assets/t4_leap.png';
+import t4_red from '../../../assets/t4_red.png';
+import t4_redSolar from '../../../assets/t4_redsolar.png';
+import t4_shard from '../../../assets/t4_shard.png';
 
 /** Props interface for TableHeader. */
 interface TableHeaderProps{
