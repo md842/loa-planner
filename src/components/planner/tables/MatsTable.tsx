@@ -47,7 +47,7 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
 
       updateTable([
         <MatsRow key="bound" mats={boundMats} name="Bound"/>,
-        table[1],
+        table[1], // Roster materials row
         <MatsRow key="total" mats={matsTotalRef.current} name={"Total"}/>,
       ]); // Only re-renders the row being updated and the total row
 

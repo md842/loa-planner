@@ -37,6 +37,7 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
 
   const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
 
+  // Update signal handlers
   useEffect(() => { // Triggers useEffect in RosterGoalTable with new goal data
     setTableGoals(calculateTableGoals); // Re-calculate table goals
   }, [rosterGoalUpdateSignal]); // Runs on mount and when signal received

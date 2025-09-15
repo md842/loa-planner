@@ -11,10 +11,10 @@ export function RosterView(){
   const [chars, setChars] = useState(getChars); // Load characters into state
   const [rosterOnTop, setRosterOnTop] = useState(true); // RosterCard position
   
-  /* Roster state update signals; unknown[] is chosen as signal type because
+  /* Roster state update signals; uses array signal type because
      sendSignal([]) is guaranteed to update state with a new value. */
-  const [rosterGoalUpdateSignal, sendGoalsSignal] = useState([]);
-  const [rosterRemUpdateSignal, sendRemSignal] = useState([]);
+  const [rosterGoalUpdateSignal, sendRosterGoalUpdateSignal] = useState([]);
+  const [rosterRemUpdateSignal, sendRosterRemUpdateSignal] = useState([]);
 
   // Character operation handlers
   function handleAddChar(){ // Called when "Add Character" button is clicked
@@ -41,8 +41,8 @@ export function RosterView(){
           rosterGoalUpdateSignal={rosterGoalUpdateSignal}
           rosterRemUpdateSignal={rosterRemUpdateSignal}
           setOnTop={setRosterOnTop}
-          updateRosterGoals={() => sendGoalsSignal([])}
-          updateRosterRem={() => sendRemSignal([])}
+          updateRosterGoals={() => sendRosterGoalUpdateSignal([])}
+          updateRosterRem={() => sendRosterRemUpdateSignal([])}
         />}
       {chars.map((char: Character, index: number) => {
         return( /* Render a CharacterCard for each character. */
@@ -52,8 +52,8 @@ export function RosterView(){
             index={index}
             handleDelete={handleDeleteChar}
             handleSwap={handleSwapChar}
-            updateRosterGoals={() => sendGoalsSignal([])}
-            updateRosterRem={() => sendRemSignal([])}
+            updateRosterGoals={() => sendRosterGoalUpdateSignal([])}
+            updateRosterRem={() => sendRosterRemUpdateSignal([])}
           />
         );
       })}
@@ -63,8 +63,8 @@ export function RosterView(){
           rosterGoalUpdateSignal={rosterGoalUpdateSignal}
           rosterRemUpdateSignal={rosterRemUpdateSignal}
           setOnTop={setRosterOnTop}
-          updateRosterGoals={() => sendGoalsSignal([])}
-          updateRosterRem={() => sendRemSignal([])}
+          updateRosterGoals={() => sendRosterGoalUpdateSignal([])}
+          updateRosterRem={() => sendRosterRemUpdateSignal([])}
         />}
       {(chars.length < 10) && /* Hide button if character limit reached */
         <Button className="d-block mx-auto" variant="primary" onClick={handleAddChar}>

@@ -15,7 +15,7 @@ interface GoalTableProps{
   goalsTotalRef: RefObject<Goal>; // Passed to RemTable to avoid re-calculation
   charIndex: number; // The index of the character this GoalTable is for.
   // References to parent component state/state setters
-  updateCharRem: () => void;
+  updateCharRem: (goalIndex: number) => void;
   updateRosterGoals: () => void;
   updateRosterRem: () => void;
 }
@@ -53,12 +53,12 @@ export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
     expandRosterGoals(charIndex, true);
 
     updateTable([
-      ...table.slice(0, -1),
+      ...table.slice(0, -1), // Previously existing goals
       <GoalRow key={goals.length - 1} goal={goals[goals.length - 1]} index={goals.length - 1}/>,
       <GoalRow total key="total" goal={goalsTotalRef.current} index={-1}/>,
     ]); // Only re-renders the row being updated and the total row
 
-    updateCharRem(); // Update remaining materials table(s)
+    updateCharRem(goals.length - 1); // Update remaining materials table(s)
   } // Don't save goal data; changing anything in the new goal will save.
 
   function removeGoal(){
@@ -70,11 +70,11 @@ export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
     expandRosterGoals(charIndex, false);
 
     updateTable([
-      ...table.slice(0, -2),
+      ...table.slice(0, -2), // Goals before the removed goal
       <GoalRow total key="total" goal={goalsTotalRef.current} index={-1}/>,
     ]); // Only re-renders the row being updated and the total row
 
-    updateCharRem(); // Update remaining materials table(s)
+    updateCharRem(goals.length); // Update remaining materials table(s)
     updateRosterGoals(); // Send signal to update RosterCard goalsTable
     updateRosterRem(); // Send signal to update RosterCard remTable
     saveChanges(true); // Save updated goal data
@@ -84,7 +84,7 @@ export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
     if (key == "name"){ // No input sanitization needed for name string
       if (e.target.value.length < 30){ // Under length limit, accept input
         goal.name = e.target.value; // Update goal data
-        updateCharRem(); // Update remaining materials table(s)
+        updateCharRem(index); // Update remaining materials table(s)
         changed = true; // Goal data will be saved on next focus out
       }
       else // Over length limit, reject input
@@ -96,13 +96,13 @@ export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
       goal.mats[key] = Number(e.target.value); // Update goal data
 
       updateTable([
-        ...table.slice(0, index),
+        ...table.slice(0, index), // Goals before specified index
         <GoalRow key={index} goal={goal} index={index}/>,
-        ...table.slice(index + 1, -1),
+        ...table.slice(index + 1, -1), // Goals after specified index
         <GoalRow total key="total" goal={goalsTotalRef.current} index={-1}/>,
       ]); // Only re-renders the row being updated and the total row
 
-      updateCharRem(); // Update remaining materials table(s)
+      updateCharRem(index); // Update remaining materials table(s)
       updateRosterGoals(); // Send signal to update RosterCard goalsTable
       updateRosterRem(); // Send signal to update RosterCard remTable
       changed = true; // Character data will be saved on next focus out

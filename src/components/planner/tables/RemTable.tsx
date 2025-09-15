@@ -8,24 +8,53 @@ import {goldValue} from '../../core/market-data';
 /** Props interface for RemTable. */
 interface RemTableProps{
   goals: Goal[]; // The character goals or roster goals for this RemTable
-  goalsTotalRef?: RefObject<Goal>; // Calculated in GoalTable; passed to RemTable to avoid re-calculation
-  matsTotalRef?: RefObject<Materials>; // Calculated in MatsTable; passed to RemTable to avoid re-calculation
-  boundMats?: Materials; // If defined, remBoundTable will be rendered.
+  boundMats?: Materials; // If defined, character RemTable; remBoundTable will be rendered.
+  // Refs passed to character RemTable to avoid re-calculation
+  goalsTotalRef?: RefObject<Goal>; // Calculated in CharacterGoalTable
+  matsTotalRef?: RefObject<Materials>; // Calculated in MatsTable
   // References to parent component state/state setters
-  remUpdateSignal?: unknown[];
+  charRemUpdateSignal?: number[];
 }
 
 /** Constructs the "Remaining materials" section(s) of the parent table. */
 export function RemTable(props: RemTableProps): JSX.Element{
-  let {goals, goalsTotalRef, matsTotalRef, boundMats, remUpdateSignal} = props; // Unpack props
+  let {goals, boundMats, goalsTotalRef, matsTotalRef, charRemUpdateSignal} = props; // Unpack props
 
   /* Table state variable for remaining materials (character or roster).
      Will be initialized when useEffect runs on mount, so initialize blank. */
   const [table, updateTable] = useState([] as JSX.Element[][]);
 
-  useEffect(() => { // Character uses remUpdateSignal, Roster uses goals
-    updateTable(initTable); // Re-render remaining materials table
-  }, [remUpdateSignal, goals]); // Runs on mount and when signal received or table goals change
+  // Update signal handlers
+  useEffect(() => { // RosterCard RemTable update hook
+    updateTable(initTable); // Re-render entire remaining materials table
+  }, [goals]); // Runs on mount and when table goals change
+
+  useEffect(() => { // CharacterCard RemTable update hook
+    // Allows updating individual rows of an initialized character RemTable.
+    if (table[1]){ // Character's remBoundTable is initialized
+      if (charRemUpdateSignal!.length == 0) // Empty signal from MatsTable
+        updateTable(initTable); // Re-render entire remaining materials table
+      else{ // Non-empty signal from CharacterGoalTable (contains a goal index)
+        let index: number = charRemUpdateSignal![0]; // Unpack signal index
+        updateTable([
+          [ // Update remTable (table[0])
+            ...table[0].slice(0, index), // Goals before specified index
+            // Skip row if goals.length == index (signal sent by removeGoal)
+            (goals.length > index) ? <RemRow key={index} goal={goals[index]} subtract={matsTotalRef!.current}/> : undefined,
+            ...table[0].slice(index + 1, -1), // Goals after specified index
+            <RemRow total key="total" goal={goalsTotalRef!.current} subtract={matsTotalRef!.current}/>,
+          ] as JSX.Element[],
+          [ // Update remBoundTable (table[1])
+            ...table[1].slice(0, index), // Goals before specified index
+            // Skip row if goals.length == index (signal sent by removeGoal)
+            (goals.length > index) ? <RemRow bound key={index} goal={goals[index]} subtract={boundMats}/> : undefined,
+            ...table[1].slice(index + 1, -1), // Goals after specified index
+            <RemRow bound total key="total" goal={goalsTotalRef!.current} subtract={boundMats}/>,
+          ] as JSX.Element[],
+        ]); // Only re-renders the rows being updated and the total rows
+      }
+    } // Do nothing if not an initialized character RemTable
+  }, [charRemUpdateSignal]); // Runs on mount and when update signal received
   
   function initTable(): JSX.Element[][]{ // Table state initializer function
     let remTable: JSX.Element[] = [], remBoundTable: JSX.Element[] = []; // Initialize tables

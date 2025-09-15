@@ -40,9 +40,9 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
   const goalsTotal: RefObject<Goal> = useRef({name: "Total", mats: initMaterials()});
   const matsTotal: RefObject<Materials> = useRef(initMaterials());
 
-  /* Character state update signals; unknown[] is chosen as signal type because
+  /* Character state update signal; uses array signal type because
      sendSignal([]) is guaranteed to update state with a new value. */
-  const [charRemUpdateSignal, sendCharRemSignal] = useState([]);
+  const [charRemUpdateSignal, sendCharRemSignal] = useState([0]);
 
   function SettingsModal(){
     const [colorPickerDisabled, setColorPickerDisabled] = useState(charState.usesClassColor);
@@ -173,7 +173,7 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
             goals={char.goals}
             goalsTotalRef={goalsTotal}
             charIndex={index}
-            updateCharRem={() => sendCharRemSignal([])}
+            updateCharRem={(goalIndex: number) => sendCharRemSignal([goalIndex])}
             updateRosterGoals={updateRosterGoals}
             updateRosterRem={updateRosterRem}
           />
@@ -188,7 +188,7 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
             goalsTotalRef={goalsTotal}
             matsTotalRef={matsTotal}
             boundMats={char.boundMats}
-            remUpdateSignal={charRemUpdateSignal}
+            charRemUpdateSignal={charRemUpdateSignal}
           />
         </tbody>
       </Table>
