@@ -1,4 +1,4 @@
-import {type ChangeEvent, type JSX} from 'react';
+import {type ChangeEvent, type JSX, useEffect, useState} from 'react';
 
 import {Cell} from './Cell';
 
@@ -12,8 +12,8 @@ import Button from 'react-bootstrap/Button';
 interface RosterGoalTableProps{
   goals: Goal[]; // The roster goals for this GoalTable
   // References to parent component state/state setters
-  setGoals: () => void;
-  setRem: () => void;
+  updateRosterGoals: () => void;
+  updateRosterRem: () => void;
 }
 
 // If true, changes will be committed by saveChanges() on next onBlur event.
@@ -21,38 +21,47 @@ let changed: boolean = false;
 
 /** Constructs the "Roster Goals" section of the parent table. */
 export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
-  let {goals, setGoals, setRem} = props; // Unpack props
+  let {goals, updateRosterGoals, updateRosterRem} = props; // Unpack props
 
-  console.log("RosterGoalTable rendering");
+  /* Table state variable for roster goals.
+     Will be initialized when useEffect runs on mount, so initialize blank. */
+  const [table, updateTable] = useState([] as JSX.Element[]);
 
-  let goalTable: JSX.Element[] = []; // Initialize table
+  useEffect(() => {
+    updateTable(initTable); // Re-render goals table
+  }, [goals]); // Runs on mount and when table goals change
   
-  goals.forEach((goal: Goal, index: number) => {
-    // Build a row for each goal and push it to the table
-    goalTable.push(<tr key={index}>{goalRow({goal: goal, index: index})}</tr>);
-  });
-
-
+  function initTable(): JSX.Element[]{ // Table state initializer function
+    let table: JSX.Element[] = []; // Initialize table
+  
+    goals.forEach((goal: Goal, index: number) => {
+      // Build a row for each goal and push it to the table
+      table.push(<GoalRow key={index} goal={goal} index={index}/>);
+    });
+    return table;
+  }
+  
   function addGoal(){
     if (goals.length == 10) // Limit roster goals to 10
       return;
-    addRosterGoal(); // Add blank roster goal
-    setGoals(); // Update goals table
-    setRem(); // Update remaining materials table(s)
+    addRosterGoal(); // Add blank roster goal to character-data
+    updateRosterGoals(); // Update goals table
+    updateRosterRem(); // Update remaining materials table(s)
   }
 
   function removeGoal(){
     if (goals.length == 1) // Must have at least 1 goal
       return;
     delRosterGoal(goals.length - 1); // Removes last roster goal
-    setGoals(); // Update goals table
-    setRem(); // Update remaining materials table(s)
+    updateRosterGoals(); // Update goals table
+    updateRosterRem(); // Update remaining materials table(s)
   }
 
   function handleGoalChange(e: ChangeEvent<HTMLInputElement>, index: number){
     if (e.target.value.length < 30){ // Under length limit, accept input
+      console.log("e.target.value.length:", e.target.value.length);
       setRosterGoalName(index, e.target.value); // Update roster goal name
-      setRem(); // Update remaining materials table(s)
+      updateRosterRem(); // Update remaining materials table(s)
       changed = true; // Roster goal data will be saved on next focus out
     }
     else // Over length limit, reject input
@@ -65,9 +74,11 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
    * @param  {number}         index     The index of the goal being used to generate the row.
    * @return {JSX.Element[]}            The generated table row.
    */
-  function goalRow(props: {goal: Goal, index: number}): JSX.Element[]{
+  function GoalRow(props: {goal: Goal, index: number}): JSX.Element{
     let {goal, index} = props;  // Unpack props
     let cells: JSX.Element[] = []; // Initialize table row for this goal
+
+    console.log("Roster GoalRow", index, "rendering");
 
     cells.push( // Add writeable name to the table row for this roster goal
       <Cell key="name" value={goal.name} className="first-col"
@@ -83,7 +94,7 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
     Object.entries(goal.mats).forEach(([key, value]) => {
       cells.push(<Cell key={key} value={value}/>);
     }); // Always read-only, do not specify change handlers
-    return cells;
+    return <tr>{cells}</tr>;
   }
 
   return(
@@ -95,7 +106,7 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
           <Button variant="primary" onClick={removeGoal}>Remove Goal</Button>
         </td>
       </tr>
-      {goalTable}
+      {table}
     </>
   );
 }

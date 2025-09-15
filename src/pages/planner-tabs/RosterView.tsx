@@ -9,11 +9,12 @@ import Button from 'react-bootstrap/Button';
 
 export function RosterView(){
   const [chars, setChars] = useState(getChars); // Load characters into state
-  const [rosterOnTop, setRosterOnTop] = useState(true);
-  /* unknown[] is chosen as a reliable signal type because calls to
-     sendSignal([]) are guaranteed to update state with a new value. */
-  const [goalsUpdateSignal, sendGoalsSignal] = useState([]);
-  const [remUpdateSignal, sendRemSignal] = useState([]);
+  const [rosterOnTop, setRosterOnTop] = useState(true); // RosterCard position
+  
+  /* Roster state update signals; unknown[] is chosen as signal type because
+     sendSignal([]) is guaranteed to update state with a new value. */
+  const [rosterGoalUpdateSignal, sendGoalsSignal] = useState([]);
+  const [rosterRemUpdateSignal, sendRemSignal] = useState([]);
 
   // Character operation handlers
   function handleAddChar(){ // Called when "Add Character" button is clicked
@@ -22,7 +23,7 @@ export function RosterView(){
   }
   function handleDeleteChar(index: number){
     // Called when a trash button associated with a CharacterCard is clicked
-    delChar(index); // Always succeeds, delete button is tied to CharacterCard existing
+    delChar(index); // Always succeeds, no delete button if no char exists
     setChars(getChars); // Always update state and re-render
   }
   function handleSwapChar(index: number, direction: number){
@@ -37,9 +38,11 @@ export function RosterView(){
       {rosterOnTop && /* If true, render RosterCard above CharacterCards. */
         <RosterCard
           chars={chars}
-          goalsUpdateSignal={goalsUpdateSignal}
-          remUpdateSignal={remUpdateSignal}
+          rosterGoalUpdateSignal={rosterGoalUpdateSignal}
+          rosterRemUpdateSignal={rosterRemUpdateSignal}
           setOnTop={setRosterOnTop}
+          updateRosterGoals={() => sendGoalsSignal([])}
+          updateRosterRem={() => sendRemSignal([])}
         />}
       {chars.map((char: Character, index: number) => {
         return( /* Render a CharacterCard for each character. */
@@ -57,9 +60,11 @@ export function RosterView(){
       {!rosterOnTop && /* If false, render RosterCard below CharacterCards. */
         <RosterCard
           chars={chars}
-          goalsUpdateSignal={goalsUpdateSignal}
-          remUpdateSignal={remUpdateSignal}
+          rosterGoalUpdateSignal={rosterGoalUpdateSignal}
+          rosterRemUpdateSignal={rosterRemUpdateSignal}
           setOnTop={setRosterOnTop}
+          updateRosterGoals={() => sendGoalsSignal([])}
+          updateRosterRem={() => sendRemSignal([])}
         />}
       {(chars.length < 10) && /* Hide button if character limit reached */
         <Button className="d-block mx-auto" variant="primary" onClick={handleAddChar}>

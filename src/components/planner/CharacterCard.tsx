@@ -40,40 +40,9 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
   const goalsTotal: RefObject<Goal> = useRef({name: "Total", mats: initMaterials()});
   const matsTotal: RefObject<Materials> = useRef(initMaterials());
 
-  // Table state variables
-  const [goalsTable, setGoals] = useState(initGoals);
-  const [matsTable, setMats] = useState(initMats);
-  const [remTable, setRem] = useState(initRem);
-
-  // Table state initializer functions
-  function initGoals(){
-    return CharacterGoalTable({
-      goals: char.goals,
-      goalsTotalRef: goalsTotal,
-      index: index,
-      setGoals: () => setGoals(initGoals),
-      setRem: () => setRem(initRem),
-      updateRosterGoals: updateRosterGoals,
-      updateRosterRem: updateRosterRem
-    });
-  }
-  function initMats(){
-    return MatsTable({
-      matsTotalRef: matsTotal,
-      boundMats: char.boundMats,
-      setMats: () => setMats(initMats),
-      setRem: () => setRem(initRem),
-      updateRosterRem: updateRosterRem
-    });
-  }
-  function initRem(){
-    return RemTable({
-      goals: char.goals,
-      goalsTotalRef: goalsTotal,
-      matsTotalRef: matsTotal,
-      boundMats: char.boundMats
-    });
-  }
+  /* Character state update signals; unknown[] is chosen as signal type because
+     sendSignal([]) is guaranteed to update state with a new value. */
+  const [charRemUpdateSignal, sendCharRemSignal] = useState([]);
 
   function SettingsModal(){
     const [colorPickerDisabled, setColorPickerDisabled] = useState(charState.usesClassColor);
@@ -200,9 +169,27 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
       <Table hover>
         <TableHeader title={<th>{charState.name}<br/>{charState.ilvl} {charState.class}</th>}/>
         <tbody>
-          {goalsTable}
-          {matsTable}
-          {remTable}
+          <CharacterGoalTable
+            goals={char.goals}
+            goalsTotalRef={goalsTotal}
+            charIndex={index}
+            updateCharRem={() => sendCharRemSignal([])}
+            updateRosterGoals={updateRosterGoals}
+            updateRosterRem={updateRosterRem}
+          />
+          <MatsTable
+            matsTotalRef={matsTotal}
+            boundMats={char.boundMats}
+            updateCharRem={() => sendCharRemSignal([])}
+            updateRosterRem={updateRosterRem}
+          />
+          <RemTable
+            goals={char.goals}
+            goalsTotalRef={goalsTotal}
+            matsTotalRef={matsTotal}
+            boundMats={char.boundMats}
+            remUpdateSignal={charRemUpdateSignal}
+          />
         </tbody>
       </Table>
     </div>

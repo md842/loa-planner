@@ -1,4 +1,4 @@
-import {type JSX, type RefObject} from 'react';
+import {type JSX, type RefObject, useEffect, useState} from 'react';
 
 import {Cell} from './Cell';
 
@@ -11,28 +11,39 @@ interface RemTableProps{
   goalsTotalRef?: RefObject<Goal>; // Calculated in GoalTable; passed to RemTable to avoid re-calculation
   matsTotalRef?: RefObject<Materials>; // Calculated in MatsTable; passed to RemTable to avoid re-calculation
   boundMats?: Materials; // If defined, remBoundTable will be rendered.
+  // References to parent component state/state setters
+  remUpdateSignal?: unknown[];
 }
 
 /** Constructs the "Remaining materials" section(s) of the parent table. */
 export function RemTable(props: RemTableProps): JSX.Element{
-  let {goals, goalsTotalRef, matsTotalRef, boundMats} = props; // Unpack props
+  let {goals, goalsTotalRef, matsTotalRef, boundMats, remUpdateSignal} = props; // Unpack props
 
-  console.log("RemTable rendering");
+  /* Table state variable for remaining materials (character or roster).
+     Will be initialized when useEffect runs on mount, so initialize blank. */
+  const [table, updateTable] = useState([] as JSX.Element[][]);
 
-  let remTable: JSX.Element[] = [], remBoundTable: JSX.Element[] = []; // Initialize tables
+  useEffect(() => { // Character uses remUpdateSignal, Roster uses goals
+    updateTable(initTable); // Re-render remaining materials table
+  }, [remUpdateSignal, goals]); // Runs on mount and when signal received or table goals change
+  
+  function initTable(): JSX.Element[][]{ // Table state initializer function
+    let remTable: JSX.Element[] = [], remBoundTable: JSX.Element[] = []; // Initialize tables
 
-  goals.forEach((goal: Goal, index: number) => {
-    // Build rows for each goal and push them to the tables
-    remTable.push(<RemRow key={index} goal={goal} subtract={(matsTotalRef) ? matsTotalRef.current : undefined}/>);
-    if (boundMats) // Character table; initialize remBoundTable.
-      remBoundTable.push(<RemRow bound key={index} goal={goal} subtract={boundMats}/>);
-  });
+    goals.forEach((goal: Goal, index: number) => {
+      // Build rows for each goal and push them to the tables
+      remTable.push(<RemRow key={index} goal={goal} subtract={(matsTotalRef) ? matsTotalRef.current : undefined}/>);
+      if (boundMats) // Character table; initialize remBoundTable.
+        remBoundTable.push(<RemRow bound key={index} goal={goal} subtract={boundMats}/>);
+    });
 
-  // If all defined, this RemTable is for a character. Build total rows if multiple goals.
-  if (goalsTotalRef && matsTotalRef && boundMats && goals.length > 1){
-    remTable.push(<RemRow total key="totalGoals" goal={goalsTotalRef.current} subtract={matsTotalRef.current}/>);
-    remBoundTable.push(<RemRow bound total key="totalGoals" goal={goalsTotalRef.current} subtract={boundMats}/>);
-  } // If roster RemTable, total rows are not needed.
+    // If all defined, this RemTable is for a character. Build total rows if multiple goals.
+    if (goalsTotalRef && matsTotalRef && boundMats && goals.length > 1){
+      remTable.push(<RemRow total key="total" goal={goalsTotalRef.current} subtract={matsTotalRef.current}/>);
+      remBoundTable.push(<RemRow bound total key="total" goal={goalsTotalRef.current} subtract={boundMats}/>);
+    } // If roster RemTable, total rows are not needed.
+    return [remTable, remBoundTable];
+  }
 
   /**
    * Generate a table row for the "Remaining materials" sections.
@@ -44,6 +55,8 @@ export function RemTable(props: RemTableProps): JSX.Element{
    */
   function RemRow(props: {bound?: boolean, total?: boolean, goal: Goal, subtract?: Materials}): JSX.Element{
     let cells: JSX.Element[] = []; // Initialize table row for this goal
+
+    console.log("RemRow rendering");
 
     // Add goal name to the table row for this goal
     cells.push(<Cell key="name" className="first-col" value={props.goal.name}/>);
@@ -59,16 +72,16 @@ export function RemTable(props: RemTableProps): JSX.Element{
       cells.push(<Cell key={key} value={(props.bound && key == "silver") ? "--" : value}/>);
     }); // Always read-only, do not specify change handlers
 
-    return <tr className={(props.total) ? "bold" : undefined}>{cells}</tr>;
+    return <tr className={props.total ? "bold" : undefined}>{cells}</tr>;
   }
 
   return(
     <>
       <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining materials"}</td></tr>
-      {remTable}
+      {table[0]}
       {(boundMats) &&
       <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining bound materials"}</td></tr>}
-      {remBoundTable}
+      {table[1]}
     </>
   );
 }

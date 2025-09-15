@@ -1,4 +1,4 @@
-import {type ChangeEvent, type JSX, type RefObject} from 'react';
+import {type ChangeEvent, type JSX, type RefObject, useState} from 'react';
 
 import {Cell} from './Cell';
 
@@ -12,8 +12,7 @@ interface MatsTableProps{
   boundMats: Materials; // Bound materials owned by the character for which this table is being generated
   matsTotalRef: RefObject<Materials>; // Passed to RemTable to avoid re-calculation
   // References to parent component state/state setters
-  setMats: () => void;
-  setRem: () => void;
+  updateCharRem: () => void;
   updateRosterRem: () => void;
 }
 
@@ -22,28 +21,37 @@ let changed: boolean = false;
 
 /** Constructs the "Owned materials" section of the parent table. */
 export function MatsTable(props: MatsTableProps): JSX.Element{
-  let {boundMats, matsTotalRef, setMats, setRem, updateRosterRem} = props; // Unpack props
+  let {boundMats, matsTotalRef, updateCharRem, updateRosterRem} = props; // Unpack props
 
-  console.log("MatsTable rendering");
+  // Table state variable for owned materials.
+  const [table, updateTable] = useState(initTable);
 
-  let matsTable: JSX.Element[] = []; // Initialize table and matsTotal
-  matsTotalRef.current = initMaterials();
-  let rosterMats: Materials = getRosterMats();
+  function initTable(): JSX.Element[]{ // Table state initializer function
+    let table: JSX.Element[] = []; // Initialize table and matsTotal
+    matsTotalRef.current = initMaterials();
 
-  matsTotalRef.current = addMaterials(rosterMats, boundMats); // Total mats
+    let rosterMats: Materials = getRosterMats();
+    matsTotalRef.current = addMaterials(rosterMats, boundMats); // Total mats
 
-  // Build and push each owned materials row to the table
-  matsTable.push(<tr key="boundMats">{matsRow({mats: boundMats, name: "Bound"})}</tr>);
-  matsTable.push(<tr key="rosterMats">{matsRow({mats: rosterMats, name: "Roster"})}</tr>);
-  matsTable.push(<tr className="bold" key="totalMats">{matsRow({mats: matsTotalRef.current, name: "Total"})}</tr>);
-
+    // Build and push each owned materials row to the table
+    table.push(<MatsRow key="bound" mats={boundMats} name={"Bound"}/>);
+    table.push(<MatsRow key="roster" mats={rosterMats} name={"Roster"}/>);
+    table.push(<MatsRow key="total" mats={matsTotalRef.current} name={"Total"}/>);
+    return table;
+  }
 
   function handleBoundMatChange(e: ChangeEvent<HTMLInputElement>, key: string){
     if (sanitizeInput(e, boundMats[key])){ // Valid numeric input
       matsTotalRef.current[key] += Number(e.target.value) - boundMats[key];
       boundMats[key] = Number(e.target.value); // Update char data
-      setMats(); // Update owned materials table
-      setRem(); // Update remaining materials table(s)
+
+      updateTable([
+        <MatsRow key="bound" mats={boundMats} name="Bound"/>,
+        table[1],
+        <MatsRow key="total" mats={matsTotalRef.current} name={"Total"}/>,
+      ]); // Only re-renders the row being updated and the total row
+
+      updateCharRem(); // Update remaining materials table(s)
       updateRosterRem(); // Send signal to update RosterCard remTable
       changed = true; // Character data will be saved on next focus out
     } // Reject non-numeric input (do nothing)
@@ -56,9 +64,11 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
    *                                "Bound" is writeable other than "silver", the rest are read-only.
    * @return {JSX.Element[]}        The generated table row.
    */
-  function matsRow(props: {mats: Materials, name: string}): JSX.Element[]{
+  function MatsRow(props: {mats: Materials, name: string}): JSX.Element{
     let {mats, name} = props; // Unpack props
     let cells: JSX.Element[] = []; // Initialize table row for this goal
+
+    console.log("MatsRow", name, "rendering");
 
     // Add goal name and calculated gold value to the table row for this goal
     cells.push(<Cell bold key="name" className="first-col" value={name}/>);
@@ -80,13 +90,13 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
       else // Always read-only if total or roster mats
         cells.push(<Cell key={key} value={value}/>);
     });
-    return cells;
+    return <tr className={name == "Total" ? "bold" : undefined}>{cells}</tr>;
   }
 
   return(
     <>
       <tr className="bold"><td className="section-title" colSpan={11}>Owned materials</td></tr>
-      {matsTable}
+      {table}
     </>
   );
 }
