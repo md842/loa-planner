@@ -3,7 +3,8 @@ import {RosterStorageTable} from '../../components/planner/tables/RosterStorageT
 export function RosterStorageView(){
 	return(
     <main>
-      <RosterStorageTable mat="fusions"/>
+      <RosterStorageTable friendlyName="Fusion Materials" mat="fusions"/>
+      <RosterStorageTable friendlyName="Reds/Blues" mat="reds" mat2="blues"/>
     </main>
 	);
 }

@@ -91,3 +91,13 @@ export function subMaterials(a: Materials, b: Materials): Materials{
     out[key] = Math.max(0, a[key] - b[key]); // Materials cannot be negative
   return out;
 }
+
+
+/** Roster storage table source data structure. */
+export interface Source{
+  label: string;
+  // If arrays have length 2, this Source is a combo source (e.g., reds/blues)
+  qty: number[];
+  selected?: boolean[];
+  mult: number[];
+}

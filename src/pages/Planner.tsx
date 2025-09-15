@@ -8,7 +8,7 @@ import {Tab, Tabs} from 'react-bootstrap';
 
 export function Planner(){
   return (
-    <Tabs defaultActiveKey="roster-view" className="planner-tabs mb-5" justify>
+    <Tabs defaultActiveKey="roster-storage" className="planner-tabs mb-5" justify>
       <Tab eventKey="roster-view" title="Roster View">
         <RosterView/>
       </Tab>

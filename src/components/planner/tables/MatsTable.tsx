@@ -2,8 +2,8 @@ import {type ChangeEvent, type JSX, type RefObject, useState} from 'react';
 
 import {Cell} from './Cell';
 
-import {sanitizeInput, saveChanges} from './common';
 import {type Materials, addMaterials, initMaterials} from '../../core/types';
+import {sanitizeInput, saveChanges} from './common';
 import {goldValue} from '../../core/market-data';
 import {getRosterMats} from '../../core/roster-storage-data';
 
@@ -68,7 +68,7 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
     let {mats, name} = props; // Unpack props
     let cells: JSX.Element[] = []; // Initialize table row for this goal
 
-    console.log("MatsRow", name, "rendering");
+    // console.log("MatsRow", name, "rendering");
 
     // Add goal name and calculated gold value to the table row for this goal
     cells.push(<Cell bold key="name" className="first-col" value={name}/>);

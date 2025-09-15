@@ -1,7 +1,30 @@
-import {type Materials, initMaterials} from './types';
+import {type Materials, initMaterials, type Source} from './types';
 
 // Initialize roster storage data at module level
 let rosterMats: Materials = initMaterials();
+
+// Hardcoded placeholder sources
+let sources: {[index: string]: Source[]} = {
+  "fusions": [
+    {label: "Tradable", qty: [0], selected: [true], mult: [1]},
+    {label: "Other", qty: [0], mult: [1]},
+    {label: "Total", qty: [0], mult: [1]}
+  ],
+  "reds": [
+    {label: "Tradable 1640",
+      qty: [1000, 3000], selected: [true, true], mult: [1, 1]},
+    {label: "Tradable 1580",
+      qty: [1000, 3000], selected: [true, true], mult: [0.2, 0.2]},
+    {label: "Tradable 1490",
+      qty: [1000, 3000], selected: [true, true], mult: [0.04, 0.04]},
+    {label: "Tradable 1250",
+      qty: [1000, 3000], selected: [true, true], mult: [0.008, 0.008]},
+    {label: "Other",
+      qty: [0, 0], mult: [1, 1]},
+    {label: "Total",
+      qty: [1248, 3744], mult: [1, 1]},
+  ],
+};
 
 rosterMats = { // Uses placeholder values for now
   silver: 645120369,
@@ -18,4 +41,16 @@ rosterMats = { // Uses placeholder values for now
 /** Returns the contents of rosterMats. */
 export function getRosterMats(): Materials{
   return rosterMats;
+}
+
+/** Returns the stored source data for the specified material. */
+export function getSources(mat: keyof Materials): Source[]{
+  return sources[mat];
+}
+
+/** Sets roster storage data for the specified material and quantity. */
+export function setRosterMat(mat: keyof Materials, quantity: number){
+  console.log("rosterMats before:", rosterMats);
+  rosterMats[mat] = quantity;
+  console.log("rosterMats after:", rosterMats);
 }

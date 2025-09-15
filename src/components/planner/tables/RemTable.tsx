@@ -85,7 +85,7 @@ export function RemTable(props: RemTableProps): JSX.Element{
   function RemRow(props: {bound?: boolean, total?: boolean, goal: Goal, subtract?: Materials}): JSX.Element{
     let cells: JSX.Element[] = []; // Initialize table row for this goal
 
-    console.log("RemRow rendering");
+    // console.log("RemRow rendering");
 
     // Add goal name to the table row for this goal
     cells.push(<Cell key="name" className="first-col" value={props.goal.name}/>);

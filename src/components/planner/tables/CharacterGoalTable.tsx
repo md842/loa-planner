@@ -2,8 +2,8 @@ import {type ChangeEvent, type JSX, type RefObject, useState} from 'react';
 
 import {Cell} from './Cell';
 
-import {sanitizeInput, saveChanges} from './common';
 import {addMaterials, type Goal, initGoal, initMaterials, subMaterials} from '../../core/types';
+import {sanitizeInput, saveChanges} from './common';
 import {expandRosterGoals} from '../../core/character-data';
 import {goldValue} from '../../core/market-data';
 
@@ -120,7 +120,7 @@ export function CharacterGoalTable(props: GoalTableProps): JSX.Element{
     let {total, goal, index} = props;  // Unpack props
     let cells: JSX.Element[] = []; // Initialize table row for this goal
 
-    console.log("Character", charIndex, "GoalRow", total ? "Total" : index, "rendering");
+    // console.log("Character", charIndex, "GoalRow", total ? "Total" : index, "rendering");
 
     cells.push( // Add goal name field to the table row for this goal
       <Cell key="name" value={goal.name} className="first-col"

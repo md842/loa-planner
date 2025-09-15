@@ -77,7 +77,7 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
     let {goal, index} = props;  // Unpack props
     let cells: JSX.Element[] = []; // Initialize table row for this goal
 
-    console.log("Roster GoalRow", index, "rendering");
+    // console.log("Roster GoalRow", index, "rendering");
 
     cells.push( // Add writeable name to the table row for this roster goal
       <Cell key="name" value={goal.name} className="first-col"
