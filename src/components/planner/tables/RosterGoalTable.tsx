@@ -3,7 +3,7 @@ import {type ChangeEvent, type JSX, useEffect, useState} from 'react';
 import {Cell} from './Cell';
 
 import {type Goal} from '../../core/types';
-import {addRosterGoal, delRosterGoal, saveRosterGoals, setRosterGoalName} from '../../core/character-data';
+import {addRosterGoal, delRosterGoal, getRosterGoals, saveRosterGoals, setRosterGoalName} from '../../core/character-data';
 import {goldValue} from '../../core/market-data';
 
 import Button from 'react-bootstrap/Button';
@@ -52,20 +52,19 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
   function removeGoal(){
     if (goals.length == 1) // Must have at least 1 goal
       return;
-    delRosterGoal(goals.length - 1); // Removes last roster goal
+    delRosterGoal(); // Removes last roster goal
     updateRosterGoals(); // Update goals table
     updateRosterRem(); // Update remaining materials table(s)
   }
 
   function handleGoalChange(e: ChangeEvent<HTMLInputElement>, index: number){
     if (e.target.value.length < 30){ // Under length limit, accept input
-      console.log("e.target.value.length:", e.target.value.length);
       setRosterGoalName(index, e.target.value); // Update roster goal name
       updateRosterRem(); // Update remaining materials table(s)
       changed = true; // Roster goal data will be saved on next focus out
     }
     else // Over length limit, reject input
-      e.target.value = goals[index].name; // Resets field to last good value
+      e.target.value = getRosterGoals()[index].name; // Resets field to last good value
   }
 
   /**

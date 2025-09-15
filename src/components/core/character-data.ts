@@ -62,9 +62,9 @@ export function delChar(index: number){
   saveRosterGoals(); // Save updated roster goals to local storage
 }
 
-/** Deletes the roster goal with the specified index. */
-export function delRosterGoal(index: number){
-  rosterGoals.splice(index, 1); // Remove the specified roster goal
+/** Deletes the last roster goal. */
+export function delRosterGoal(){
+  rosterGoals.pop(); // Remove the last roster goal
   saveRosterGoals(); // Save updated roster goals to local storage
 }
 
@@ -74,9 +74,9 @@ export function getChars(): Character[]{
   return [...chars]; // Returning as a new array triggers re-render.
 }
 
-/** Returns the contents of rosterGoals in a new array to a state setter. */
+/** Returns the contents of rosterGoals. */
 export function getRosterGoals(): RosterGoal[]{
-  return [...rosterGoals]; // Returning as a new array triggers re-render.
+  return rosterGoals;
 }
 
 
