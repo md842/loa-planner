@@ -1,11 +1,11 @@
 /* Table color formatting */
 
 .read-only{ /* Sets derived color for read-only fields */
-  background-color: color-mix(in srgb, var(--table-color) 50%, white 50%) !important;
+  background-color: color-mix(in srgb, var(--table-color) 50%, white) !important;
 }
 
 .writeable{ /* Sets derived color for writeable fields */
-  background-color: color-mix(in srgb, var(--table-color) 25%, white 75%) !important;
+  background-color: color-mix(in srgb, var(--table-color) 25%, white) !important;
 }
 
 /* Cell formatting */
@@ -26,12 +26,12 @@
   font-weight: inherit;
 }
 
-.cell.first-col{
-  min-width: 8em;
-}
-
 input:disabled{ /* Disabled input has same text color as surroundings */
   color: unset;
+}
+
+.first-col{
+  min-width: 10em;
 }
 
 .bold{ /* Custom bold font weight for gold value and total cells */

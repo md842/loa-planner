@@ -1,0 +1,34 @@
+/* Table color formatting */
+
+.mat2{
+  background-color: var(--mat2-color) !important; /* Override background color */
+  border-color: var(--mat2-color);
+}
+
+.mat2.read-only{ /* Sets derived color for read-only fields */
+  background-color: color-mix(in srgb, var(--mat2-color) 50%, white) !important;
+}
+
+.mat2.writeable{ /* Sets derived color for writeable fields */
+  background-color: color-mix(in srgb, var(--mat2-color) 25%, white) !important;
+}
+
+/* Checkbox color formatting */
+
+.mat1-checkbox .form-check-input{
+  background-color: color-mix(in srgb, var(--table-color) 50%, white);
+  border-color: var(--table-color);
+}
+
+.mat1-checkbox .form-check-input:checked{
+  background-color: var(--table-color);
+}
+
+.mat2-checkbox .form-check-input{
+  background-color: color-mix(in srgb, var(--mat2-color) 50%, white);
+  border-color: var(--mat2-color);
+}
+
+.mat2-checkbox .form-check-input:checked{
+  background-color: var(--mat2-color);
+}

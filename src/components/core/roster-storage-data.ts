@@ -10,6 +10,14 @@ let sources: {[index: string]: Source[]} = {
     {label: "Other", qty: [0], mult: [1]},
     {label: "Total", qty: [0], mult: [1]}
   ],
+  "shards": [
+    {label: "Other", qty: [0], mult: [1]},
+    {label: "Total", qty: [0], mult: [1]}
+  ],
+  "leaps": [
+    {label: "Other", qty: [0], mult: [1]},
+    {label: "Total", qty: [0], mult: [1]}
+  ],
   "reds": [
     {label: "Tradable 1640",
       qty: [1000, 3000], selected: [true, true], mult: [1, 1]},
@@ -25,6 +33,12 @@ let sources: {[index: string]: Source[]} = {
       qty: [0, 0], mult: [1, 1]},
     {label: "Total",
       qty: [5248, 3744], mult: [1, 1]},
+  ],
+  "redSolars": [
+    {label: "Other",
+      qty: [0, 0], mult: [1, 1]},
+    {label: "Total",
+      qty: [0, 0], mult: [1, 1]},
   ],
 };
 
