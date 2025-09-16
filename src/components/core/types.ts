@@ -100,4 +100,7 @@ export interface Source{
   qty: number[];
   selected?: boolean[];
   mult: number[];
+  /* If true, this combo source is a selection chest; qty[0] == qty[1], and
+     selecting material 1 will deselect material 2. */
+  selectionChest?: boolean;
 }

@@ -47,6 +47,9 @@ export function RosterStorageTable(props: RosterStorageTableProps): JSX.Element{
       // Update total quantity with diff * multiplier
       totalSource.qty[matIndex] += (input - prevValue) * changedSource.mult[matIndex];
       changedSource.qty[matIndex] = input; // Update source quantity
+      if (changedSource.selectionChest) // Changed source is a selection chest
+        // Set source's material 2 quantity equal to material 1 quantity
+        changedSource.qty[1] = input;
 
       updateTable([
         ...table.slice(0, index), // Sources before specified index
@@ -68,10 +71,25 @@ export function RosterStorageTable(props: RosterStorageTableProps): JSX.Element{
        handleChecked, otherwise checkboxes would not render) */
     changedSource.selected![matIndex] = e.target.checked;
 
-    totalSource.qty[matIndex] += // Update total quantity
-      // If selected, add qty * mult; if not selected, subtract qty * mult
-      ((changedSource.selected![matIndex]) ? 1 : -1) *
-      (changedSource.qty[matIndex] * changedSource.mult[matIndex]);
+    // If selecting, add from total; if deselecting, subtract from total
+    let sign: number = changedSource.selected![matIndex] ? 1 : -1
+    // Update total quantity by sign * qty * mult
+    totalSource.qty[matIndex] += sign * (changedSource.qty[matIndex] * changedSource.mult[matIndex]);
+    // Update roster storage data (which material is set depends on matIndex)
+    setRosterMat(matIndex ? mat2! : mat, totalSource.qty[matIndex]);
+
+    // Changed source is combo selection chest, update source's other material
+    if (changedSource.selectionChest){
+      let otherIndex: number = (matIndex == 0) ? 1 : 0
+
+      // Set source's other material "selected" field to opposite value
+      changedSource.selected![otherIndex] = !e.target.checked;
+
+      // Update total quantity by -sign * qty * mult
+      totalSource.qty[otherIndex] -= sign * (changedSource.qty[otherIndex] * changedSource.mult[otherIndex]);
+      // Update roster storage data (which material is set depends on otherIndex)
+      setRosterMat(otherIndex ? mat2! : mat, totalSource.qty[otherIndex]);
+    }
 
     updateTable([
       ...table.slice(0, index), // Sources before specified index
@@ -79,9 +97,6 @@ export function RosterStorageTable(props: RosterStorageTableProps): JSX.Element{
       ...table.slice(index + 1, -1), // Sources after specified index
       <SourceRow total key="total" index={sources.length - 1}/>,
     ]); // Only re-renders the row being updated and the total row
-
-    // Update roster storage data (which material is set depends on matIndex)
-    setRosterMat(matIndex ? mat2! : mat, totalSource.qty[matIndex]);
   }
 
   /**
@@ -103,7 +118,7 @@ export function RosterStorageTable(props: RosterStorageTableProps): JSX.Element{
       <Cell key="qty" value={(total) ? undefined : src.qty[0]}
         // onBlur={() => {saveChanges(changed); changed = false}}
         onChange={total ? undefined : (e) => handleChange(e, index, 0)}
-      />
+      /> // Input disabled if total
     );
     
     cells.push( // Material 1 selected field
@@ -111,7 +126,9 @@ export function RosterStorageTable(props: RosterStorageTableProps): JSX.Element{
         {src.selected && // Render checkbox conditionally
           <Form.Check
             type="checkbox"
-            defaultChecked={src.selected[0]}
+            // If selection chest, checked = inverse of other checkbox
+            defaultChecked={src.selectionChest ? undefined : src.selected[0]}
+            checked={src.selectionChest ? !src.selected[1] : undefined}
             onChange={(e) => handleChecked(e, index, 0)}
           />}
       </td>);
@@ -128,8 +145,8 @@ export function RosterStorageTable(props: RosterStorageTableProps): JSX.Element{
       cells.push( // Material 2 quantity field
         <Cell key="qty2" value={(total) ? undefined : src.qty[1]}
           // onBlur={() => {saveChanges(changed); changed = false}}
-          onChange={total ? undefined : (e) => handleChange(e, index, 1)}
-        />
+          onChange={(total || src.selectionChest) ? undefined : (e) => handleChange(e, index, 1)}
+        /> // Input disabled if total or selection chest (use material 1 field)
       );
       
       cells.push( // Material 2 selected field
@@ -137,7 +154,9 @@ export function RosterStorageTable(props: RosterStorageTableProps): JSX.Element{
           {src.selected && // Render checkbox conditionally
             <Form.Check
               type="checkbox"
-              defaultChecked={src.selected[1]}
+              // If selection chest, checked = inverse of other checkbox
+              defaultChecked={src.selectionChest ? undefined : src.selected[1]}
+              checked={src.selectionChest ? !src.selected[0] : undefined}
               onChange={(e) => handleChecked(e, index, 1)}
             />}
         </td>);

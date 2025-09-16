@@ -19,10 +19,12 @@ let sources: {[index: string]: Source[]} = {
       qty: [1000, 3000], selected: [true, true], mult: [0.04, 0.04]},
     {label: "Tradable 1250",
       qty: [1000, 3000], selected: [true, true], mult: [0.008, 0.008]},
+    {label: "Daily Chest",
+      qty: [100, 100], selected: [true, false], mult: [40, 80], selectionChest: true},
     {label: "Other",
       qty: [0, 0], mult: [1, 1]},
     {label: "Total",
-      qty: [1248, 3744], mult: [1, 1]},
+      qty: [5248, 3744], mult: [1, 1]},
   ],
 };
 
@@ -50,7 +52,6 @@ export function getSources(mat: keyof Materials): Source[]{
 
 /** Sets roster storage data for the specified material and quantity. */
 export function setRosterMat(mat: keyof Materials, quantity: number){
-  console.log("rosterMats before:", rosterMats);
   rosterMats[mat] = quantity;
-  console.log("rosterMats after:", rosterMats);
+  console.log("rosterMats:", rosterMats);
 }
