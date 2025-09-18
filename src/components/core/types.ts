@@ -96,10 +96,15 @@ export function subMaterials(a: Materials, b: Materials): Materials{
 /** Roster storage table source data structure. */
 export interface Source{
   label: string;
+
   // If arrays have length 2, this Source is a combo source (e.g., reds/blues)
   qty: number[];
-  selected?: boolean[];
-  mult: number[];
+  amt: number[];
+
+  selected?: boolean[]; // If defined, source is selectable; true = active
+  div?: number; // If defined, qty has a floored division before multiplier
+  mult?: number[]; // If defined, qty has a multiplier
+
   /* If true, this combo source is a selection chest; qty[0] == qty[1], and
      selecting material 1 will deselect material 2. */
   selectionChest?: boolean;

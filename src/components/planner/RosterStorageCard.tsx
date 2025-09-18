@@ -32,7 +32,7 @@ let changed: boolean = false;
 export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
   let {friendlyName, color, image, mat, color2, image2, mat2} = props; // Unpack props
 
-  // Get const references to sources for table material(s) and rosterMats
+  // Get const references to sources for this table's material(s)
   const sources = getSources(mat);
 
   // Table state variable for materials sources.
@@ -51,75 +51,85 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
 
   function handleChange(e: ChangeEvent<HTMLInputElement>, index: number, matIndex: number){
     let input: number = Number(e.target.value); // Variables for readability
-    let prevValue: number = sources[index].qty[matIndex];
-    let changedSource: Source = sources[index];
-    let totalSource: Source = sources[sources.length - 1];
+    let changedSrc: Source = sources[index];
+    let total: Source = sources[sources.length - 1];
     
-    if (sanitizeInput(e, prevValue)){ // Valid numeric input
-      changedSource.qty[matIndex] = input; // Update source quantity
+    if (sanitizeInput(e, sources[index].qty[matIndex])){ // Valid numeric input
+      total.amt[matIndex] -= changedSrc.amt[matIndex]; // Subtract old amount from total
+      changedSrc.qty[matIndex] = input; // Update source quantity
+      updateAmt(changedSrc, matIndex); // Update source amount
+      total.amt[matIndex] += changedSrc.amt[matIndex]; // Add new amount to total
 
-      // If source is active (selected is true or undefined = always active)
-      if (!changedSource.selected || changedSource.selected[matIndex])
-        // Update total quantity with diff * multiplier
-        totalSource.qty[matIndex] += (input - prevValue) * changedSource.mult[matIndex];
+      // Update roster storage data (which material is set depends on matIndex)
+      setRosterMat(matIndex ? mat2! : mat, total.amt[matIndex]);
 
-      if (changedSource.selectionChest){ // Changed source is a selection chest
+      if (changedSrc.selectionChest){ // Changed source is a selection chest
         // Note: For selection chest, matIndex always 0, mat2 always defined
-        changedSource.qty[1] = input; // Synchronize quantity
-        
-        if (changedSource.selected![1]) // If material 2 is active
-          // Update total quantity with diff * multiplier
-          totalSource.qty[1] += (input - prevValue) * changedSource.mult[1];
+        total.amt[1] -= changedSrc.amt[1]; // Subtract old amount from total
+        changedSrc.qty[1] = input; // Update (synchronize) source quantity
+        updateAmt(changedSrc, 1); // Update source amount
+        total.amt[1] += changedSrc.amt[1]; // Add new amount to total
 
         // Update roster storage data for material 2
-        setRosterMat(mat2!, totalSource.qty[1]);
+        setRosterMat(mat2!, total.amt[1]);
       }
 
       updateTable([
         ...table.slice(0, index), // Sources before specified index
-        <SourceRow key={changedSource.label} index={index}/>,
+        <SourceRow key={changedSrc.label} index={index}/>,
         ...table.slice(index + 1, -1), // Sources after specified index
         <SourceRow total key="total" index={sources.length - 1}/>,
       ]); // Only re-renders the row being updated and the total row
-
-      // Update roster storage data (which material is set depends on matIndex)
-      setRosterMat(matIndex ? mat2! : mat, totalSource.qty[matIndex]);
 
       changed = true; // Roster storage data will be saved on next focus out
     } // Reject non-numeric input outside of name field (do nothing)
   }
 
   function handleChecked(e: ChangeEvent<HTMLInputElement>, index: number, matIndex: number){
-    let changedSource: Source = sources[index]; // Variables for readability
-    let totalSource: Source = sources[sources.length - 1];
+    let changedSrc: Source = sources[index]; // Variables for readability
+    let total: Source = sources[sources.length - 1];
 
-    /* Update changedSource.selected (guaranteed to be defined in
+    /* Update changedSrc.selected (guaranteed to be defined in
        handleChecked, otherwise checkboxes would not render) */
-    changedSource.selected![matIndex] = e.target.checked;
+    changedSrc.selected![matIndex] = e.target.checked;
 
-    // If selecting, add from total; if deselecting, subtract from total
-    let sign: number = changedSource.selected![matIndex] ? 1 : -1
-    // Update total quantity by sign * qty * mult
-    totalSource.qty[matIndex] += sign * (changedSource.qty[matIndex] * changedSource.mult[matIndex]);
+    // Update source and total amounts based on selecting or deselecting
+    if (e.target.checked){ // Selecting
+      updateAmt(changedSrc, matIndex); // Update source amount
+      total.amt[matIndex] += changedSrc.amt[matIndex]; // Add new amount to total
+    }
+    else{ // Deselecting
+      total.amt[matIndex] -= changedSrc.amt[matIndex]; // Subtract amount from total
+      changedSrc.amt[matIndex] = 0; // Set source amount to 0
+    }
+
     // Update roster storage data (which material is set depends on matIndex)
-    setRosterMat(matIndex ? mat2! : mat, totalSource.qty[matIndex]);
+    setRosterMat(matIndex ? mat2! : mat, total.amt[matIndex]);
 
     // Changed source is combo selection chest, update source's other material
-    if (changedSource.selectionChest){
+    if (changedSrc.selectionChest){
       let otherIndex: number = (matIndex == 0) ? 1 : 0
 
       // Set source's other material "selected" field to opposite value
-      changedSource.selected![otherIndex] = !e.target.checked;
+      changedSrc.selected![otherIndex] = !e.target.checked;
 
-      // Update total quantity by -sign * qty * mult
-      totalSource.qty[otherIndex] -= sign * (changedSource.qty[otherIndex] * changedSource.mult[otherIndex]);
+      // Update source and total amounts based on selecting or deselecting
+      if (!e.target.checked){ // Selecting (by deselecting other)
+        updateAmt(changedSrc, otherIndex); // Update source amount
+        total.amt[otherIndex] += changedSrc.amt[otherIndex]; // Add new amount to total
+      }
+      else{ // Deselecting (by selecting other)
+        total.amt[otherIndex] -= changedSrc.amt[otherIndex]; // Subtract amount from total
+        changedSrc.amt[otherIndex] = 0; // Set source amount to 0
+      }
+
       // Update roster storage data (which material is set depends on otherIndex)
-      setRosterMat(otherIndex ? mat2! : mat, totalSource.qty[otherIndex]);
+      setRosterMat(otherIndex ? mat2! : mat, total.amt[otherIndex]);
     }
 
     updateTable([
       ...table.slice(0, index), // Sources before specified index
-      <SourceRow key={changedSource.label} index={index}/>,
+      <SourceRow key={changedSrc.label} index={index}/>,
       ...table.slice(index + 1, -1), // Sources after specified index
       <SourceRow total key="total" index={sources.length - 1}/>,
     ]); // Only re-renders the row being updated and the total row
@@ -164,8 +174,8 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
     // Material 1 amount field
     cells.push(
       <Cell bold key="amt"
-        // If src.selected defined and false, amount = 0, else qty * mult
-        value={(src.selected && !src.selected[0]) ? 0 : src.qty[0] * src.mult[0]}
+        // If src.selected defined and false, amount = 0, else src.amt
+        value={(src.selected && !src.selected[0]) ? 0 : src.amt[0]}
       />
     );
 
@@ -192,8 +202,8 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
       // Material 2 amount field
       cells.push(
         <Cell bold key="amt2" className="mat2"
-          // If src.selected defined and false, amount = 0, else qty * mult
-          value={(src.selected && !src.selected[1]) ? 0 : src.qty[1] * src.mult[1]}
+          // If src.selected defined and false, amount = 0, else src.amt
+          value={(src.selected && !src.selected[1]) ? 0 : src.amt[1]}
         />
       );
     }
@@ -222,4 +232,21 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
       </Table>
     </Col>
   );
+}
+
+/** Given src and matIndex, update src.amt[matIndex]. */
+function updateAmt(src: Source, matIndex: number){
+  // If src.selected is defined and false, source is inactive
+  if (src.selected && !src.selected[matIndex]){
+    src.amt[matIndex] = 0; // Set amount to 0
+    return;
+  }
+
+  let amt: number = src.qty[matIndex]; // Start from source quantity
+  if (src.div) // Apply floor divisor if present
+    amt = Math.floor(amt / src.div);
+  if (src.mult) // Apply multiplier if present
+    amt *= src.mult[matIndex];
+
+  src.amt[matIndex] = amt; // Update source amount
 }
