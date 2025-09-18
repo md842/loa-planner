@@ -97,7 +97,7 @@ export function expandRosterGoals(charIndex: number, expand: boolean){
 export function saveChars(){
   let temp: string = JSON.stringify(chars);
   totalSaved += temp.length;
-  console.log("Saved", temp.length, "B,", totalSaved, "B total");
+  console.log("Character data: Saved", temp.length, "B,", totalSaved, "B total");
 
   window.localStorage.setItem('chars', temp);
 }
@@ -106,7 +106,7 @@ export function saveChars(){
 export function saveRosterGoals(){
   let temp: string = JSON.stringify(rosterGoals);
   totalSaved += temp.length;
-  console.log("Saved", temp.length, "B,", totalSaved, "B total");
+  console.log("Character data: Saved", temp.length, "B,", totalSaved, "B total");
 
   window.localStorage.setItem('rosterGoals', temp);
 }

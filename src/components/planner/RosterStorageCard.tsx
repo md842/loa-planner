@@ -6,7 +6,7 @@ import {Cell} from './tables/Cell';
 
 import {type Materials, type Source} from '../core/types';
 import {sanitizeInput} from './tables/common';
-import {getSources, setRosterMat} from '../core/roster-storage-data';
+import {getSources, setRosterMat, saveSources} from '../core/roster-storage-data';
 
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
@@ -24,6 +24,9 @@ interface RosterStorageCardProps{
   image2?: string;
   mat2?: keyof Materials; // The second material associated with this table
 }
+
+// If true, changes will be committed by saveRosterMats() on next onBlur event.
+let changed: boolean = false;
 
 /** Constructs the "Goals" section of the parent table. */
 export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
@@ -68,6 +71,8 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
 
       // Update roster storage data (which material is set depends on matIndex)
       setRosterMat(matIndex ? mat2! : mat, totalSource.qty[matIndex]);
+
+      changed = true; // Roster storage data will be saved on next focus out
     } // Reject non-numeric input outside of name field (do nothing)
   }
 
@@ -105,6 +110,8 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
       ...table.slice(index + 1, -1), // Sources after specified index
       <SourceRow total key="total" index={sources.length - 1}/>,
     ]); // Only re-renders the row being updated and the total row
+
+    saveSources(mat); // Save roster storage data for specified mat
   }
 
   /**
@@ -124,7 +131,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
 
     cells.push( // Material 1 quantity field
       <Cell key="qty" value={(total) ? undefined : src.qty[0]}
-        // onBlur={() => {saveChanges(changed); changed = false}}
+        onBlur={total ? undefined : () => {if (changed){saveSources(mat)}; changed = false}}
         onChange={total ? undefined : (e) => handleChange(e, index, 0)}
       /> // Input disabled if total
     );
@@ -152,7 +159,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
     if (mat2){ // If combo table, push cells for second material
       cells.push( // Material 2 quantity field
         <Cell key="qty2" className="mat2" value={(total) ? undefined : src.qty[1]}
-          // onBlur={() => {saveChanges(changed); changed = false}}
+          onBlur={total ? undefined : () => {if (changed){saveSources(mat)}; changed = false}}
           onChange={(total || src.selectionChest) ? undefined : (e) => handleChange(e, index, 1)}
         /> // Input disabled if total or selection chest (use material 1 field)
       );

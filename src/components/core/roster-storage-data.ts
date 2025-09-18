@@ -1,10 +1,9 @@
 import {type Materials, initMaterials, type Source} from './types';
 
 // Initialize roster storage data at module level
-let rosterMats: Materials = initMaterials();
-
-// Hardcoded placeholder sources
-let sources: {[index: string]: Source[]} = {
+const rosterMats: Materials = initMaterials();
+const sources: {[index: string]: Source[]} = {}
+const defaultSources: {[index: string]: Source[]} = {
   "silver": [
     {label: "Roster-bound", qty: [0], mult: [1]},
     {label: "Total", qty: [0], mult: [1]}
@@ -51,17 +50,37 @@ let sources: {[index: string]: Source[]} = {
   ],
 };
 
-rosterMats = { // Uses placeholder values for now
-  silver: 645120369,
-  gold: 3687289,
-  shards: 2652000,
-  fusions: 11873,
-  reds: 80569,
-  blues: 1063845,
-  leaps: 25780,
-  redSolars: 77,
-  blueSolars: 3957
+for (let [key] of Object.entries(rosterMats)){
+  /* blues and blueSolars are combo materials with their source data stored in
+     reds and redSolars respectively; don't read source data for these keys. */
+  if (key != "blues" && key != "blueSolars"){
+    // Attempt to load data from local storage
+    const storedSources = window.localStorage.getItem('src_' + key);
+
+    if (storedSources) // Source data exists in local storage
+      sources[key] = JSON.parse(storedSources); // Use local stored data
+    else // Source data does not exist in local storage
+      sources[key] = defaultSources[key]; // Use default data
+
+    // Set rosterMats value to total quantity for this key
+    rosterMats[key] = sources[key][sources[key].length - 1].qty[0];
+  }
+  /* Due to the structure of the Materials object, reds always initialize
+     before blues, and likewise for redSolars and blueSolars. */
+  else if (key == "blues") // Set rosterMats value to total blues quantity
+    rosterMats[key] = sources["reds"][sources["reds"].length - 1].qty[1];
+  else // Set rosterMats value to total blueSolars quantity
+    rosterMats[key] = sources["redSolars"][sources["redSolars"].length - 1].qty[1];
 }
+
+console.log("Initialized roster materials:", rosterMats);
+
+
+/* I have some concerns about how much data is being saved with the current
+   implementations, so tracking how much is being saved over the course of a
+   testing session. */
+let totalSaved: number = 0; // This can be deleted later.
+
 
 /** Returns the contents of rosterMats. */
 export function getRosterMats(): Materials{
@@ -76,5 +95,13 @@ export function getSources(mat: keyof Materials): Source[]{
 /** Sets roster storage data for the specified material and quantity. */
 export function setRosterMat(mat: keyof Materials, quantity: number){
   rosterMats[mat] = quantity;
-  console.log("rosterMats:", rosterMats);
+}
+
+/** Saves current roster storage data for specified mat to local storage. */
+export function saveSources(mat: keyof Materials){
+  let temp: string = JSON.stringify(sources[mat]);
+  totalSaved += temp.length;
+  console.log("Roster storage data: Saved", temp.length, "B,", totalSaved, "B total");
+
+  window.localStorage.setItem('src_' + mat, temp);
 }
