@@ -8,6 +8,7 @@ import {type Materials, type Source} from '../core/types';
 import {sanitizeInput} from './tables/common';
 import {getSources, setRosterMat} from '../core/roster-storage-data';
 
+import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 
@@ -15,16 +16,18 @@ import Table from 'react-bootstrap/Table';
 interface RosterStorageCardProps{
   friendlyName: string; // Displayed as the table name (top-left corner)
   color: string; // The color used for this table
+  image: string;
   mat: keyof Materials; // The material associated with this table
 
   // If defined, this RosterStorageTable is a combo table (e.g., reds/blues)
   color2?: string; // The color used for the second material area of this table
+  image2?: string;
   mat2?: keyof Materials; // The second material associated with this table
 }
 
 /** Constructs the "Goals" section of the parent table. */
 export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
-  let {friendlyName, color, mat, color2, mat2} = props; // Unpack props
+  let {friendlyName, color, image, mat, color2, image2, mat2} = props; // Unpack props
 
   let sources = getSources(mat); // Get sources for this table's material(s)
 
@@ -178,16 +181,16 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
   }
 
   return(
-    <div style={{"--table-color": color, "--mat2-color": color2} as React.CSSProperties}>
+    <Col style={{"--table-color": color, "--mat2-color": color2} as React.CSSProperties}>
       <Table hover>
         <thead>
           <tr>
             <th>{friendlyName}</th>
-            <th>Image Placeholder</th>
+            <th><img src={image}/></th>
             <th>Use?</th>
             <th>Amount</th>
             {mat2 && <>
-              <th className="mat2">Image 2 Placeholder</th>
+              <th className="mat2"><img src={image2}/></th>
               <th className="mat2">Use?</th>
               <th className="mat2">Amount</th>
             </>}
@@ -197,6 +200,6 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
           {table}
         </tbody>
       </Table>
-    </div>
+    </Col>
   );
 }

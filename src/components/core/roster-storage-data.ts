@@ -5,6 +5,15 @@ let rosterMats: Materials = initMaterials();
 
 // Hardcoded placeholder sources
 let sources: {[index: string]: Source[]} = {
+  "silver": [
+    {label: "Roster-bound", qty: [0], mult: [1]},
+    {label: "Total", qty: [0], mult: [1]}
+  ],
+  "gold": [
+    {label: "Tradable", qty: [0], selected: [true], mult: [1]},
+    {label: "Roster-bound", qty: [0], mult: [1]},
+    {label: "Total", qty: [0], mult: [1]}
+  ],
   "fusions": [
     {label: "Tradable", qty: [0], selected: [true], mult: [1]},
     {label: "Other", qty: [0], mult: [1]},
