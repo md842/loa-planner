@@ -1,8 +1,9 @@
 import {type Materials, initMaterials, type Source} from './types';
 
-// Initialize roster storage data at module level
+// Declare roster storage data structures at module level
 const rosterMats: Materials = initMaterials();
 const sources: {[index: string]: Source[]} = {}
+
 const defaultSources: {[index: string]: Source[]} = {
   "silver": [
     {label: "Roster-bound", qty: [0], mult: [1]},
@@ -50,6 +51,7 @@ const defaultSources: {[index: string]: Source[]} = {
   ],
 };
 
+// Initialize roster storage data
 for (let [key] of Object.entries(rosterMats)){
   /* blues and blueSolars are combo materials with their source data stored in
      reds and redSolars respectively; don't read source data for these keys. */
@@ -82,12 +84,12 @@ console.log("Initialized roster materials:", rosterMats);
 let totalSaved: number = 0; // This can be deleted later.
 
 
-/** Returns the contents of rosterMats. */
+/** Returns a const reference to rosterMats. */
 export function getRosterMats(): Materials{
   return rosterMats;
 }
 
-/** Returns the stored source data for the specified material. */
+/** Returns a const reference to stored source data for specified mat. */
 export function getSources(mat: keyof Materials): Source[]{
   return sources[mat];
 }

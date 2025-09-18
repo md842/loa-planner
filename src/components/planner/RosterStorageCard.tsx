@@ -32,7 +32,8 @@ let changed: boolean = false;
 export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
   let {friendlyName, color, image, mat, color2, image2, mat2} = props; // Unpack props
 
-  let sources = getSources(mat); // Get sources for this table's material(s)
+  // Get const references to sources for table material(s) and rosterMats
+  const sources = getSources(mat);
 
   // Table state variable for materials sources.
   const [table, updateTable] = useState(initTable);
@@ -55,12 +56,24 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
     let totalSource: Source = sources[sources.length - 1];
     
     if (sanitizeInput(e, prevValue)){ // Valid numeric input
-      // Update total quantity with diff * multiplier
-      totalSource.qty[matIndex] += (input - prevValue) * changedSource.mult[matIndex];
       changedSource.qty[matIndex] = input; // Update source quantity
-      if (changedSource.selectionChest) // Changed source is a selection chest
-        // Set source's material 2 quantity equal to material 1 quantity
-        changedSource.qty[1] = input;
+
+      // If source is active (selected is true or undefined = always active)
+      if (!changedSource.selected || changedSource.selected[matIndex])
+        // Update total quantity with diff * multiplier
+        totalSource.qty[matIndex] += (input - prevValue) * changedSource.mult[matIndex];
+
+      if (changedSource.selectionChest){ // Changed source is a selection chest
+        // Note: For selection chest, matIndex always 0, mat2 always defined
+        changedSource.qty[1] = input; // Synchronize quantity
+        
+        if (changedSource.selected![1]) // If material 2 is active
+          // Update total quantity with diff * multiplier
+          totalSource.qty[1] += (input - prevValue) * changedSource.mult[1];
+
+        // Update roster storage data for material 2
+        setRosterMat(mat2!, totalSource.qty[1]);
+      }
 
       updateTable([
         ...table.slice(0, index), // Sources before specified index
