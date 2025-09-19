@@ -1,3 +1,5 @@
+import {useState} from 'react';
+
 import {RosterStorageCard} from '../../components/planner/RosterStorageCard';
 
 import gold from '../../assets/gold.png';
@@ -14,6 +16,9 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 
 export function RosterStorageView(){
+  const [dailyChests, setDailyChestQty] = useState([] as number[]);
+  const [dailyChestSel, setDailyChestSel] = useState([] as boolean[]);
+
 	return(
     <main>
       <Container fluid="md">
@@ -43,12 +48,20 @@ export function RosterStorageView(){
             color="#E47"
             image={t4_shard}
             mat="shards"
+            // Controlling table: controls daily chests in "leaps" table
+            setDailyChestQty={(qty: number) => setDailyChestQty([qty])}
+            dailyChestSel={dailyChestSel}
+            setDailyChestSel={(controllingTable: boolean) => setDailyChestSel([controllingTable])}
           />
           <RosterStorageCard
             friendlyName="Leapstones"
             color="#D36"
             image={t4_leap}
             mat="leaps"
+            // Controlled table: daily chests controlled by "shards" table
+            dailyChests={dailyChests}
+            dailyChestSel={dailyChestSel}
+            setDailyChestSel={(controllingTable: boolean) => setDailyChestSel([controllingTable])}
           />
         </Row>
         <Row>
