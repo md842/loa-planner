@@ -57,15 +57,8 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
   // Daily chest synchronization signal handlers
   useEffect(() => { // Controlled table quantity update hook
     if (dailyChests && dailyChests.length){ // Received non-empty signal
-      let signal: number = dailyChests[0]; // Variables for readability
-      let total: Source = sources[sources.length - 1];
-
-      sources[0].qty[0] = signal; // Update source quantity to signal value
-
-      total.amt[0] -= sources[0].amt[0]; // Subtract old amount from total
-      updateAmt(sources[0], 0); // Update source amount
-      total.amt[0] += sources[0].amt[0]; // Add new amount to total
-      setRosterMat(mat, total.amt[0]); // Update roster storage data
+      sources[0].qty = dailyChests; // Update source quantity to signal value
+      updateAmts(sources[0], sources[sources.length - 1], 0, mat);
       saveSources(mat); // Save roster storage data for specified mat
 
       updateTable([
@@ -78,16 +71,10 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
 
   useEffect(() => { // Controlling/controlled table selected update hook
     if (dailyChestSel && dailyChestSel.length){ // Received non-empty signal
-      let signal: boolean = dailyChestSel[0]; // Variables for readability
-      let total: Source = sources[sources.length - 1];
-
       // Controlling table sets selected == signal, controlled table sets selected == !signal
-      sources[0].selected![0] = (((setDailyChestQty) && signal) || ((!setDailyChestQty) && !signal));
-
-      total.amt[0] -= sources[0].amt[0]; // Subtract old amount from total
-      updateAmt(sources[0], 0); // Update source amount
-      total.amt[0] += sources[0].amt[0]; // Add new amount to total
-      setRosterMat(mat, total.amt[0]); // Update roster storage data
+      sources[0].selected![0] = (((setDailyChestQty) && dailyChestSel[0]) ||
+                                 ((!setDailyChestQty) && !dailyChestSel[0]));
+      updateAmts(sources[0], sources[sources.length - 1], 0, mat);
       saveSources(mat); // Save roster storage data for specified mat
 
       updateTable([
@@ -110,28 +97,17 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
   }
 
   function handleChange(e: ChangeEvent<HTMLInputElement>, index: number, matIndex: number){
-    let input: number = Number(e.target.value); // Variables for readability
+    let input: number = Number(e.target.value); // For readability
     let changedSrc: Source = sources[index];
-    let total: Source = sources[sources.length - 1];
     
     if (sanitizeInput(e, sources[index].qty[matIndex])){ // Valid numeric input
-      total.amt[matIndex] -= changedSrc.amt[matIndex]; // Subtract old amount from total
       changedSrc.qty[matIndex] = input; // Update source quantity
-      updateAmt(changedSrc, matIndex); // Update source amount
-      total.amt[matIndex] += changedSrc.amt[matIndex]; // Add new amount to total
-
-      // Update roster storage data (which material is set depends on matIndex)
-      setRosterMat(matIndex ? mat2! : mat, total.amt[matIndex]);
-
+      updateAmts(changedSrc, sources[sources.length - 1], matIndex, mat, mat2);
+      
       if (changedSrc.selectionChest){ // Changed source is a selection chest
         // Note: For selection chest, matIndex always 0, mat2 always defined
-        total.amt[1] -= changedSrc.amt[1]; // Subtract old amount from total
         changedSrc.qty[1] = input; // Update (synchronize) source quantity
-        updateAmt(changedSrc, 1); // Update source amount
-        total.amt[1] += changedSrc.amt[1]; // Add new amount to total
-
-        // Update roster storage data for material 2
-        setRosterMat(mat2!, total.amt[1]);
+        updateAmts(changedSrc, sources[sources.length - 1], 1, mat, mat2);
       }
 
       updateTable([
@@ -141,13 +117,13 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
         <SourceRow total key="total" index={sources.length - 1}/>,
       ]); // Only re-renders the row being updated and the total row
 
-      changed = true; // Roster storage data will be saved on next focus out
-
       /* Special case: daily chests (source index 0) synced between tables.
          Signal received by controlled table only, so send signal at end of
          handleChange of controlling table. */
       if (setDailyChestQty && index == 0)
         setDailyChestQty(changedSrc.qty[0]); // Sync quantity fields
+
+      changed = true; // Roster storage data will be saved on next focus out
     } // Reject non-numeric input outside of name field (do nothing)
   }
 
@@ -160,46 +136,19 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
       setDailyChestSel((setDailyChestQty) && e.target.checked || (!setDailyChestQty) && !e.target.checked);
       return; // Override handleChecked by returning early
     }
-
-    let changedSrc: Source = sources[index]; // Variables for readability
-    let total: Source = sources[sources.length - 1];
+    let changedSrc: Source = sources[index]; // For readability
 
     /* Update changedSrc.selected (guaranteed to be defined in
        handleChecked, otherwise checkboxes would not render) */
     changedSrc.selected![matIndex] = e.target.checked;
-
-    // Update source and total amounts based on selecting or deselecting
-    if (e.target.checked){ // Selecting
-      updateAmt(changedSrc, matIndex); // Update source amount
-      total.amt[matIndex] += changedSrc.amt[matIndex]; // Add new amount to total
-    }
-    else{ // Deselecting
-      total.amt[matIndex] -= changedSrc.amt[matIndex]; // Subtract amount from total
-      changedSrc.amt[matIndex] = 0; // Set source amount to 0
-    }
-
-    // Update roster storage data (which material is set depends on matIndex)
-    setRosterMat(matIndex ? mat2! : mat, total.amt[matIndex]);
+    updateAmts(changedSrc, sources[sources.length - 1], matIndex, mat, mat2);
 
     // Changed source is combo selection chest, update source's other material
     if (changedSrc.selectionChest){
       let otherIndex: number = (matIndex == 0) ? 1 : 0
-
-      // Set source's other material "selected" field to opposite value
+      // Set other material's "selected" field to opposite value
       changedSrc.selected![otherIndex] = !e.target.checked;
-
-      // Update source and total amounts based on selecting or deselecting
-      if (!e.target.checked){ // Selecting (by deselecting other)
-        updateAmt(changedSrc, otherIndex); // Update source amount
-        total.amt[otherIndex] += changedSrc.amt[otherIndex]; // Add new amount to total
-      }
-      else{ // Deselecting (by selecting other)
-        total.amt[otherIndex] -= changedSrc.amt[otherIndex]; // Subtract amount from total
-        changedSrc.amt[otherIndex] = 0; // Set source amount to 0
-      }
-
-      // Update roster storage data (which material is set depends on otherIndex)
-      setRosterMat(otherIndex ? mat2! : mat, total.amt[otherIndex]);
+      updateAmts(changedSrc, sources[sources.length - 1], otherIndex, mat, mat2);
     }
 
     updateTable([
@@ -220,7 +169,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
    */
   function SourceRow(props: {total?: boolean, index: number}): JSX.Element{
     let {total, index} = props; // Unpack props
-    let src: Source = sources[index]; // Variable for readability
+    let src: Source = sources[index]; // For readability
     let cells: JSX.Element[] = []; // Initialize table row for this source
 
     console.log(mat, "SourceRow", index, "rendering");
@@ -247,12 +196,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
       </td>);
 
     // Material 1 amount field
-    cells.push(
-      <Cell bold key="amt"
-        // If src.selected defined and false, amount = 0, else src.amt
-        value={(src.selected && !src.selected[0]) ? 0 : src.amt[0]}
-      />
-    );
+    cells.push(<Cell bold key="amt" value={src.amt[0]}/>);
 
     if (mat2){ // If combo table, push cells for second material
       cells.push( // Material 2 quantity field
@@ -275,12 +219,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
         </td>);
 
       // Material 2 amount field
-      cells.push(
-        <Cell bold key="amt2" className="mat2"
-          // If src.selected defined and false, amount = 0, else src.amt
-          value={(src.selected && !src.selected[1]) ? 0 : src.amt[1]}
-        />
-      );
+      cells.push(<Cell bold key="amt2" className="mat2" value={src.amt[1]}/>);
     }
     return <tr>{cells}</tr>;
   }
@@ -310,19 +249,22 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
 }
 
 
-/** Given src and matIndex, update src.amt[matIndex]. */
-function updateAmt(src: Source, matIndex: number){
-  // If src.selected is defined and false, source is inactive
-  if (src.selected && !src.selected[matIndex]){
-    src.amt[matIndex] = 0; // Set amount to 0
-    return;
+/** Update source amount, total amount, and rosterMats according to src. */
+  function updateAmts(src: Source, total: Source, matIndex: number, mat: keyof Materials, mat2?: keyof Materials){
+    total.amt[matIndex] -= src.amt[matIndex]; // Subtract old amount from total
+
+    if (src.selected && !src.selected[matIndex]) // Source is inactive
+      src.amt[matIndex] = 0; // Set amount to 0
+    else{ // Source is active, calculate new src.amt and add to total.amt
+      let amt: number = src.qty[matIndex]; // Start from source quantity
+      if (src.div) // Apply floor divisor if present
+        amt = Math.floor(amt / src.div);
+      if (src.mult) // Apply multiplier if present
+        amt *= src.mult[matIndex];
+      src.amt[matIndex] = amt; // Update source amount
+      total.amt[matIndex] += amt; // Add new amount to total
+    }
+
+    // Update roster storage data (which material is set depends on matIndex)
+    setRosterMat(matIndex ? mat2! : mat, total.amt[matIndex]);
   }
-
-  let amt: number = src.qty[matIndex]; // Start from source quantity
-  if (src.div) // Apply floor divisor if present
-    amt = Math.floor(amt / src.div);
-  if (src.mult) // Apply multiplier if present
-    amt *= src.mult[matIndex];
-
-  src.amt[matIndex] = amt; // Update source amount
-}
