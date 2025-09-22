@@ -3,12 +3,12 @@ import './RosterStorageCard.css';
 import {type ChangeEvent, type JSX, useEffect, useState} from 'react';
 
 import {Cell} from './tables/Cell';
+import {SortableList} from '../Sortable/SortableList';
 
-import {type Materials, type Source} from '../core/types';
+import {type Materials, type Source, findSource} from '../core/types';
 import {sanitizeInput} from './tables/common';
-import {getSources, setRosterMat, saveSources} from '../core/roster-storage-data';
+import {getPresetSources, getSources, setRosterMat, saveSources} from '../core/roster-storage-data';
 
-import Accordion from 'react-bootstrap/Accordion';
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
@@ -55,6 +55,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
 
   // Get const references to sources for this table's material(s)
   const sources = getSources(mat);
+  const presetSources = getPresetSources(mat);
 
   const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
 
@@ -96,7 +97,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
     let table: JSX.Element[] = []; // Initialize table
     
     for (let i = 0; i < sources.length - 1; i++) // Build row for each source
-      table.push(<SourceRow key={sources[i].label} index={i}/>);
+      table.push(<SourceRow key={sources[i].id} index={i}/>);
 
     // Build the total row and push it to the table
     table.push(<SourceRow total key="total" index={sources.length - 1}/>);
@@ -119,7 +120,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
 
       updateTable([
         ...table.slice(0, index), // Sources before specified index
-        <SourceRow key={changedSrc.label} index={index}/>,
+        <SourceRow key={changedSrc.id} index={index}/>,
         ...table.slice(index + 1, -1), // Sources after specified index
         <SourceRow total key="total" index={sources.length - 1}/>,
       ]); // Only re-renders the row being updated and the total row
@@ -160,7 +161,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
 
     updateTable([
       ...table.slice(0, index), // Sources before specified index
-      <SourceRow key={changedSrc.label} index={index}/>,
+      <SourceRow key={changedSrc.id} index={index}/>,
       ...table.slice(index + 1, -1), // Sources after specified index
       <SourceRow total key="total" index={sources.length - 1}/>,
     ]); // Only re-renders the row being updated and the total row
@@ -181,7 +182,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
 
     console.log(mat, "SourceRow", index, "rendering");
 
-    cells.push(<Cell bold key="label" value={src.label}/>); // Source label
+    cells.push(<Cell bold key="label" value={src.id}/>); // Source label
 
     cells.push( // Material 1 quantity field
       <Cell key="qty" value={total ? undefined : src.qty[0]} // Empty if total
@@ -232,58 +233,101 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
   }
 
   function SettingsModal(){
-    const sourceOptions: Source[] = sources;
+    if (!configurable) // Only render for configurable tables
+      return;
+
+    const [temp, setTemp] = useState(initTemp); // Stores uncommitted changes
+
+    function initTemp(): Source[]{ // temp state initializer function
+      return JSON.parse(JSON.stringify(sources.slice(0, -2))); // Deep copy sources
+    }
+
+    function handleDelete(index: number){
+      // Slice out specified index from temp
+      setTemp([...temp.slice(0, index), ...temp.slice(index + 1)]);
+    }
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>){
-      console.log("Event:", e);
+      e.preventDefault(); // Prevents refreshing page on form submission
+      console.log("handleSubmit called:", e);
+
+      // Extract form information
+      let target: HTMLFormElement = e.target as HTMLFormElement;
+      let preset: string = (target[0] as HTMLFormElement).value;
+      let custom: boolean = (target[1] as HTMLFormElement).checked;
+      //let custom_name: string = (target[2] as HTMLFormElement).value;
+
+      if (custom){ // TODO: Add custom source
+      }
+      else{ // Add preset source
+        let index: number = findSource(preset, presetSources);
+        if (index != -1) // Preset was found
+          setTemp([...temp, presetSources[index]]);
+        else // Preset was not found (most likely all presets already in temp)
+          console.log("Failed to add!");
+      }
+    }
+
+    function saveChanges(){
+      console.log("saveChanges() called. Temp sources:", temp);
       setModalVis(false); // Close modal
     }
 
     return(
       <Modal show={modalVis} centered>
         <Modal.Header>
-          <Modal.Title>Configure {friendlyName} Sources</Modal.Title>
+          <Modal.Title>Configure Sources of {friendlyName}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form onSubmit={(e) => handleSubmit(e)}>
-            <Accordion className="mb-3" defaultActiveKey="0">
-              <Accordion.Item eventKey="0">
-                <Accordion.Header>Configure Existing Sources</Accordion.Header>
-                <Accordion.Body>
-                  { /* Populate sources dropdown with sourceOptions */
-                  sourceOptions.map((src: Source) => {
-                    return(<p key={src.label}>{src.label}</p>);
-                  })}
-                </Accordion.Body>
-              </Accordion.Item>
-              <Accordion.Item eventKey="1">
-                <Accordion.Header>Add Preset Source</Accordion.Header>
-                <Accordion.Body>
-                  <InputGroup className="mb-3">
-                    <Form.Select defaultValue={sources[0].label}>
-                      { /* Populate sources dropdown with sourceOptions */
-                      sourceOptions.map((src: Source) => {
-                        return(<option key={src.label} value={src.label}>{src.label}</option>);
-                      })}
-                    </Form.Select>
-                    <Button variant="primary">Add</Button>
-                  </InputGroup>
-                </Accordion.Body>
-              </Accordion.Item>
-              <Accordion.Item eventKey="2">
-                <Accordion.Header>Add Custom Source</Accordion.Header>
-                <Accordion.Body>
-                  <InputGroup className="mb-3">
-                    <InputGroup.Text id="basic-addon3">Name</InputGroup.Text>
-                    <Form.Control/>
-                  </InputGroup>
-                </Accordion.Body>
-              </Accordion.Item>
-            </Accordion>
+          <p>Drag and drop sources to reorder them, or click the trash button to delete them.</p>
+          <SortableList
+            items={temp}
+            onChange={setTemp}
+            renderItem={(item: Source, index: number) => (
+              <SortableList.Item id={item.id}>
+                {item.id}
+                <div>
+                  <SortableList.DeleteButton handleDelete={handleDelete} index={index}/>
+                  <SortableList.DragHandle/>
+                </div>
+              </SortableList.Item>
+            )}
+          />
 
-            <Button variant="primary" onClick={() => setModalVis(false)}>Close</Button>
+          <hr/>
+
+          <Form onSubmit={(e) => handleSubmit(e)}>
+            <p>Add a new source using the form below.</p>
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon3">Preset Sources</InputGroup.Text>
+              <Form.Select defaultValue={sources[0].id}>
+                { /* Populate sources dropdown with sourceOptions */
+                presetSources.map((src: Source) => {
+                  if (findSource(src.id, temp) == -1)
+                    return(<option key={src.id} value={src.id}>{src.id}</option>);
+                })}
+              </Form.Select>
+            </InputGroup>
+
+            <Form.Check
+              className="mb-3"
+              type="checkbox"
+              label="Add custom source"
+              defaultChecked={false}
+            />
+
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon3">Name</InputGroup.Text>
+              <Form.Control/>
+            </InputGroup>
+
+            <Button className="d-block mx-auto" variant="primary" type="submit">Add</Button>
           </Form>
         </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={saveChanges}>Save</Button>
+          <Button variant="primary" onClick={() => setModalVis(false)}>Cancel</Button>
+        </Modal.Footer>
       </Modal>
     );
   }

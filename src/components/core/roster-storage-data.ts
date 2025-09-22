@@ -6,74 +6,114 @@ const sources: {[index: string]: Source[]} = {}
 
 const defaultSources: {[index: string]: Source[]} = {
   "silver": [
-    {label: "Roster-bound", qty: [0], amt: [0]},
-    {label: "Total", qty: [0], amt: [0]}
+    {id: "Roster-bound", qty: [0], amt: [0]},
+    {id: "Total", qty: [0], amt: [0]}
   ],
   "gold": [
-    {label: "Tradable", qty: [0], selected: [true], amt: [0]},
-    {label: "Roster-bound", qty: [0], amt: [0]},
-    {label: "Total", qty: [0], amt: [0]}
+    {id: "Tradable", qty: [0], selected: [true], amt: [0]},
+    {id: "Roster-bound", qty: [0], amt: [0]},
+    {id: "Total", qty: [0], amt: [0]}
   ],
   "fusions": [
-    {label: "Tradable", qty: [0], selected: [true], amt: [0]},
-    {label: "Product Inventory", qty: [0], mult: [50], amt: [0]},
-    {label: "Blue Crystals", qty: [0], selected: [true], mult: [50], div: 65, amt: [0]},
-    {label: "Craftable", qty: [0], selected: [true], mult: [10], amt: [0]},
-    {label: "Farm Chest", qty: [0], mult: [10], amt: [0]},
-    {label: "Other", qty: [0], amt: [0]},
-    {label: "Total", qty: [0], amt: [0]}
+    {id: "Tradable", qty: [0], selected: [true], amt: [0]},
+    {id: "Product Inventory", qty: [0], mult: [50], amt: [0]},
+    {id: "Blue Crystals", qty: [0], selected: [true], mult: [50], div: 65, amt: [0]},
+    {id: "Craftable", qty: [0], selected: [true], mult: [10], amt: [0]},
+    {id: "Farm Chest", qty: [0], mult: [10], amt: [0]},
+    {id: "Other", qty: [0], amt: [0]},
+    {id: "Total", qty: [0], amt: [0]}
   ],
   "shards": [
-    {label: "Daily Chest", qty: [0], selected: [true], mult: [1000], amt: [0]},
-    {label: "Tradable (L)", qty: [0], selected: [true], mult: [3000], amt: [0]},
-    {label: "Tradable (M)", qty: [0], selected: [true], mult: [2000], amt: [0]},
-    {label: "Tradable (S)", qty: [0], selected: [true], mult: [1000], amt: [0]},
-    {label: "Roster-bound (L)", qty: [0], mult: [3000], amt: [0]},
-    {label: "Roster-bound (M)", qty: [0], mult: [2000], amt: [0]},
-    {label: "Roster-bound (S)", qty: [0], mult: [1000], amt: [0]},
-    {label: "Event Chest (M)", qty: [0], mult: [2000], amt: [0]},
-    {label: "Other", qty: [0], amt: [0]},
-    {label: "Total", qty: [0], amt: [0]}
+    {id: "Daily Chest", qty: [0], selected: [true], mult: [1000], amt: [0]},
+    {id: "Tradable (L)", qty: [0], selected: [true], mult: [3000], amt: [0]},
+    {id: "Roster-bound (L)", qty: [0], mult: [3000], amt: [0]},
+    {id: "Event Chest (M)", qty: [0], mult: [2000], amt: [0]},
+    {id: "Other", qty: [0], amt: [0]},
+    {id: "Total", qty: [0], amt: [0]}
   ],
   "leaps": [
-    {label: "Daily Chest", qty: [0], selected: [false], mult: [2], amt: [0]},
-    {label: "Tradable 1640", qty: [0], selected: [true], amt: [0]},
-    {label: "Tradable 1580", qty: [0], selected: [true], div: 5, amt: [0]},
-    {label: "Tradable 1490", qty: [0], selected: [true], div: 25, amt: [0]},
-    {label: "Tradable 1250", qty: [0], selected: [true], div: 125, amt: [0]},
-    {label: "Event Chest (x5)", qty: [0], mult: [5], amt: [0]},
-    {label: "Other", qty: [0], amt: [0]},
-    {label: "Total", qty: [0], amt: [0]}
+    {id: "Daily Chest", qty: [0], selected: [false], mult: [2], amt: [0]},
+    {id: "Tradable 1640", qty: [0], selected: [true], amt: [0]},
+    {id: "Tradable 1580", qty: [0], selected: [true], div: 5, amt: [0]},
+    {id: "Event Chest (x5)", qty: [0], mult: [5], amt: [0]},
+    {id: "Other", qty: [0], amt: [0]},
+    {id: "Total", qty: [0], amt: [0]}
   ],
   "reds": [
-    {label: "Daily Chest",
+    {id: "Daily Chest",
       qty: [0, 0], selected: [true, false], mult: [40, 80], selectionChest: true, amt: [0, 0]},
-    {label: "Tradable 1640",
+    {id: "Tradable 1640",
       qty: [0, 0], selected: [true, true], amt: [0, 0]},
-    {label: "Tradable 1580",
+    {id: "Tradable 1580",
       qty: [0, 0], selected: [true, true], div: 5, amt: [0, 0]},
-    {label: "Tradable 1490",
-      qty: [0, 0], selected: [true, true], div: 25, amt: [0, 0]},
-    {label: "Tradable 1250",
-      qty: [0, 0], selected: [true, true], div: 125, amt: [0, 0]},
-    {label: "75x Pouch",
+    {id: "75x Pouch",
       qty: [0, 0], mult: [75, 75], amt: [0, 0]},
-    {label: "Other",
+    {id: "Other",
       qty: [0, 0], amt: [0, 0]},
-    {label: "Total",
+    {id: "Total",
       qty: [0, 0], amt: [0, 0]},
   ],
   "redSolars": [
-    {label: "Daily Chest",
+    {id: "Daily Chest",
       qty: [0, 0], selected: [true, false], mult: [1, 3], selectionChest: true, amt: [0, 0]},
-    {label: "Tradable",
+    {id: "Tradable",
       qty: [0, 0], selected: [true, true], amt: [0, 0]},
-    {label: "3/9 Selection",
+    {id: "3/9 Selection",
       qty: [0, 0], selected: [true, false], mult: [3, 9], selectionChest: true, amt: [0, 0]},
-    {label: "Other",
+    {id: "Other",
       qty: [0, 0], amt: [0, 0]},
-    {label: "Total",
+    {id: "Total",
       qty: [0, 0], amt: [0, 0]},
+  ],
+};
+
+const presetSources: {[index: string]: Source[]} = {
+  "fusions": [
+    {id: "Tradable", qty: [0], selected: [true], amt: [0]},
+    {id: "Product Inventory", qty: [0], mult: [50], amt: [0]},
+    {id: "Blue Crystals", qty: [0], selected: [true], mult: [50], div: 65, amt: [0]},
+    {id: "Craftable", qty: [0], selected: [true], mult: [10], amt: [0]},
+    {id: "Farm Chest", qty: [0], mult: [10], amt: [0]},
+  ],
+  "shards": [
+    {id: "Daily Chest", qty: [0], selected: [true], mult: [1000], amt: [0]},
+    {id: "Tradable (L)", qty: [0], selected: [true], mult: [3000], amt: [0]},
+    {id: "Tradable (M)", qty: [0], selected: [true], mult: [2000], amt: [0]},
+    {id: "Tradable (S)", qty: [0], selected: [true], mult: [1000], amt: [0]},
+    {id: "Roster-bound (L)", qty: [0], mult: [3000], amt: [0]},
+    {id: "Roster-bound (M)", qty: [0], mult: [2000], amt: [0]},
+    {id: "Roster-bound (S)", qty: [0], mult: [1000], amt: [0]},
+    {id: "Event Chest (M)", qty: [0], mult: [2000], amt: [0]},
+  ],
+  "leaps": [
+    {id: "Daily Chest", qty: [0], selected: [false], mult: [2], amt: [0]},
+    {id: "Tradable 1640", qty: [0], selected: [true], amt: [0]},
+    {id: "Tradable 1580", qty: [0], selected: [true], div: 5, amt: [0]},
+    {id: "Tradable 1490", qty: [0], selected: [true], div: 25, amt: [0]},
+    {id: "Tradable 1250", qty: [0], selected: [true], div: 125, amt: [0]},
+    {id: "Event Chest (x5)", qty: [0], mult: [5], amt: [0]},
+  ],
+  "reds": [
+    {id: "Daily Chest",
+      qty: [0, 0], selected: [true, false], mult: [40, 80], selectionChest: true, amt: [0, 0]},
+    {id: "Tradable 1640",
+      qty: [0, 0], selected: [true, true], amt: [0, 0]},
+    {id: "Tradable 1580",
+      qty: [0, 0], selected: [true, true], div: 5, amt: [0, 0]},
+    {id: "Tradable 1490",
+      qty: [0, 0], selected: [true, true], div: 25, amt: [0, 0]},
+    {id: "Tradable 1250",
+      qty: [0, 0], selected: [true, true], div: 125, amt: [0, 0]},
+    {id: "75x Pouch",
+      qty: [0, 0], mult: [75, 75], amt: [0, 0]},
+  ],
+  "redSolars": [
+    {id: "Daily Chest",
+      qty: [0, 0], selected: [true, false], mult: [1, 3], selectionChest: true, amt: [0, 0]},
+    {id: "Tradable",
+      qty: [0, 0], selected: [true, true], amt: [0, 0]},
+    {id: "3/9 Selection",
+      qty: [0, 0], selected: [true, false], mult: [3, 9], selectionChest: true, amt: [0, 0]},
   ],
 };
 
@@ -109,6 +149,11 @@ console.log("Initialized roster materials:", rosterMats);
    testing session. */
 let totalSaved: number = 0; // This can be deleted later.
 
+
+/** Returns a const reference to preset source data for specified mat. */
+export function getPresetSources(mat: keyof Materials): Source[]{
+  return presetSources[mat];
+}
 
 /** Returns a const reference to rosterMats. */
 export function getRosterMats(): Materials{

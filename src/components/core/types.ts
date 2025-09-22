@@ -95,7 +95,7 @@ export function subMaterials(a: Materials, b: Materials): Materials{
 
 /** Roster storage table source data structure. */
 export interface Source{
-  label: string;
+  id: string;
 
   // If arrays have length 2, this Source is a combo source (e.g., reds/blues)
   qty: number[];
@@ -108,4 +108,9 @@ export interface Source{
   /* If true, this combo source is a selection chest; qty[0] == qty[1], and
      selecting material 1 will deselect material 2. */
   selectionChest?: boolean;
+}
+
+/** Returns the index of a Source id within a Source array. */
+export function findSource(idToFind: string, sources: Source[]){
+  return sources.findIndex(({id}) => idToFind === id);
 }

@@ -1,0 +1,19 @@
+.sortable-item{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75em;
+  border: 1px solid color-mix(in srgb, var(--bs-body-color) 50%, var(--bs-body-bg));
+  border-radius: 0.5em;
+}
+
+.sortable-item .btn{
+  color: var(--bs-body-color);
+  cursor: var(--cursor, pointer);
+  border: none;
+  background-color: unset;
+}
+
+.sortable-item .btn:hover{
+  background-color: rgba(0, 0, 0, 0.05);
+}
