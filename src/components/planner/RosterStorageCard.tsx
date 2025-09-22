@@ -8,12 +8,17 @@ import {type Materials, type Source} from '../core/types';
 import {sanitizeInput} from './tables/common';
 import {getSources, setRosterMat, saveSources} from '../core/roster-storage-data';
 
+import Accordion from 'react-bootstrap/Accordion';
+import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
+import InputGroup from 'react-bootstrap/InputGroup';
+import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
 
 /** Props interface for RosterStorageCard. */
 interface RosterStorageCardProps{
+  configurable?: boolean; // If defined, this table is configurable.
   friendlyName: string; // Displayed as the table name (top-left corner)
   color: string; // The color used for this table
   image: string; // The image used for this table
@@ -44,12 +49,14 @@ let changed: boolean = false;
 
 /** Constructs the "Goals" section of the parent table. */
 export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
-  let {friendlyName, color, image, mat, color2, image2, mat2,
+  let {configurable, friendlyName, color, image, mat, color2, image2, mat2,
        dailyChests, setDailyChestQty,
        dailyChestSel, setDailyChestSel} = props; // Unpack props
 
   // Get const references to sources for this table's material(s)
   const sources = getSources(mat);
+
+  const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
 
   // Table state variable for materials sources
   const [table, updateTable] = useState(initTable);
@@ -224,8 +231,66 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
     return <tr>{cells}</tr>;
   }
 
+  function SettingsModal(){
+    const sourceOptions: Source[] = sources;
+
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>){
+      console.log("Event:", e);
+      setModalVis(false); // Close modal
+    }
+
+    return(
+      <Modal show={modalVis} centered>
+        <Modal.Header>
+          <Modal.Title>Configure {friendlyName} Sources</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={(e) => handleSubmit(e)}>
+            <Accordion className="mb-3" defaultActiveKey="0">
+              <Accordion.Item eventKey="0">
+                <Accordion.Header>Configure Existing Sources</Accordion.Header>
+                <Accordion.Body>
+                  { /* Populate sources dropdown with sourceOptions */
+                  sourceOptions.map((src: Source) => {
+                    return(<p key={src.label}>{src.label}</p>);
+                  })}
+                </Accordion.Body>
+              </Accordion.Item>
+              <Accordion.Item eventKey="1">
+                <Accordion.Header>Add Preset Source</Accordion.Header>
+                <Accordion.Body>
+                  <InputGroup className="mb-3">
+                    <Form.Select defaultValue={sources[0].label}>
+                      { /* Populate sources dropdown with sourceOptions */
+                      sourceOptions.map((src: Source) => {
+                        return(<option key={src.label} value={src.label}>{src.label}</option>);
+                      })}
+                    </Form.Select>
+                    <Button variant="primary">Add</Button>
+                  </InputGroup>
+                </Accordion.Body>
+              </Accordion.Item>
+              <Accordion.Item eventKey="2">
+                <Accordion.Header>Add Custom Source</Accordion.Header>
+                <Accordion.Body>
+                  <InputGroup className="mb-3">
+                    <InputGroup.Text id="basic-addon3">Name</InputGroup.Text>
+                    <Form.Control/>
+                  </InputGroup>
+                </Accordion.Body>
+              </Accordion.Item>
+            </Accordion>
+
+            <Button variant="primary" onClick={() => setModalVis(false)}>Close</Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
+    );
+  }
+
   return(
     <Col style={{"--table-color": color, "--mat2-color": color2} as React.CSSProperties}>
+      <SettingsModal/> {/* Hidden until setModalVis(true) onClick*/}
       <Table hover>
         <thead>
           <tr>
@@ -239,6 +304,11 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
               <th className="mat2">Amount</th>
             </>}
           </tr>
+          {configurable && <tr>
+            <td className="section-title goal-btns" colSpan={(mat2) ? 7 : 4}>
+              <Button variant="primary" onClick={() => setModalVis(true)}>Configure Sources</Button>
+            </td>
+          </tr>}
         </thead>
         <tbody>
           {table}
@@ -250,21 +320,21 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
 
 
 /** Update source amount, total amount, and rosterMats according to src. */
-  function updateAmts(src: Source, total: Source, matIndex: number, mat: keyof Materials, mat2?: keyof Materials){
-    total.amt[matIndex] -= src.amt[matIndex]; // Subtract old amount from total
+function updateAmts(src: Source, total: Source, matIndex: number, mat: keyof Materials, mat2?: keyof Materials){
+  total.amt[matIndex] -= src.amt[matIndex]; // Subtract old amount from total
 
-    if (src.selected && !src.selected[matIndex]) // Source is inactive
-      src.amt[matIndex] = 0; // Set amount to 0
-    else{ // Source is active, calculate new src.amt and add to total.amt
-      let amt: number = src.qty[matIndex]; // Start from source quantity
-      if (src.div) // Apply floor divisor if present
-        amt = Math.floor(amt / src.div);
-      if (src.mult) // Apply multiplier if present
-        amt *= src.mult[matIndex];
-      src.amt[matIndex] = amt; // Update source amount
-      total.amt[matIndex] += amt; // Add new amount to total
-    }
-
-    // Update roster storage data (which material is set depends on matIndex)
-    setRosterMat(matIndex ? mat2! : mat, total.amt[matIndex]);
+  if (src.selected && !src.selected[matIndex]) // Source is inactive
+    src.amt[matIndex] = 0; // Set amount to 0
+  else{ // Source is active, calculate new src.amt and add to total.amt
+    let amt: number = src.qty[matIndex]; // Start from source quantity
+    if (src.div) // Apply floor divisor if present
+      amt = Math.floor(amt / src.div);
+    if (src.mult) // Apply multiplier if present
+      amt *= src.mult[matIndex];
+    src.amt[matIndex] = amt; // Update source amount
+    total.amt[matIndex] += amt; // Add new amount to total
   }
+
+  // Update roster storage data (which material is set depends on matIndex)
+  setRosterMat(matIndex ? mat2! : mat, total.amt[matIndex]);
+}

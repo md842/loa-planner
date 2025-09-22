@@ -37,13 +37,13 @@ export function RosterStorageView(){
           />
         </Row>
         <Row>
-          <RosterStorageCard
+          <RosterStorageCard configurable
             friendlyName="Fusion Materials"
             color="#F90"
             image={t4_fusion}
             mat="fusions"
           />
-          <RosterStorageCard
+          <RosterStorageCard configurable
             friendlyName="Shards"
             color="#E47"
             image={t4_shard}
@@ -53,7 +53,7 @@ export function RosterStorageView(){
             dailyChestSel={dailyChestSel}
             setDailyChestSel={(controllingTable: boolean) => setDailyChestSel([controllingTable])}
           />
-          <RosterStorageCard
+          <RosterStorageCard configurable
             friendlyName="Leapstones"
             color="#D36"
             image={t4_leap}
@@ -65,7 +65,7 @@ export function RosterStorageView(){
           />
         </Row>
         <Row>
-          <RosterStorageCard
+          <RosterStorageCard configurable
             friendlyName="Red/Blue Stones"
             color="#F44"
             image={t4_red}
@@ -74,7 +74,7 @@ export function RosterStorageView(){
             image2={t4_blue}
             mat2="blues"
           />
-          <RosterStorageCard
+          <RosterStorageCard configurable
             friendlyName="Lava/Glacier Breaths"
             color="#F43"
             image={t4_redSolar}
