@@ -84,6 +84,9 @@ const presetSources: {[index: string]: Source[]} = {
     {id: "Roster-bound (M)", qty: [0], mult: [2000], amt: [0]},
     {id: "Roster-bound (S)", qty: [0], mult: [1000], amt: [0]},
     {id: "Event Chest (M)", qty: [0], mult: [2000], amt: [0]},
+    {id: "Time Shard Chest", qty: [0], mult: [8000], amt: [0]},
+    {id: "Explorer's Shard Chest", qty: [0], mult: [8000], amt: [0]},
+    {id: "Knight Shard Chest", qty: [0], mult: [8000], amt: [0]},
   ],
   "leaps": [
     {id: "Daily Chest", qty: [0], selected: [false], mult: [2], amt: [0]},
@@ -92,6 +95,12 @@ const presetSources: {[index: string]: Source[]} = {
     {id: "Tradable 1490", qty: [0], selected: [true], div: 25, amt: [0]},
     {id: "Tradable 1250", qty: [0], selected: [true], div: 125, amt: [0]},
     {id: "Event Chest (x5)", qty: [0], mult: [5], amt: [0]},
+    {id: "Time Leapstone Selection Chest", qty: [0], mult: [25], amt: [0]},
+    {id: "Explorer's Leapstone Selection Chest", qty: [0], mult: [25], amt: [0]},
+    {id: "Knight Leapstone Selection Chest", qty: [0], mult: [25], amt: [0]},
+    {id: "Time Leapstone Special Selection Chest", qty: [0], mult: [75], amt: [0]},
+    {id: "Explorer's Leapstone Special Selection Chest", qty: [0], mult: [75], amt: [0]},
+    {id: "Knight Leapstone Special Selection Chest", qty: [0], mult: [75], amt: [0]},
   ],
   "reds": [
     {id: "Daily Chest",
@@ -175,6 +184,11 @@ export function saveSources(mat: keyof Materials){
   let temp: string = JSON.stringify(sources[mat]);
   totalSaved += temp.length;
   console.log("Roster storage data: Saved", temp.length, "B,", totalSaved, "B total");
+  // console.log("Saved sources:", sources[mat]);
 
   window.localStorage.setItem('src_' + mat, temp);
+}
+
+export function setSourceData(mat: keyof Materials, newData: Source[]){
+  sources[mat] = newData;
 }

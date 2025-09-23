@@ -1,13 +1,12 @@
 import './RosterStorageCard.css';
 
-import {type ChangeEvent, type JSX, useEffect, useState} from 'react';
+import {type ReactNode, useEffect, useState} from 'react';
 
-import {Cell} from './tables/Cell';
 import {SortableList} from '../Sortable/SortableList';
+import {SourceRow} from './tables/SourceRow';
 
 import {type Materials, type Source, findSource} from '../core/types';
-import {sanitizeInput} from './tables/common';
-import {getPresetSources, getSources, setRosterMat, saveSources} from '../core/roster-storage-data';
+import {getPresetSources, getSources, saveSources, setRosterMat, setSourceData} from '../core/roster-storage-data';
 
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -18,7 +17,7 @@ import Table from 'react-bootstrap/Table';
 
 /** Props interface for RosterStorageCard. */
 interface RosterStorageCardProps{
-  configurable?: boolean; // If defined, this table is configurable.
+  configurable?: boolean; // If defined, this table's sources are configurable.
   friendlyName: string; // Displayed as the table name (top-left corner)
   color: string; // The color used for this table
   image: string; // The image used for this table
@@ -44,212 +43,135 @@ interface RosterStorageCardProps{
   setDailyChestSel?: (controllingTable: boolean) => void;
 }
 
-// If true, changes will be committed by saveRosterMats() on next onBlur event.
-let changed: boolean = false;
-
 /** Constructs the "Goals" section of the parent table. */
-export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
+export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
   let {configurable, friendlyName, color, image, mat, color2, image2, mat2,
        dailyChests, setDailyChestQty,
        dailyChestSel, setDailyChestSel} = props; // Unpack props
 
-  // Get const references to sources for this table's material(s)
-  const sources = getSources(mat);
+  // Get const reference to preset sources for this table's material(s)
   const presetSources = getPresetSources(mat);
 
   const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
 
   // Table state variable for materials sources
-  const [table, updateTable] = useState(initTable);
+  const [changed, setChanged] = useState(false);
+  const [sources, setSources] = useState(() => getSources(mat));
+  const [table, updateTable] = useState([] as ReactNode[]);
 
+  // Update signal handlers
+  useEffect(() => {
+    setSourceData(mat, sources); // Updates source data
+    updateTable(initTable); // Re-renders table
+  }, [sources]); // Runs on mount and when sources change
+
+  useEffect(() => {
+    if (changed){ // Uncommitted changes are present
+      saveSources(mat); // Save roster storage data for specified mat
+      setChanged(false); // Signal that changes were committed
+    }
+  }, [changed]); // Runs when changed changes, does nothing on mount due to initial state false
+  
   // Daily chest synchronization signal handlers
   useEffect(() => { // Controlled table quantity update hook
     if (dailyChests && dailyChests.length){ // Received non-empty signal
-      sources[0].qty = dailyChests; // Update source quantity to signal value
-      updateAmts(sources[0], sources[sources.length - 1], 0, mat);
-      saveSources(mat); // Save roster storage data for specified mat
-
-      updateTable([
-        <SourceRow key="Daily Chest" index={0}/>,
-        ...table.slice(1, -1), // Sources after specified index
-        <SourceRow total key="total" index={sources.length - 1}/>,
-      ]); // Only re-renders the first row (daily chests) and the total row
+      // console.log("Controlled table", mat, "quantity update hook got signal", dailyChests[0]);
+      setSource(0, 0, dailyChests[0]); // Update source quantity to signal value
+      setChanged(true); // Signal that uncommitted changes are present
     }
   }, [dailyChests]); // Runs when dailyChests changes, does nothing on mount due to empty signal
 
   useEffect(() => { // Controlling/controlled table selected update hook
     if (dailyChestSel && dailyChestSel.length){ // Received non-empty signal
+      // console.log("Table", mat, "selected update hook", (((setDailyChestQty) && dailyChestSel[0]) || ((!setDailyChestQty) && !dailyChestSel[0])));
       // Controlling table sets selected == signal, controlled table sets selected == !signal
-      sources[0].selected![0] = (((setDailyChestQty) && dailyChestSel[0]) ||
-                                 ((!setDailyChestQty) && !dailyChestSel[0]));
-      updateAmts(sources[0], sources[sources.length - 1], 0, mat);
-      saveSources(mat); // Save roster storage data for specified mat
-
-      updateTable([
-        <SourceRow key="Daily Chest" index={0}/>,
-        ...table.slice(1, -1), // Sources after specified index
-        <SourceRow total key="total" index={sources.length - 1}/>,
-      ]); // Only re-renders the first row (daily chests) and the total row
+      setSource(0, 0, undefined, (((setDailyChestQty) && dailyChestSel[0]) ||
+                                  ((!setDailyChestQty) && !dailyChestSel[0])));
+      setChanged(true);
     }
   }, [dailyChestSel]); // Runs when dailyChestSel changes, does nothing on mount due to empty signal
 
-  function initTable(): JSX.Element[]{ // Table state initializer function
-    let table: JSX.Element[] = []; // Initialize table
+  function initTable(): ReactNode[]{ // Table state initializer function
+    let table: ReactNode[] = []; // Initialize table
     
-    for (let i = 0; i < sources.length - 1; i++) // Build row for each source
-      table.push(<SourceRow key={sources[i].id} index={i}/>);
-
-    // Build the total row and push it to the table
-    table.push(<SourceRow total key="total" index={sources.length - 1}/>);
+    for (let i = 0; i < sources.length; i++){ // Build row for each source
+      table.push(
+        <SourceRow key={sources[i].id}
+          total={(i == sources.length - 1)} // Last source is total
+          src={sources[i]}
+          setSource={setSource}
+          index={i}
+          combo={(mat2) ? true : false}
+          setChanged={setChanged}
+          dailyChests={dailyChests}
+          setDailyChestQty={setDailyChestQty}
+          setDailyChestSel={setDailyChestSel}
+        />
+      );
+    }
     return table;
   }
 
-  function handleChange(e: ChangeEvent<HTMLInputElement>, index: number, matIndex: number){
-    let input: number = Number(e.target.value); // For readability
-    let changedSrc: Source = sources[index];
+  /** Updates source srcIndex, source total, and rosterMats. */
+  function setSource(srcIndex: number, matIndex: number, qty?: number, selected?: boolean){
+    // Deep copy target source and total source from state variable
+    let src: Source = JSON.parse(JSON.stringify(sources[srcIndex]));
+    let total: Source = JSON.parse(JSON.stringify(sources[sources.length - 1]));
+
+    if (qty != null) // If defined, update quantity
+      src.qty[matIndex] = qty;
+    if (selected != null) // If defined, update selected
+      src.selected![matIndex] = selected;
+
+    total.amt[matIndex] -= src.amt[matIndex]; // Subtract old amount from total
+
+    if (src.selected && !src.selected[matIndex]) // Source is inactive
+      src.amt[matIndex] = 0; // Set amount to 0
+    else{ // Source is active, calculate new src.amt and add to total.amt
+      let amt: number = src.qty[matIndex]; // Start from source quantity
+      if (src.div) // Apply floor divisor if present
+        amt = Math.floor(amt / src.div);
+      if (src.mult) // Apply multiplier if present
+        amt *= src.mult[matIndex];
+      src.amt[matIndex] = amt; // Update source amount
+      total.amt[matIndex] += amt; // Add new amount to total
+    }
+
+    // console.log("Updated source:", src);
+
+    // Update sources state variable
+    setSources([
+      ...sources.slice(0, srcIndex), // Sources before specified index
+      src,
+      ...sources.slice(srcIndex + 1, -1), // Sources after specified index
+      total
+    ]);
     
-    if (sanitizeInput(e, sources[index].qty[matIndex])){ // Valid numeric input
-      changedSrc.qty[matIndex] = input; // Update source quantity
-      updateAmts(changedSrc, sources[sources.length - 1], matIndex, mat, mat2);
-      
-      if (changedSrc.selectionChest){ // Changed source is a selection chest
-        // Note: For selection chest, matIndex always 0, mat2 always defined
-        changedSrc.qty[1] = input; // Update (synchronize) source quantity
-        updateAmts(changedSrc, sources[sources.length - 1], 1, mat, mat2);
-      }
-
-      updateTable([
-        ...table.slice(0, index), // Sources before specified index
-        <SourceRow key={changedSrc.id} index={index}/>,
-        ...table.slice(index + 1, -1), // Sources after specified index
-        <SourceRow total key="total" index={sources.length - 1}/>,
-      ]); // Only re-renders the row being updated and the total row
-
-      /* Special case: daily chests (source index 0) synced between tables.
-         Signal received by controlled table only, so send signal at end of
-         handleChange of controlling table. */
-      if (setDailyChestQty && index == 0)
-        setDailyChestQty(changedSrc.qty[0]); // Sync quantity fields
-
-      changed = true; // Roster storage data will be saved on next focus out
-    } // Reject non-numeric input outside of name field (do nothing)
-  }
-
-  function handleChecked(e: ChangeEvent<HTMLInputElement>, index: number, matIndex: number){
-    /* Special case: daily chests (source index 0) synced between tables.
-       Signal received by both tables, so override handleChecked by sending
-       signal at the beginning and returning early. */
-    if (setDailyChestSel && index == 0){
-      // Controlling table sends true if checked, controlled table sends false if checked
-      setDailyChestSel((setDailyChestQty) && e.target.checked || (!setDailyChestQty) && !e.target.checked);
-      return; // Override handleChecked by returning early
-    }
-    let changedSrc: Source = sources[index]; // For readability
-
-    /* Update changedSrc.selected (guaranteed to be defined in
-       handleChecked, otherwise checkboxes would not render) */
-    changedSrc.selected![matIndex] = e.target.checked;
-    updateAmts(changedSrc, sources[sources.length - 1], matIndex, mat, mat2);
-
-    // Changed source is combo selection chest, update source's other material
-    if (changedSrc.selectionChest){
-      let otherIndex: number = (matIndex == 0) ? 1 : 0
-      // Set other material's "selected" field to opposite value
-      changedSrc.selected![otherIndex] = !e.target.checked;
-      updateAmts(changedSrc, sources[sources.length - 1], otherIndex, mat, mat2);
-    }
-
-    updateTable([
-      ...table.slice(0, index), // Sources before specified index
-      <SourceRow key={changedSrc.id} index={index}/>,
-      ...table.slice(index + 1, -1), // Sources after specified index
-      <SourceRow total key="total" index={sources.length - 1}/>,
-    ]); // Only re-renders the row being updated and the total row
-
-    saveSources(mat); // Save roster storage data for specified mat
-  }
-
-  /**
-   * Generate a table row for the "Roster Storage" section.
-   * @param  {boolean}        total     If true, this row represents the table total.
-   * @param  {number}         index     The index of the source to use for this row.
-   * @return {JSX.Element[]}            The generated table row.
-   */
-  function SourceRow(props: {total?: boolean, index: number}): JSX.Element{
-    let {total, index} = props; // Unpack props
-    let src: Source = sources[index]; // For readability
-    let cells: JSX.Element[] = []; // Initialize table row for this source
-
-    console.log(mat, "SourceRow", index, "rendering");
-
-    cells.push(<Cell bold key="label" value={src.id}/>); // Source label
-
-    cells.push( // Material 1 quantity field
-      <Cell key="qty" value={total ? undefined : src.qty[0]} // Empty if total
-        onBlur={(total || (dailyChests && index == 0)) ? undefined : () => {if (changed){saveSources(mat)}; changed = false}}
-        onChange={(total || (dailyChests && index == 0)) ? undefined : (e) => handleChange(e, index, 0)}
-      /> // Input disabled if total or daily chests of controlled table
-    );
-    
-    cells.push( // Material 1 selected field
-      <td className="read-only" key="sel">
-        {src.selected && // Render checkbox conditionally
-          <Form.Check className="mat1-checkbox"
-            type="checkbox"
-            // If selection chest, checked = inverse of other checkbox
-            defaultChecked={src.selectionChest ? undefined : src.selected[0]}
-            checked={src.selectionChest ? !src.selected[1] : undefined}
-            onChange={(e) => handleChecked(e, index, 0)}
-          />}
-      </td>);
-
-    // Material 1 amount field
-    cells.push(<Cell bold key="amt" value={src.amt[0]}/>);
-
-    if (mat2){ // If combo table, push cells for second material
-      cells.push( // Material 2 quantity field
-        <Cell key="qty2" className="mat2" value={(total) ? undefined : src.qty[1]} // Empty if total
-          onBlur={total ? undefined : () => {if (changed){saveSources(mat)}; changed = false}}
-          onChange={(total || src.selectionChest) ? undefined : (e) => handleChange(e, index, 1)}
-        /> // Input disabled if total or selection chest (use material 1 field)
-      );
-      
-      cells.push( // Material 2 selected field
-        <td key="sel2" className="read-only mat2">
-          {src.selected && // Render checkbox conditionally
-            <Form.Check className="mat2-checkbox"
-              type="checkbox"
-              // If selection chest, checked = inverse of other checkbox
-              defaultChecked={src.selectionChest ? undefined : src.selected[1]}
-              checked={src.selectionChest ? !src.selected[0] : undefined}
-              onChange={(e) => handleChecked(e, index, 1)}
-            />}
-        </td>);
-
-      // Material 2 amount field
-      cells.push(<Cell bold key="amt2" className="mat2" value={src.amt[1]}/>);
-    }
-    return <tr>{cells}</tr>;
+    // Update roster storage data (which material is set depends on matIndex)
+    setRosterMat(matIndex ? mat2! : mat, total.amt[matIndex]);
   }
 
   function SettingsModal(){
-    if (!configurable) // Only render for configurable tables
+    if (!configurable) // Only render SettingsModal if table is configurable
       return;
 
-    const [temp, setTemp] = useState(initTemp); // Stores uncommitted changes
+    // State variables store uncommitted changes to sources
+    const [temp, setTemp] = useState(initTemp);
+    const [tempTotal, setTempTotal] = useState(initTempTotal);
 
     function initTemp(): Source[]{ // temp state initializer function
-      return JSON.parse(JSON.stringify(sources.slice(0, -2))); // Deep copy sources
+      // Deep copy sources excluding "Other" and "Total" from sources
+      return JSON.parse(JSON.stringify(sources.slice(0, -2)));
     }
 
-    function handleDelete(index: number){
-      // Slice out specified index from temp
-      setTemp([...temp.slice(0, index), ...temp.slice(index + 1)]);
+    function initTempTotal(): Source{ // tempTotal state initializer function
+      // Deep copy source total from sources
+      return JSON.parse(JSON.stringify(sources[sources.length - 1]));
     }
 
-    function handleSubmit(e: React.FormEvent<HTMLFormElement>){
+    function handleAdd(e: React.FormEvent<HTMLFormElement>){
       e.preventDefault(); // Prevents refreshing page on form submission
-      console.log("handleSubmit called:", e);
+      console.log("handleAdd called:", e);
 
       // Extract form information
       let target: HTMLFormElement = e.target as HTMLFormElement;
@@ -268,8 +190,27 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
       }
     }
 
+    function handleDelete(index: number){
+      // Deep copy source total from tempTotal
+      let total: Source = JSON.parse(JSON.stringify(tempTotal));
+
+      // Subtract deleted source's amounts from total amount
+      total.amt[0] -= temp[index].amt[0];
+      if (mat2)
+        total.amt[1] -= temp[index].amt[1];
+
+      // Slice out specified index from temp
+      setTemp([...temp.slice(0, index), ...temp.slice(index + 1)]);
+      setTempTotal(total); // Update tempTotal
+    }
+
     function saveChanges(){
-      console.log("saveChanges() called. Temp sources:", temp);
+      console.log("saveChanges() called. temp sources:", temp);
+      setSources([
+        ...temp, // Uncommitted changes
+        sources[sources.length - 2], // "Other"
+        tempTotal // "Total"
+      ]);
       setModalVis(false); // Close modal
     }
 
@@ -296,7 +237,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
 
           <hr/>
 
-          <Form onSubmit={(e) => handleSubmit(e)}>
+          <Form onSubmit={(e) => handleAdd(e)}>
             <p>Add a new source using the form below.</p>
             <InputGroup className="mb-3">
               <InputGroup.Text id="basic-addon3">Preset Sources</InputGroup.Text>
@@ -360,25 +301,4 @@ export function RosterStorageCard(props: RosterStorageCardProps): JSX.Element{
       </Table>
     </Col>
   );
-}
-
-
-/** Update source amount, total amount, and rosterMats according to src. */
-function updateAmts(src: Source, total: Source, matIndex: number, mat: keyof Materials, mat2?: keyof Materials){
-  total.amt[matIndex] -= src.amt[matIndex]; // Subtract old amount from total
-
-  if (src.selected && !src.selected[matIndex]) // Source is inactive
-    src.amt[matIndex] = 0; // Set amount to 0
-  else{ // Source is active, calculate new src.amt and add to total.amt
-    let amt: number = src.qty[matIndex]; // Start from source quantity
-    if (src.div) // Apply floor divisor if present
-      amt = Math.floor(amt / src.div);
-    if (src.mult) // Apply multiplier if present
-      amt *= src.mult[matIndex];
-    src.amt[matIndex] = amt; // Update source amount
-    total.amt[matIndex] += amt; // Add new amount to total
-  }
-
-  // Update roster storage data (which material is set depends on matIndex)
-  setRosterMat(matIndex ? mat2! : mat, total.amt[matIndex]);
 }
