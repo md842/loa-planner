@@ -10,42 +10,42 @@ const defaultSources: {[index: string]: Source[]} = {
     {id: "Total", qty: [0], amt: [0]}
   ],
   "gold": [
-    {id: "Tradable", qty: [0], selected: [true], amt: [0]},
+    {id: "Tradable", qty: [0], sel: [true], amt: [0]},
     {id: "Roster-bound", qty: [0], amt: [0]},
     {id: "Total", qty: [0], amt: [0]}
   ],
   "fusions": [
-    {id: "Tradable", qty: [0], selected: [true], amt: [0]},
+    {id: "Tradable", qty: [0], sel: [true], amt: [0]},
     {id: "Product Inventory", qty: [0], mult: [50], amt: [0]},
-    {id: "Blue Crystals", qty: [0], selected: [true], mult: [50], div: 65, amt: [0]},
-    {id: "Craftable", qty: [0], selected: [true], mult: [10], amt: [0]},
+    {id: "Blue Crystals", qty: [0], sel: [true], mult: [50], div: 65, amt: [0]},
+    {id: "Craftable", qty: [0], sel: [true], mult: [10], amt: [0]},
     {id: "Farm Chest", qty: [0], mult: [10], amt: [0]},
     {id: "Other", qty: [0], amt: [0]},
     {id: "Total", qty: [0], amt: [0]}
   ],
   "shards": [
-    {id: "Daily Chest", qty: [0], selected: [true], mult: [1000], amt: [0]},
-    {id: "Tradable (L)", qty: [0], selected: [true], mult: [3000], amt: [0]},
+    {id: "Daily Chest", qty: [0], use: [0], mult: [1000], amt: [0]},
+    {id: "Tradable (L)", qty: [0], sel: [true], mult: [3000], amt: [0]},
     {id: "Roster-bound (L)", qty: [0], mult: [3000], amt: [0]},
     {id: "Event Chest (M)", qty: [0], mult: [2000], amt: [0]},
     {id: "Other", qty: [0], amt: [0]},
     {id: "Total", qty: [0], amt: [0]}
   ],
   "leaps": [
-    {id: "Daily Chest", qty: [0], selected: [false], mult: [2], amt: [0]},
-    {id: "Tradable 1640", qty: [0], selected: [true], amt: [0]},
-    {id: "Tradable 1580", qty: [0], selected: [true], div: 5, amt: [0]},
+    {id: "Daily Chest", qty: [0], use: [0], mult: [2], amt: [0]},
+    {id: "Tradable 1640", qty: [0], sel: [true], amt: [0]},
+    {id: "Tradable 1580", qty: [0], sel: [true], div: 5, amt: [0]},
     {id: "Event Chest (x5)", qty: [0], mult: [5], amt: [0]},
     {id: "Other", qty: [0], amt: [0]},
     {id: "Total", qty: [0], amt: [0]}
   ],
   "reds": [
     {id: "Daily Chest",
-      qty: [0, 0], selected: [true, false], mult: [40, 80], selectionChest: true, amt: [0, 0]},
+      qty: [0, 0], use: [0, 0], mult: [40, 80], amt: [0, 0]},
     {id: "Tradable 1640",
-      qty: [0, 0], selected: [true, true], amt: [0, 0]},
+      qty: [0, 0], sel: [true, true], amt: [0, 0]},
     {id: "Tradable 1580",
-      qty: [0, 0], selected: [true, true], div: 5, amt: [0, 0]},
+      qty: [0, 0], sel: [true, true], div: 5, amt: [0, 0]},
     {id: "75x Pouch",
       qty: [0, 0], mult: [75, 75], amt: [0, 0]},
     {id: "Other",
@@ -55,11 +55,11 @@ const defaultSources: {[index: string]: Source[]} = {
   ],
   "redSolars": [
     {id: "Daily Chest",
-      qty: [0, 0], selected: [true, false], mult: [1, 3], selectionChest: true, amt: [0, 0]},
+      qty: [0, 0], use: [0, 0], mult: [1, 3], amt: [0, 0]},
     {id: "Tradable",
-      qty: [0, 0], selected: [true, true], amt: [0, 0]},
+      qty: [0, 0], sel: [true, true], amt: [0, 0]},
     {id: "3/9 Selection",
-      qty: [0, 0], selected: [true, false], mult: [3, 9], selectionChest: true, amt: [0, 0]},
+      qty: [0, 0], use: [0, 0], mult: [3, 9], amt: [0, 0]},
     {id: "Other",
       qty: [0, 0], amt: [0, 0]},
     {id: "Total",
@@ -69,60 +69,55 @@ const defaultSources: {[index: string]: Source[]} = {
 
 const presetSources: {[index: string]: Source[]} = {
   "fusions": [
-    {id: "Tradable", qty: [0], selected: [true], amt: [0]},
+    {id: "Tradable", qty: [0], sel: [true], amt: [0]},
     {id: "Product Inventory", qty: [0], mult: [50], amt: [0]},
-    {id: "Blue Crystals", qty: [0], selected: [true], mult: [50], div: 65, amt: [0]},
-    {id: "Craftable", qty: [0], selected: [true], mult: [10], amt: [0]},
+    {id: "Blue Crystals", qty: [0], sel: [true], mult: [50], div: 65, amt: [0]},
+    {id: "Craftable", qty: [0], sel: [true], mult: [10], amt: [0]},
     {id: "Farm Chest", qty: [0], mult: [10], amt: [0]},
+    {id: "Ark Pass Chest (x30)", qty: [0], mult: [30], amt: [0]}
   ],
   "shards": [
-    {id: "Daily Chest", qty: [0], selected: [true], mult: [1000], amt: [0]},
-    {id: "Tradable (L)", qty: [0], selected: [true], mult: [3000], amt: [0]},
-    {id: "Tradable (M)", qty: [0], selected: [true], mult: [2000], amt: [0]},
-    {id: "Tradable (S)", qty: [0], selected: [true], mult: [1000], amt: [0]},
+    {id: "Daily Chest", qty: [0], use: [0], mult: [1000], amt: [0]},
+    {id: "Tradable (L)", qty: [0], sel: [true], mult: [3000], amt: [0]},
+    {id: "Tradable (M)", qty: [0], sel: [true], mult: [2000], amt: [0]},
+    {id: "Tradable (S)", qty: [0], sel: [true], mult: [1000], amt: [0]},
     {id: "Roster-bound (L)", qty: [0], mult: [3000], amt: [0]},
     {id: "Roster-bound (M)", qty: [0], mult: [2000], amt: [0]},
     {id: "Roster-bound (S)", qty: [0], mult: [1000], amt: [0]},
     {id: "Event Chest (M)", qty: [0], mult: [2000], amt: [0]},
-    {id: "Time Shard Chest", qty: [0], mult: [8000], amt: [0]},
-    {id: "Explorer's Shard Chest", qty: [0], mult: [8000], amt: [0]},
-    {id: "Knight Shard Chest", qty: [0], mult: [8000], amt: [0]},
+    {id: "Ark Pass Chest (x8000)", qty: [0], mult: [8000], amt: [0]}
   ],
   "leaps": [
-    {id: "Daily Chest", qty: [0], selected: [false], mult: [2], amt: [0]},
-    {id: "Tradable 1640", qty: [0], selected: [true], amt: [0]},
-    {id: "Tradable 1580", qty: [0], selected: [true], div: 5, amt: [0]},
-    {id: "Tradable 1490", qty: [0], selected: [true], div: 25, amt: [0]},
-    {id: "Tradable 1250", qty: [0], selected: [true], div: 125, amt: [0]},
+    {id: "Daily Chest", qty: [0], use: [0], mult: [2], amt: [0]},
+    {id: "Tradable 1640", qty: [0], sel: [true], amt: [0]},
+    {id: "Tradable 1580", qty: [0], sel: [true], div: 5, amt: [0]},
+    {id: "Tradable 1490", qty: [0], sel: [true], div: 25, amt: [0]},
+    {id: "Tradable 1250", qty: [0], sel: [true], div: 125, amt: [0]},
     {id: "Event Chest (x5)", qty: [0], mult: [5], amt: [0]},
-    {id: "Time Leapstone Selection Chest", qty: [0], mult: [25], amt: [0]},
-    {id: "Explorer's Leapstone Selection Chest", qty: [0], mult: [25], amt: [0]},
-    {id: "Knight Leapstone Selection Chest", qty: [0], mult: [25], amt: [0]},
-    {id: "Time Leapstone Special Selection Chest", qty: [0], mult: [75], amt: [0]},
-    {id: "Explorer's Leapstone Special Selection Chest", qty: [0], mult: [75], amt: [0]},
-    {id: "Knight Leapstone Special Selection Chest", qty: [0], mult: [75], amt: [0]},
+    {id: "Ark Pass Chest (x25)", qty: [0], mult: [25], amt: [0]},
+    {id: "Ark Pass Special Chest (x75)", qty: [0], mult: [75], amt: [0]}
   ],
   "reds": [
     {id: "Daily Chest",
-      qty: [0, 0], selected: [true, false], mult: [40, 80], selectionChest: true, amt: [0, 0]},
+      qty: [0, 0], use: [0, 0], mult: [40, 80], amt: [0, 0]},
     {id: "Tradable 1640",
-      qty: [0, 0], selected: [true, true], amt: [0, 0]},
+      qty: [0, 0], sel: [true, true], amt: [0, 0]},
     {id: "Tradable 1580",
-      qty: [0, 0], selected: [true, true], div: 5, amt: [0, 0]},
+      qty: [0, 0], sel: [true, true], div: 5, amt: [0, 0]},
     {id: "Tradable 1490",
-      qty: [0, 0], selected: [true, true], div: 25, amt: [0, 0]},
+      qty: [0, 0], sel: [true, true], div: 25, amt: [0, 0]},
     {id: "Tradable 1250",
-      qty: [0, 0], selected: [true, true], div: 125, amt: [0, 0]},
+      qty: [0, 0], sel: [true, true], div: 125, amt: [0, 0]},
     {id: "75x Pouch",
       qty: [0, 0], mult: [75, 75], amt: [0, 0]},
   ],
   "redSolars": [
     {id: "Daily Chest",
-      qty: [0, 0], selected: [true, false], mult: [1, 3], selectionChest: true, amt: [0, 0]},
+      qty: [0, 0], use: [0, 0], mult: [1, 3], amt: [0, 0]},
     {id: "Tradable",
-      qty: [0, 0], selected: [true, true], amt: [0, 0]},
+      qty: [0, 0], sel: [true, true], amt: [0, 0]},
     {id: "3/9 Selection",
-      qty: [0, 0], selected: [true, false], mult: [3, 9], selectionChest: true, amt: [0, 0]},
+      qty: [0, 0], use: [0, 0], mult: [3, 9], amt: [0, 0]},
   ],
 };
 
@@ -184,7 +179,7 @@ export function saveSources(mat: keyof Materials){
   let temp: string = JSON.stringify(sources[mat]);
   totalSaved += temp.length;
   console.log("Roster storage data: Saved", temp.length, "B,", totalSaved, "B total");
-  // console.log("Saved sources:", sources[mat]);
+  console.log("Saved sources:", sources[mat]);
 
   window.localStorage.setItem('src_' + mat, temp);
 }

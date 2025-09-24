@@ -113,31 +113,44 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
   }
 
   /** Updates source srcIndex, source total, and rosterMats. */
-  function setSource(srcIndex: number, matIndex: number, qty?: number, selected?: boolean){
+  function setSource(srcIndex: number, matIndex: number, qty?: number, selected?: boolean, newUse?: number[]){
     // Deep copy target source and total source from state variable
     let src: Source = JSON.parse(JSON.stringify(sources[srcIndex]));
     let total: Source = JSON.parse(JSON.stringify(sources[sources.length - 1]));
 
-    if (qty != null) // If defined, update quantity
-      src.qty[matIndex] = qty;
-    if (selected != null) // If defined, update selected
-      src.selected![matIndex] = selected;
+    function updateSource(matIndex: number, qty?: number, selected?: boolean, newUse?: number[]): Source{
+      if (qty != null) // If defined, update src.qty
+        src.qty[matIndex] = qty;
+      if (selected != null) // If defined, update src.use (not selection chest)
+        src.sel![matIndex] = selected;
+      if (newUse){ // If defined, update src.use (selection chest)
+        src.use![0] = newUse[0];
+        if (newUse.length == 2)
+          src.use![1] = newUse[1];
+      }
 
-    total.amt[matIndex] -= src.amt[matIndex]; // Subtract old amount from total
+      total.amt[matIndex] -= src.amt[matIndex]; // Subtract old amount from total
 
-    if (src.selected && !src.selected[matIndex]) // Source is inactive
-      src.amt[matIndex] = 0; // Set amount to 0
-    else{ // Source is active, calculate new src.amt and add to total.amt
-      let amt: number = src.qty[matIndex]; // Start from source quantity
-      if (src.div) // Apply floor divisor if present
-        amt = Math.floor(amt / src.div);
-      if (src.mult) // Apply multiplier if present
-        amt *= src.mult[matIndex];
-      src.amt[matIndex] = amt; // Update source amount
-      total.amt[matIndex] += amt; // Add new amount to total
+      if (src.sel && !src.sel[matIndex]) // Source is inactive
+        src.amt[matIndex] = 0; // Set amount to 0
+      else{ // Source is active, calculate new src.amt and add to total.amt
+        // If src.use is defined, start from src.use, else start from src.qty
+        let amt: number = (src.use) ? Number(src.use![matIndex]) : src.qty[matIndex];
+        if (src.div) // Apply floor divisor if present
+          amt = Math.floor(amt / src.div);
+        if (src.mult) // Apply multiplier if present
+          amt *= src.mult[matIndex];
+        src.amt[matIndex] = amt; // Update source amount
+        total.amt[matIndex] += amt; // Add new amount to total
+      }
+      return src;
     }
 
-    // console.log("Updated source:", src);
+    src = updateSource(matIndex, qty, selected, newUse);
+    if (src.use && src.use.length == 2) // src is a selection chest
+      src = updateSource(matIndex ? 0 : 1, qty);
+
+    console.log("Updated source:", src);
 
     // Update sources state variable
     setSources([

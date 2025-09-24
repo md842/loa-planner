@@ -101,13 +101,11 @@ export interface Source{
   qty: number[];
   amt: number[];
 
-  selected?: boolean[]; // If defined, source is selectable; true = active
+  sel?: boolean[]; // If defined, source is selectable; true = active
+  use?: number[]; // If defined, source is a selection chest, fields represent quantities used
+
   div?: number; // If defined, qty has a floored division before multiplier
   mult?: number[]; // If defined, qty has a multiplier
-
-  /* If true, this combo source is a selection chest; qty[0] == qty[1], and
-     selecting material 1 will deselect material 2. */
-  selectionChest?: boolean;
 }
 
 /** Returns the index of a Source id within a Source array. */
