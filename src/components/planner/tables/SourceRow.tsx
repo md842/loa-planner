@@ -48,13 +48,19 @@ export function SourceRow(props: SourceRowProps): JSX.Element{
        dailyChests, setDailyChestQty,
        setDailyChestSel} = props; // Unpack props
 
+  // State variables for controlled input fields, initialize with source data
   const [use, setUse] = useState(src.use);
+  const [qty, setQty] = useState(src.qty);
 
   // Update signal handlers
   useEffect(() => {
     if (use)
       console.log("use state updated:", use);
   }, [use]); // Runs on mount and when use changes
+
+  useEffect(() => {
+    console.log("qty state updated:", qty);
+  }, [qty]); // Runs on mount and when use changes
 
   function handleQtyChange(e: ChangeEvent<HTMLInputElement>, index: number, matIndex: number){
     let input: number = Number(e.target.value); // For readability
@@ -72,10 +78,17 @@ export function SourceRow(props: SourceRowProps): JSX.Element{
           newUse[matIndex] = 0; // Set use qty to 0
         }
         setUse(newUse); // Update use state variable
+        setQty([input, input]); // Update qty state variable
         setSource(index, matIndex, input, undefined, newUse); // Update sources
       }
-      else // Not a selection chest, simply update source quantity to input
-        setSource(index, matIndex, input);
+      else{ // Not a selection chest, simply update source quantity to input
+        setQty([
+          ...qty.slice(0, matIndex), // Updates qty[1] if matIndex == 1
+          input,
+          ...qty.slice(matIndex + 1) // Updates qty[0] if matIndex == 0
+        ]);
+        setSource(index, matIndex, input); // Update sources
+      }
 
       /* Special case: daily chests (source index 0) synced between tables.
          Signal received by controlled table only, so send signal at end of
@@ -132,16 +145,16 @@ export function SourceRow(props: SourceRowProps): JSX.Element{
   return(
     <tr>
       <Cell bold key="label" value={src.id}/>
-      <Cell key="qty" value={total ? undefined : src.qty[0]} // Empty if total
-        onBlur={(total || (dailyChests && index == 0)) ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
-        onChange={(total || (dailyChests && index == 0)) ? undefined : (e) => handleQtyChange(e, index, 0)}
-      />{/* Input disabled if total or daily chests of controlled table */}
+      <Cell key="qty" controlledValue={total ? undefined : qty[0]} // Empty if total
+        onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
+        onChange={total ? undefined : (e) => handleQtyChange(e, index, 0)}
+      />{/* Input disabled if total */}
 
       {/* "Use?" column may be empty, a checkbox, or an input. */}
-      {!src.sel && !use && // src.use not defined, render empty cell
+      {!src.sel && !use && // src.sel, src.use not defined, render empty cell
         <td className="read-only" key="use"></td>
       }
-      {src.sel && // Boolean, render checkbox
+      {src.sel && // src.sel defined, render checkbox
         <td className="read-only" key="use">
           <Form.Check className="mat1-checkbox"
             type="checkbox"
@@ -150,27 +163,27 @@ export function SourceRow(props: SourceRowProps): JSX.Element{
           />
         </td>
       }
-      {use && // Number, render input
+      {use && // src.use defined, render input
         <Cell key="use" controlledValue={use[0]}
           onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
           onChange={total ? undefined : (e) => handleUseChange(e, index, 0)}
         />
       }
-      
 
       <Cell bold key="amt" value={src.amt[0]}/>
-      {combo &&
+
+      {combo && // Render cells for second material
         <>
-          <Cell key="qty2" className="mat2" value={(total) ? undefined : src.qty[1]} // Empty if total
-            onBlur={total || use ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
-            onChange={total || use ? undefined : (e) => handleQtyChange(e, index, 1)}
-          />{/* Input disabled if total or selection chest (use material 1 field)*/}
+          <Cell key="qty2" className="mat2" controlledValue={total ? undefined : qty[1]} // Empty if total
+            onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
+            onChange={total ? undefined : (e) => handleQtyChange(e, index, 1)}
+          />{/* Input disabled if total */}
 
           {/* "Use?" column may be empty, a checkbox, or an input. */}
-          {!src.sel && !use && // src.use not defined, render empty cell
+          {!src.sel && !use && // src.sel, src.use not defined, render empty cell
             <td className="read-only mat2" key="use2"></td>
           }
-          {src.sel && // Boolean, render checkbox
+          {src.sel && // src.sel defined, render checkbox
             <td className="read-only mat2" key="use2">
               <Form.Check className="mat2-checkbox"
                 type="checkbox"
@@ -179,7 +192,7 @@ export function SourceRow(props: SourceRowProps): JSX.Element{
               />
             </td>
           }
-          {use && // Number, render input
+          {use && // src.use defined, render input
             <Cell key="use2" className="mat2" controlledValue={use[1]}
               onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
               onChange={total ? undefined : (e) => handleUseChange(e, index, 1)}
