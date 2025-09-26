@@ -18,7 +18,7 @@ import Table from 'react-bootstrap/Table';
 /** Props interface for RosterStorageCard. */
 interface RosterStorageCardProps{
   configurable?: boolean; // If defined, this table's sources are configurable.
-  friendlyName: string; // Displayed as the table name (top-left corner)
+  title: string; // Displayed in the top-left corner of the table
   color: string; // The color used for this table
   image: string; // The image used for this table
   mat: keyof Materials; // The material associated with this table
@@ -28,26 +28,15 @@ interface RosterStorageCardProps{
   image2?: string; // The image used for the second material area of this table
   mat2?: keyof Materials; // The second material associated with this table
 
-  // References to parent component state/state setters for synchronized tables
-  /* If defined, this table is a controlled table; its daily chests field is
-     controlled by another table's. setDailyChestQty must not be defined. */
-  dailyChests?: number[];
-  /* If defined, this table is a controlling table; its daily chests field
-     controls another table's. dailyChests must not be defined. */
-  setDailyChestQty?: (qty: number) => void;
-
-  /* The following props must both be defined if either prop above is defined.
-     Signal [true] if daily chests are selected in the controlling table,
-            [false] if daily chests are selected in the controlled table. */
-  dailyChestSel?: boolean[];
-  setDailyChestSel?: (controllingTable: boolean) => void;
+  // If defined, this RosterStorageTable synchronizes with an external table.
+  syncMatIndex?: number; // Index of mat this table represents in the sync pair
 }
 
 /** Constructs the "Goals" section of the parent table. */
 export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
-  let {configurable, friendlyName, color, image, mat, color2, image2, mat2,
-       dailyChests, setDailyChestQty,
-       dailyChestSel, setDailyChestSel} = props; // Unpack props
+  let {configurable, title, color, image, mat,
+       color2, image2, mat2,
+       syncMatIndex} = props; // Unpack props
 
   // Get const reference to preset sources for this table's material(s)
   const presetSources = getPresetSources(mat);
@@ -71,25 +60,6 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
       setChanged(false); // Signal that changes were committed
     }
   }, [changed]); // Runs when changed changes, does nothing on mount due to initial state false
-  
-  // Daily chest synchronization signal handlers
-  useEffect(() => { // Controlled table quantity update hook
-    if (dailyChests && dailyChests.length){ // Received non-empty signal
-      // console.log("Controlled table", mat, "quantity update hook got signal", dailyChests[0]);
-      setSource(0, 0, dailyChests[0]); // Update source quantity to signal value
-      setChanged(true); // Signal that uncommitted changes are present
-    }
-  }, [dailyChests]); // Runs when dailyChests changes, does nothing on mount due to empty signal
-
-  useEffect(() => { // Controlling/controlled table selected update hook
-    if (dailyChestSel && dailyChestSel.length){ // Received non-empty signal
-      // console.log("Table", mat, "selected update hook", (((setDailyChestQty) && dailyChestSel[0]) || ((!setDailyChestQty) && !dailyChestSel[0])));
-      // Controlling table sets selected == signal, controlled table sets selected == !signal
-      setSource(0, 0, undefined, (((setDailyChestQty) && dailyChestSel[0]) ||
-                                  ((!setDailyChestQty) && !dailyChestSel[0])));
-      setChanged(true);
-    }
-  }, [dailyChestSel]); // Runs when dailyChestSel changes, does nothing on mount due to empty signal
 
   function initTable(): ReactNode[]{ // Table state initializer function
     let table: ReactNode[] = []; // Initialize table
@@ -97,15 +67,16 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
     for (let i = 0; i < sources.length; i++){ // Build row for each source
       table.push(
         <SourceRow key={sources[i].id}
-          total={(i == sources.length - 1)} // Last source is total
+          total={i == sources.length - 1} // Last source is total
           src={sources[i]}
-          setSource={setSource}
           index={i}
-          combo={(mat2) ? true : false}
+          combo={mat2 ? true : false}
+          // Parent component state setters
           setChanged={setChanged}
-          dailyChests={dailyChests}
-          setDailyChestQty={setDailyChestQty}
-          setDailyChestSel={setDailyChestSel}
+          setSource={setSource}
+          // Synchronized table props
+          syncRow={syncMatIndex != null && sources[i].id == "Daily Chest"}
+          syncMatIndex={syncMatIndex}
         />
       );
     }
@@ -118,7 +89,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
     let src: Source = JSON.parse(JSON.stringify(sources[srcIndex]));
     let total: Source = JSON.parse(JSON.stringify(sources[sources.length - 1]));
 
-    function updateSource(matIndex: number, qty?: number, selected?: boolean, newUse?: number[]): Source{
+    function updateSource(matIndex: number, newUse?: number[]): Source{
       if (qty != null) // If defined, update src.qty
         src.qty[matIndex] = qty;
       if (selected != null) // If defined, update src.use (not selection chest)
@@ -128,14 +99,13 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
         if (newUse.length == 2)
           src.use![1] = newUse[1];
       }
-
       total.amt[matIndex] -= src.amt[matIndex]; // Subtract old amount from total
 
       if (src.sel && !src.sel[matIndex]) // Source is inactive
         src.amt[matIndex] = 0; // Set amount to 0
       else{ // Source is active, calculate new src.amt and add to total.amt
         // If src.use is defined, start from src.use, else start from src.qty
-        let amt: number = (src.use) ? Number(src.use![matIndex]) : src.qty[matIndex];
+        let amt: number = (src.use) ? src.use[matIndex] : src.qty[matIndex];
         if (src.div) // Apply floor divisor if present
           amt = Math.floor(amt / src.div);
         if (src.mult) // Apply multiplier if present
@@ -146,11 +116,9 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
       return src;
     }
 
-    src = updateSource(matIndex, qty, selected, newUse);
-    if (src.use && src.use.length == 2) // src is a selection chest
-      src = updateSource(matIndex ? 0 : 1, qty);
-
-    console.log("Updated source:", src);
+    src = updateSource(matIndex, newUse);
+    if (src.use && src.amt.length == 2) // src is a selection chest
+      src = updateSource(matIndex ? 0 : 1);
 
     // Update sources state variable
     setSources([
@@ -224,13 +192,14 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
         sources[sources.length - 2], // "Other"
         tempTotal // "Total"
       ]);
+      setChanged(true); // Save roster storage data for this mat
       setModalVis(false); // Close modal
     }
 
     return(
       <Modal show={modalVis} centered>
         <Modal.Header>
-          <Modal.Title>Configure Sources of {friendlyName}</Modal.Title>
+          <Modal.Title>Configure Sources of {title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <p>Drag and drop sources to reorder them, or click the trash button to delete them.</p>
@@ -292,7 +261,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
       <Table hover>
         <thead>
           <tr>
-            <th>{friendlyName}</th>
+            <th>{title}</th>
             <th><img src={image}/></th>
             <th>Use?</th>
             <th>Amount</th>
@@ -303,9 +272,16 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
             </>}
           </tr>
           {configurable && <tr>
-            <td className="section-title goal-btns" colSpan={(mat2) ? 7 : 4}>
-              <Button variant="primary" onClick={() => setModalVis(true)}>Configure Sources</Button>
+            <td className="configure goal-btns" colSpan={4}>
+              {!mat2 &&
+                <Button variant="primary" onClick={() => setModalVis(true)}>Configure Sources</Button>
+              }
             </td>
+            {mat2 &&
+              <td className="mat2 configure goal-btns" colSpan={3}>
+                <Button variant="primary" onClick={() => setModalVis(true)}>Configure Sources</Button>
+              </td>
+            }
           </tr>}
         </thead>
         <tbody>

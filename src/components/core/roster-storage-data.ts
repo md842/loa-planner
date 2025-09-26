@@ -24,7 +24,7 @@ const defaultSources: {[index: string]: Source[]} = {
     {id: "Total", qty: [0], amt: [0]}
   ],
   "shards": [
-    {id: "Daily Chest", qty: [0], use: [0], mult: [1000], amt: [0]},
+    {id: "Daily Chest", qty: [0], use: [0, 0], mult: [1000], amt: [0]},
     {id: "Tradable (L)", qty: [0], sel: [true], mult: [3000], amt: [0]},
     {id: "Roster-bound (L)", qty: [0], mult: [3000], amt: [0]},
     {id: "Event Chest (M)", qty: [0], mult: [2000], amt: [0]},
@@ -32,7 +32,7 @@ const defaultSources: {[index: string]: Source[]} = {
     {id: "Total", qty: [0], amt: [0]}
   ],
   "leaps": [
-    {id: "Daily Chest", qty: [0], use: [0], mult: [2], amt: [0]},
+    {id: "Daily Chest", qty: [0], use: [0, 0], mult: [2], amt: [0]},
     {id: "Tradable 1640", qty: [0], sel: [true], amt: [0]},
     {id: "Tradable 1580", qty: [0], sel: [true], div: 5, amt: [0]},
     {id: "Event Chest (x5)", qty: [0], mult: [5], amt: [0]},

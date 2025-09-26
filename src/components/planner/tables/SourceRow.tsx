@@ -1,11 +1,15 @@
-import {type ChangeEvent, type JSX, useEffect, useState} from 'react';
+import {type ChangeEvent, type ReactNode, useContext, useEffect, useState} from 'react';
 
 import {Cell} from './Cell';
+import {SyncContext} from '../../../pages/planner-tabs/RosterStorageView';
 
 import {type Source} from '../../core/types';
 import {sanitizeInput} from './common';
 
 import Form from 'react-bootstrap/Form';
+
+// If true, changes will be committed by saveSources() on next onBlur event.
+let changed: boolean = false;
 
 /** Props interface for SourceRow. */
 interface SourceRowProps{
@@ -15,27 +19,15 @@ interface SourceRowProps{
   combo?: boolean; // If true, src is a combo source (e.g., reds/blues)
 
   /** References to parent component state/state setters */
-  // Updates source srcIndex, source total, and rosterMats.
-  setSource(srcIndex: number, matIndex: number, qty?: number, selected?: boolean, newUse?: number[]): void;
   // Signals to parent component to save uncommitted changes.
   setChanged(changed: boolean): void;
+  // Updates source srcIndex, source total, and rosterMats.
+  setSource(srcIndex: number, matIndex: number, qty?: number, selected?: boolean, newUse?: number[]): void;
 
-  // References to parent component state/state setters for synchronized tables
-  /* If defined, this table is a controlled table; its daily chests field is
-     controlled by another table's. setDailyChestQty must not be defined. */
-  dailyChests?: number[];
-  /* If defined, this table is a controlling table; its daily chests field
-     controls another table's. dailyChests must not be defined. */
-  setDailyChestQty?: (qty: number) => void;
-
-  /* The following prop must be defined if either prop above is defined.
-     Signal [true] if daily chests are selected in the controlling table,
-            [false] if daily chests are selected in the controlled table. */
-  setDailyChestSel?: (controllingTable: boolean) => void;
+  // If defined, this SourceRow's parent table synchronizes with an external table.
+  syncRow?: boolean; // If true, this SourceRow synchronizes with an external SourceRow.
+  syncMatIndex?: number; // Index of mat this table represents in the sync pair
 }
-
-// If true, changes will be committed by saveRosterMats() on next onBlur event.
-let changed: boolean = false;
 
 /**
  * Generate a table row for the "Roster Storage" section.
@@ -43,24 +35,35 @@ let changed: boolean = false;
  * @param  {number}         index     The index of the source to use for this row.
  * @return {JSX.Element[]}            The generated table row.
  */
-export function SourceRow(props: SourceRowProps): JSX.Element{
-  let {total, src, index, setSource, combo, setChanged,
-       dailyChests, setDailyChestQty,
-       setDailyChestSel} = props; // Unpack props
+export function SourceRow(props: SourceRowProps): ReactNode{
+  let {total, src, index, combo, setChanged, setSource,
+       syncRow, syncMatIndex} = props; // Unpack props
 
   // State variables for controlled input fields, initialize with source data
   const [use, setUse] = useState(src.use);
   const [qty, setQty] = useState(src.qty);
 
-  // Update signal handlers
-  useEffect(() => {
-    if (use)
-      console.log("use state updated:", use);
-  }, [use]); // Runs on mount and when use changes
+  const syncContext = useContext(SyncContext);
+  let {dailyChestQty, setDailyChestQty,
+       dailyChestUse, setDailyChestUse} = syncContext; // Unpack sync context
 
-  useEffect(() => {
-    console.log("qty state updated:", qty);
-  }, [qty]); // Runs on mount and when use changes
+
+  // Daily chest synchronization signal handlers
+  useEffect(() => { // Synchronized table quantity update hook
+    if (syncRow && dailyChestQty && dailyChestQty.length) // Received non-empty signal
+      setQty(dailyChestQty); // Update qty state variable
+  }, [dailyChestQty]); // Runs when dailyChestQty changes, does nothing on mount due to empty signal
+
+  useEffect(() => { // Synchronized table "Use" update hook
+    if (syncRow && dailyChestUse && dailyChestUse.length){ // Received non-empty signal
+      // If syncMatIndex == 1, second mat in sync pair, reverse "use" array
+      let newUse: number[] = [dailyChestUse[syncMatIndex ? 1 : 0], dailyChestUse[syncMatIndex ? 0 : 1]];
+      setUse(newUse); // Update use state variable
+      setSource(index, 0, dailyChestQty[0], undefined, newUse); // Update sources
+      setChanged(true); // Save roster storage data for this mat
+    }
+  }, [dailyChestUse]); // Runs when dailyChestUse changes, does nothing on mount due to empty signal
+
 
   function handleQtyChange(e: ChangeEvent<HTMLInputElement>, index: number, matIndex: number){
     let input: number = Number(e.target.value); // For readability
@@ -69,17 +72,25 @@ export function SourceRow(props: SourceRowProps): JSX.Element{
     
     if (sanitizeInput(e, prevValue)){ // Valid numeric input
       if (use){ // src is a selection chest
-        let newUse: number[] = [...use]; // Shallow copy use state variable
+        let newUse: number[] = [...use!]; // Copy use state variable
+        newUse[matIndex] += diff; // Update mat use qty by diff
 
-        newUse[matIndex] += diff; // Update use qty for mat
         if (newUse[matIndex] < 0){ // Use qty cannot be negative
-          // Set other mat use qty to src.qty (maximum value)
+          // Set other mat use qty to maximum value (src.qty)
           newUse[matIndex ? 0 : 1] = input;
           newUse[matIndex] = 0; // Set use qty to 0
         }
-        setUse(newUse); // Update use state variable
-        setQty([input, input]); // Update qty state variable
-        setSource(index, matIndex, input, undefined, newUse); // Update sources
+
+        if (syncRow){ // Special case: daily chests synced with external table
+          setDailyChestQty(input); // Sync quantity fields
+          // If syncMatIndex == 1, second mat in sync pair, reverse "use" array
+          setDailyChestUse([newUse[syncMatIndex ? 1 : 0], newUse[syncMatIndex ? 0 : 1]]);
+        }
+        else{ // Standard selection chest
+          setQty([input, input]); // Update qty state variable
+          setUse(newUse); // Update use state variable
+          setSource(index, matIndex, input, undefined, newUse); // Update sources
+        }
       }
       else{ // Not a selection chest, simply update source quantity to input
         setQty([
@@ -88,16 +99,14 @@ export function SourceRow(props: SourceRowProps): JSX.Element{
           ...qty.slice(matIndex + 1) // Updates qty[0] if matIndex == 0
         ]);
         setSource(index, matIndex, input); // Update sources
+        changed = true; // Roster storage data will be saved on next focus out
       }
+    } // Reject non-numeric input (do nothing)
+  }
 
-      /* Special case: daily chests (source index 0) synced between tables.
-         Signal received by controlled table only, so send signal at end of
-         handleChange of controlling table. */
-      if (setDailyChestQty && index == 0)
-        setDailyChestQty(input); // Sync quantity fields
-
-      changed = true; // Roster storage data will be saved on next focus out
-    } // Reject non-numeric input outside of name field (do nothing)
+  function handleChecked(e: ChangeEvent<HTMLInputElement>, index: number, matIndex: number){
+    setSource(index, matIndex, undefined, e.target.checked); // Update sources
+    setChanged(true); // Save roster storage data for this mat
   }
 
   function handleUseChange(e: ChangeEvent<HTMLInputElement>, index: number, matIndex: number){
@@ -106,7 +115,7 @@ export function SourceRow(props: SourceRowProps): JSX.Element{
     let diff: number = input - prevValue;
     
     if (sanitizeInput(e, prevValue)){ // Valid numeric input
-      let newUse: number[] = [...use!]; // Shallow copy use state variable
+      let newUse: number[] = [...use!]; // Copy use state variable
 
       if (input <= src.qty[matIndex]){ // Limit use quantity to src.qty
         newUse[matIndex] = input; // Update use qty for mat
@@ -116,30 +125,16 @@ export function SourceRow(props: SourceRowProps): JSX.Element{
         newUse[matIndex] = src.qty[matIndex]; // Set use qty to src.qty
         newUse[matIndex ? 0 : 1] = 0; // Set other mat use qty to 0
       }
-      setUse(newUse); // Update use state variable
-      setSource(index, matIndex, undefined, undefined, newUse); // Update sources
 
-      /* Special case: daily chests (source index 0) synced between tables.
-         Signal received by controlled table only, so send signal at end of
-         handleChange of controlling table. */
-      if (setDailyChestQty && index == 0)
-        setDailyChestQty(input); // Sync quantity fields
-
-      changed = true; // Roster storage data will be saved on next focus out
-    } // Reject non-numeric input outside of name field (do nothing)
-  }
-
-  function handleChecked(e: ChangeEvent<HTMLInputElement>, index: number, matIndex: number){
-    /* Special case: daily chests (source index 0) synced between tables.
-       Signal received by both tables, so override handleChecked by sending
-       signal at the beginning and returning early. */
-    if (setDailyChestSel && index == 0){
-      // Controlling table sends true if checked, controlled table sends false if checked
-      setDailyChestSel((setDailyChestQty) && e.target.checked || (!setDailyChestQty) && !e.target.checked);
-      return; // Override handleChecked by returning early
-    }
-    setSource(index, matIndex, undefined, e.target.checked); // Update sources
-    setChanged(true); // Save roster storage data for specified mat
+      if (syncRow) // Special case: daily chests synced with external table
+        // If syncMatIndex == 1, second mat in sync pair, reverse "use" array
+        setDailyChestUse([newUse[syncMatIndex ? 1 : 0], newUse[syncMatIndex ? 0 : 1]]);
+      else{
+        setUse(newUse); // Update use state variable
+        setSource(index, matIndex, undefined, undefined, newUse); // Update sources
+        changed = true; // Roster storage data will be saved on next focus out
+      }
+    } // Reject non-numeric input (do nothing)
   }
 
   return(

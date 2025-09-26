@@ -1,8 +1,33 @@
+/* Configure Sources row formatting */
+
+.configure{
+  background-color: color-mix(in srgb, var(--table-color) 75%, white) !important;
+  text-align: right;
+  padding: calc(0.375em - 1px); /* Reduce padding according to button height to maintain row size */
+}
+
+.configure.goal-btns button{
+  background-color: var(--table-color);
+  border: 1px solid var(--table-color);
+  color: #212529; /* Set light mode default text color */
+  margin-left: 0.5em; /* Separate buttons */
+  line-height: 1em; /* Reduce button height to fit in row */
+}
+
 /* Table color formatting */
 
 .mat2{
   background-color: var(--mat2-color) !important; /* Override background color */
   border-color: var(--mat2-color);
+}
+
+.mat2.configure{ /* Sets derived color for section titles */
+  background-color: color-mix(in srgb, var(--mat2-color) 75%, white) !important;
+}
+
+.mat2.configure.goal-btns button{
+  background-color: var(--mat2-color);
+  border: 1px solid var(--mat2-color);
 }
 
 .mat2.read-only{ /* Sets derived color for read-only fields */

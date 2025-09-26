@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {createContext, useState} from 'react';
 
 import {RosterStorageCard} from '../../components/planner/RosterStorageCard';
 
@@ -15,22 +15,31 @@ import t4_shard from '../../assets/t4_shard.png';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 
+interface SyncState{
+  dailyChestQty: number[];
+  setDailyChestQty: (qty: number) => void;
+  dailyChestUse: number[];
+  setDailyChestUse: (use: number[]) => void;
+}
+
+export const SyncContext = createContext({} as SyncState);
+
 export function RosterStorageView(){
-  const [dailyChests, setDailyChestQty] = useState([] as number[]);
-  const [dailyChestSel, setDailyChestSel] = useState([] as boolean[]);
+  const [dailyChestQty, setDailyChestQty] = useState([] as number[]);
+  const [dailyChestUse, setDailyChestUse] = useState([] as number[]);
 
 	return(
     <main>
       <Container fluid="md">
         <Row>
           <RosterStorageCard
-            friendlyName="Silver"
+            title="Silver"
             color="#999"
             image={silver}
             mat="silver"
           />
           <RosterStorageCard
-            friendlyName="Gold"
+            title="Gold"
             color="#FC4"
             image={gold}
             mat="gold"
@@ -38,35 +47,42 @@ export function RosterStorageView(){
         </Row>
         <Row>
           <RosterStorageCard configurable
-            friendlyName="Fusion Materials"
+            title="Fusion Materials"
             color="#F90"
             image={t4_fusion}
             mat="fusions"
           />
-          <RosterStorageCard configurable
-            friendlyName="Shards"
-            color="#E47"
-            image={t4_shard}
-            mat="shards"
-            // Controlling table: controls daily chests in "leaps" table
-            setDailyChestQty={(qty: number) => setDailyChestQty([qty])}
-            dailyChestSel={dailyChestSel}
-            setDailyChestSel={(controllingTable: boolean) => setDailyChestSel([controllingTable])}
-          />
-          <RosterStorageCard configurable
-            friendlyName="Leapstones"
-            color="#D36"
-            image={t4_leap}
-            mat="leaps"
-            // Controlled table: daily chests controlled by "shards" table
-            dailyChests={dailyChests}
-            dailyChestSel={dailyChestSel}
-            setDailyChestSel={(controllingTable: boolean) => setDailyChestSel([controllingTable])}
-          />
+        </Row>
+        <Row>
+          <SyncContext value={
+            {
+              dailyChestQty: dailyChestQty,
+              setDailyChestQty: (qty: number) => setDailyChestQty([qty]),
+              dailyChestUse: dailyChestUse,
+              setDailyChestUse: (use: number[]) => setDailyChestUse(use)
+            } as SyncState}
+          >
+            <RosterStorageCard configurable
+              title="Shards"
+              color="#E47"
+              image={t4_shard}
+              mat="shards"
+              // Synchronized table: syncs daily chests with "leaps" table
+              syncMatIndex={0}
+            />
+            <RosterStorageCard configurable
+              title="Leapstones"
+              color="#D36"
+              image={t4_leap}
+              mat="leaps"
+              // Synchronized table: syncs daily chests with "shards" table
+              syncMatIndex={1}
+            />
+          </SyncContext>
         </Row>
         <Row>
           <RosterStorageCard configurable
-            friendlyName="Red/Blue Stones"
+            title="Red/Blue Stones"
             color="#F44"
             image={t4_red}
             mat="reds"
@@ -74,8 +90,10 @@ export function RosterStorageView(){
             image2={t4_blue}
             mat2="blues"
           />
+        </Row>
+        <Row>
           <RosterStorageCard configurable
-            friendlyName="Lava/Glacier Breaths"
+            title="Lava/Glacier Breaths"
             color="#F43"
             image={t4_redSolar}
             mat="redSolars"
