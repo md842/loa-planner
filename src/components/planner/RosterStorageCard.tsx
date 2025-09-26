@@ -1,6 +1,6 @@
 import './RosterStorageCard.css';
 
-import {type ReactNode, useEffect, useState} from 'react';
+import {type ChangeEvent, type ReactNode, useEffect, useState} from 'react';
 
 import {SortableList} from '../Sortable/SortableList';
 import {SourceRow} from './tables/SourceRow';
@@ -136,9 +136,18 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
     if (!configurable) // Only render SettingsModal if table is configurable
       return;
 
-    // State variables store uncommitted changes to sources
+    // State variables for storing uncommitted changes to sources
     const [temp, setTemp] = useState(initTemp);
     const [tempTotal, setTempTotal] = useState(initTempTotal);
+
+    // State variables for "Add Source" form
+    // Controlled by radio buttons; decides which form is displayed
+    const [preset, setPreset] = useState(true);
+    // Allows disabling "Add Source" button for preset source when none left
+    let presetsRemaining: boolean = false;
+    // Allows disabling "Add Source" button for custom source when name is empty or not unique
+    const [customName, setCustomName] = useState("");
+    const [uniqueName, setUniqueName] = useState(true);
 
     function initTemp(): Source[]{ // temp state initializer function
       // Deep copy sources excluding "Other" and "Total" from sources
@@ -150,24 +159,53 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
       return JSON.parse(JSON.stringify(sources[sources.length - 1]));
     }
 
-    function handleAdd(e: React.FormEvent<HTMLFormElement>){
+    function handleAddSource(e: React.FormEvent<HTMLFormElement>){
       e.preventDefault(); // Prevents refreshing page on form submission
-      console.log("handleAdd called:", e);
-
-      // Extract form information
       let target: HTMLFormElement = e.target as HTMLFormElement;
-      let preset: string = (target[0] as HTMLFormElement).value;
-      let custom: boolean = (target[1] as HTMLFormElement).checked;
-      //let custom_name: string = (target[2] as HTMLFormElement).value;
 
-      if (custom){ // TODO: Add custom source
+      if (preset){ // Add preset source
+        // Extract form information
+        let selection: string = (target[0] as HTMLFormElement).value;
+
+        // Find index of selected preset source
+        let index: number = findSource(selection, presetSources);
+        setTemp([...temp, presetSources[index]]); // Append preset to temp
       }
-      else{ // Add preset source
-        let index: number = findSource(preset, presetSources);
-        if (index != -1) // Preset was found
-          setTemp([...temp, presetSources[index]]);
-        else // Preset was not found (most likely all presets already in temp)
-          console.log("Failed to add!");
+      else{ // Add custom source
+        // Extract form information
+        let custom_id: string = (target[0] as HTMLFormElement).value;
+        let sel: boolean = (target[1] as HTMLFormElement).checked;
+        let mult: number = Number((target[2] as HTMLFormElement).value);
+        let mult2: number | undefined = mat2 ? Number((target[3] as HTMLFormElement).value) : undefined;
+        let div: number = Number((target[mat2 ? 4 : 3] as HTMLFormElement).value);
+
+        let newSource: Source = { // Set required props
+          id: custom_id,
+          qty: mat2 ? [0, 0] : [0],
+          amt: mat2 ? [0, 0] : [0],
+        }
+
+        // Set optional props
+        if (sel){ // Checkbox has different meaning for single vs. combo source
+          if (mat2) // Combo source: source is a selection chest
+            newSource.use = [0, 0];
+          else // Single source: source is selectable
+            newSource.sel = [true];
+        }
+
+        // If either multiplier is not 1, set mult
+        if ((mult != 1) || (mult2 != undefined && mult2 != 1)){
+          if (mat2) // Combo source: set both multipliers
+            newSource.mult = [mult, mult2!];
+          else // Single source: set single multiplier
+            newSource.mult = [mult];
+        }
+
+        if (div != 1) // If floor divisor is not 1, set div
+          newSource.div = div; // Always single value
+
+        setTemp([...temp, newSource]); // Append newSource to temp
+        setUniqueName(false); // customName is no longer unique
       }
     }
 
@@ -177,16 +215,28 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
 
       // Subtract deleted source's amounts from total amount
       total.amt[0] -= temp[index].amt[0];
-      if (mat2)
+      if (mat2) // Combo source: subtract both amounts
         total.amt[1] -= temp[index].amt[1];
 
-      // Slice out specified index from temp
+      /* If the current input in the custom source name field matches the name
+         of the deleted source temp[index], and the deleted source name does
+         not match a preset source, free the custom source name for re-use. */
+      if (customName == temp[index].id)
+        setUniqueName(findSource(customName, presetSources) == -1);
+
+      // Delete the specified source by slicing out specified index from temp
       setTemp([...temp.slice(0, index), ...temp.slice(index + 1)]);
-      setTempTotal(total); // Update tempTotal
+      setTempTotal(total); // Update tempTotal with newly computed total.amt
+    }
+
+    function handleCustomSourceNameChange(e: ChangeEvent<HTMLInputElement>){
+      setCustomName(e.target.value); // Update controlled name input
+      // Search for name in temp and presetSources; false if found in either
+      setUniqueName((findSource(e.target.value, temp)) == -1 &&
+                    (findSource(e.target.value, presetSources) == -1));
     }
 
     function saveChanges(){
-      console.log("saveChanges() called. temp sources:", temp);
       setSources([
         ...temp, // Uncommitted changes
         sources[sources.length - 2], // "Other"
@@ -216,35 +266,134 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
               </SortableList.Item>
             )}
           />
-
           <hr/>
-
-          <Form onSubmit={(e) => handleAdd(e)}>
-            <p>Add a new source using the form below.</p>
-            <InputGroup className="mb-3">
-              <InputGroup.Text id="basic-addon3">Preset Sources</InputGroup.Text>
-              <Form.Select defaultValue={sources[0].id}>
-                { /* Populate sources dropdown with sourceOptions */
-                presetSources.map((src: Source) => {
-                  if (findSource(src.id, temp) == -1)
-                    return(<option key={src.id} value={src.id}>{src.id}</option>);
-                })}
-              </Form.Select>
-            </InputGroup>
-
+          <p>Add a new source using the form below.</p>
+          <div className="d-flex justify-content-between px-5 mb-3">
             <Form.Check
-              className="mb-3"
-              type="checkbox"
-              label="Add custom source"
-              defaultChecked={false}
+              type="radio"
+              label="Preset source"
+              checked={preset}
+              onChange={() => setPreset(true)}
             />
+            <Form.Check
+              type="radio"
+              label="Custom source"
+              checked={!preset}
+              onChange={() => setPreset(false)}
+            />
+          </div>
 
-            <InputGroup className="mb-3">
-              <InputGroup.Text id="basic-addon3">Name</InputGroup.Text>
-              <Form.Control/>
-            </InputGroup>
+          <Form onSubmit={(e) => handleAddSource(e)}>
+            {preset && // Render preset sources dropdown
+              <>
+                <InputGroup className="mb-3">
+                  <InputGroup.Text id="basic-addon3">Preset Sources</InputGroup.Text>
+                  <Form.Select>
+                    { /* Populate sources dropdown with sourceOptions */
+                    presetSources.map((src: Source) => {
+                      if (findSource(src.id, temp) == -1){ // Not found in temp
+                        presetsRemaining = true;
+                        return(<option key={src.id} value={src.id}>{src.id}</option>);
+                      }
+                    })}
+                  </Form.Select>
+                </InputGroup>
+                {!presetsRemaining && // If button is disabled, render help string
+                  <p style={{color: "var(--bs-warning)"}}>
+                    All preset sources are already active, nothing to add.
+                  </p>
+                }
+              </>
+            }
+            {!preset && // Render custom sources form
+              <>
+                <p>Tip: Hover over any input for an explanation.</p>
+                <InputGroup className="mb-3" // Name field
+                  title={"The source name, displayed in the first column."}
+                >
+                  <InputGroup.Text id="basic-addon3">Name</InputGroup.Text>
+                  <Form.Control
+                    value={customName}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleCustomSourceNameChange(e)}
+                  />
+                </InputGroup>
 
-            <Button className="d-block mx-auto" variant="primary" type="submit">Add</Button>
+                <Form.Check // Selectable/selection chest toggle
+                  title={mat2 ? "Selection chest sources allow opening a "
+                  + "variable number of chests for each material (e.g., out "
+                  + "of 375 Honing Support Selection Chests, 200 will be "
+                  + "opened with Lava's Breath selected and 175 will be "
+                  + "opened with Glacier's Breath selected)."
+                  : "Selectable sources allow toggling whether or not the "
+                  + "source is included in the total amount via checkbox."
+                  + "\n\nUseful for quickly enabling and disabling tradable "
+                  + "materials depending on whether or not they will be used "
+                  + "for honing (enabled) or sold (disabled)."}
+                  className="mb-3"
+                  type="checkbox"
+                  label={"Source is " + (mat2 ? "a selection chest" : "selectable")}
+                />
+
+                <div className="d-flex" // Multiplier input(s)
+                  title={"Multiplier refers to the amount of materials per "
+                  + "source quantity (e.g., Destiny Shard Pouch (S) has "
+                  + "multiplier 1000 because one pouch contains 1000 Destiny "
+                  + "Shards)."
+                  + (mat2 ? "\n\nCombo sources may have a different "
+                          + "multiplier for each quantity (e.g., Honing "
+                          + "Support Selection Chest has multiplier 3 for "
+                          + "Lava's Breath and 9 for Glacier's Breath)"
+                          : "")}
+                >
+                  <InputGroup className="mb-3">
+                    <InputGroup.Text id="basic-addon3">Multiplier</InputGroup.Text>
+                    <Form.Control type="number" defaultValue={1} min={1}/>
+                  </InputGroup>
+                  {mat2 && // Render second multiplier input if combo source
+                    <>
+                      <div className="mx-1"/>{/* Spacing */}
+                      <InputGroup className="mb-3">
+                        <InputGroup.Text id="basic-addon3">Multiplier 2</InputGroup.Text>
+                        <Form.Control type="number" defaultValue={1} min={1}/>
+                      </InputGroup>
+                    </>
+                  }
+                </div>
+
+                <InputGroup className="mb-3"
+                  title={"Tip: Floor divisor is usually 1."
+                  + "\n\nFloor divisor performs a floor division on the "
+                  + "quantity before applying the multiplier (if present)."
+                  + "\n\nUseful when an exchange is involved (e.g., "
+                  + "converting 1580 Leapstones to 1640 has floor divisor 5 "
+                  + "mirroring the 5:1 exchange ratio, converting Blue "
+                  + "Crystals to Abidos Fusion Materials has floor divisor 65 "
+                  + "and multiplier 50 mirroring the 65:50 exchange ratio)."}
+                >
+                  <InputGroup.Text id="basic-addon3">Floor divisor</InputGroup.Text>
+                  <Form.Control type="number" defaultValue={1} min={1}/>
+                </InputGroup>
+
+                {!customName.length &&  // If button is disabled, render help string
+                  <p style={{color: "var(--bs-warning)"}}>
+                    Custom source name cannot be empty.
+                  </p>
+                }
+                {!uniqueName &&  // If button is disabled, render help string
+                  <p style={{color: "var(--bs-warning)"}}>
+                    Custom source name must be unique.
+                  </p>
+                }
+              </>
+            }
+            <Button className="d-block mx-auto" variant="primary" type="submit"
+              /* Disable if preset source selected but no presets to add,
+                 or custom source selected but name is empty or not unique. */
+              disabled={preset && !presetsRemaining ||
+                        !preset && (!customName.length || !uniqueName)}
+            >
+              Add Source
+            </Button>
           </Form>
         </Modal.Body>
         <Modal.Footer>

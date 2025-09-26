@@ -104,8 +104,8 @@ export interface Source{
   sel?: boolean[]; // If defined, source is selectable; true = active
   use?: number[]; // If defined, source is a selection chest, fields represent quantities used
 
-  div?: number; // If defined, qty has a floored division before multiplier
   mult?: number[]; // If defined, qty has a multiplier
+  div?: number; // If defined, qty has a floored division before multiplier
 }
 
 /** Returns the index of a Source id within a Source array. */
