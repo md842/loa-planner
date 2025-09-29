@@ -92,7 +92,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
     function updateSource(matIndex: number, newUse?: number[]): Source{
       if (qty != null) // If defined, update src.qty
         src.qty[matIndex] = qty;
-      if (selected != null) // If defined, update src.use (not selection chest)
+      if (selected != null) // If defined, update src.sel (not selection chest)
         src.sel![matIndex] = selected;
       if (newUse){ // If defined, update src.use (selection chest)
         src.use![0] = newUse[0];
