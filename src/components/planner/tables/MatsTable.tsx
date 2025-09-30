@@ -7,6 +7,8 @@ import {sanitizeInput, saveChanges} from './common';
 import {goldValue} from '../../core/market-data';
 import {getRosterMats} from '../../core/roster-storage-data';
 
+import Table from 'react-bootstrap/Table';
+
 /** Props interface for MatsTable. */
 interface MatsTableProps{
   boundMats: Materials; // Bound materials owned by the character for which this table is being generated
@@ -94,9 +96,13 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
   }
 
   return(
-    <>
-      <tr className="bold"><td className="section-title" colSpan={11}>Owned materials</td></tr>
-      {table}
-    </>
+    <Table className="m-0" hover>
+      <thead>
+        <tr className="bold"><td className="section-title" colSpan={11}>Owned materials</td></tr>
+      </thead>
+      <tbody>
+        {table}
+      </tbody>
+    </Table>
   );
 }

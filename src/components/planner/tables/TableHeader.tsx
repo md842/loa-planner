@@ -10,6 +10,8 @@ import t4_red from '../../../assets/t4_red.png';
 import t4_redSolar from '../../../assets/t4_redsolar.png';
 import t4_shard from '../../../assets/t4_shard.png';
 
+import Table from 'react-bootstrap/Table';
+
 /** Props interface for TableHeader. */
 interface TableHeaderProps{
   title: JSX.Element;
@@ -18,20 +20,22 @@ interface TableHeaderProps{
 /** Constructs the header row of the parent table. */
 export function TableHeader(props: TableHeaderProps): JSX.Element{
   return(
-    <thead>
-      <tr>
-        {props.title}
-        <th>Gold Value</th>
-        <th><img src={silver}/></th>
-        <th><img src={gold}/></th>
-        <th><img src={t4_shard}/></th>
-        <th><img src={t4_fusion}/></th>
-        <th><img src={t4_red}/></th>
-        <th><img src={t4_blue}/></th>
-        <th><img src={t4_leap}/></th>
-        <th><img src={t4_redSolar}/></th>
-        <th><img src={t4_blueSolar}/></th>
-      </tr>
-    </thead>
+    <Table className="m-0" hover>
+      <thead>
+        <tr>
+          {props.title}
+          <th>Gold Value</th>
+          <th><img src={silver}/></th>
+          <th><img src={gold}/></th>
+          <th><img src={t4_shard}/></th>
+          <th><img src={t4_fusion}/></th>
+          <th><img src={t4_red}/></th>
+          <th><img src={t4_blue}/></th>
+          <th><img src={t4_leap}/></th>
+          <th><img src={t4_redSolar}/></th>
+          <th><img src={t4_blueSolar}/></th>
+        </tr>
+      </thead>
+    </Table>
   );
 }

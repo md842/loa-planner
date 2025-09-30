@@ -17,14 +17,14 @@ export function initCharacter(): Character{
     class: "(Class)",
     usesClassColor: true,
     color: "#777",
-    goals: [initGoal()],
+    goals: [initGoal(), {id: "Total", mats: initMaterials()} as Goal],
     boundMats: initMaterials()
   };
 }
 
 /** Roster goal data structure. */
 export interface RosterGoal{
-  name: string; // Name of roster goal.
+  id: string; // Name of roster goal.
   goals: boolean[][]; // Indices of goals to include from each character.
                      // [[goals of chars[0]], [goals of chars[1]]]...]
 }
@@ -32,7 +32,7 @@ export interface RosterGoal{
 /** Initializes and returns a default RosterGoal object. */
 export function initRosterGoal(chars: Character[]): RosterGoal{
   let out: RosterGoal = {
-    name: "(Goal Name)",
+    id: "(Goal Name)",
     goals: []
   };
   for (let i = 0; i < chars.length; i++){ // For each character
@@ -47,13 +47,13 @@ export function initRosterGoal(chars: Character[]): RosterGoal{
 
 /** Goal data structure. */
 export interface Goal{
-  name: string; // Name of goal.
+  id: string; // Name of goal.
   mats: Materials; // Uniform index signature helps with type checking.
 }
 
 /** Initializes and returns a default Goal object. */
 export function initGoal(): Goal{
-  return {name: "(Goal Name)", mats: initMaterials()};
+  return {id: "(Goal Name)", mats: initMaterials()};
 }
 
 

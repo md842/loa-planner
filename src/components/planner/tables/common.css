@@ -12,6 +12,7 @@ td, th{ /* Set border color to the table's theme color */
 
 .section-title{ /* Sets derived color for section titles */
   background-color: color-mix(in srgb, var(--table-color) 75%, white) !important;
+  border-width: 0 1px; /* top/bottom, left/right */
 }
 
 /* Goal buttons formatting */

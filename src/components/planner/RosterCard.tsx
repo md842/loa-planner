@@ -12,7 +12,6 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
-import Table from 'react-bootstrap/Table';
 
 /** Props interface for RosterTable. */
 interface RosterCardProps{
@@ -21,8 +20,8 @@ interface RosterCardProps{
   rosterGoalUpdateSignal: unknown[];
   rosterRemUpdateSignal: unknown[];
   setOnTop: React.Dispatch<React.SetStateAction<boolean>>;
-  updateRosterGoals: () => void;
-  updateRosterRem: () => void;
+  updateRosterGoals(): void; // Sends signal to update RosterCard GoalTable
+  updateRosterRem(): void; // Sends signal to update RosterCard RemTable
 }
 
 /** Constructs the card for the roster goals. */
@@ -52,7 +51,7 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
 
     getRosterGoals().forEach((rosterGoal: RosterGoal) => {
       // Calculate a tableGoal for each roster goal
-      let tableGoal: Goal = {name: rosterGoal.name, mats: initMaterials()};
+      let tableGoal: Goal = {id: rosterGoal.id, mats: initMaterials()};
 
       rosterGoal.goals.forEach((charGoals: boolean[], charIndex: number) => {
         charGoals.forEach((goalIncluded: boolean, goalIndex: number) => {
@@ -71,7 +70,7 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
 
     getRosterGoals().forEach((rosterGoal: RosterGoal) => {
       // Calculate a remTableGoal for each roster goal
-      let remTableGoal: Goal = {name: rosterGoal.name, mats: initMaterials()};
+      let remTableGoal: Goal = {id: rosterGoal.id, mats: initMaterials()};
 
       rosterGoal.goals.forEach((charGoals: boolean[], charIndex: number) => {
         /* For each character, determine the remaining bound materials required
@@ -113,9 +112,9 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
             return(<Form.Check
               className="mb-3"
               style={{overflowWrap: "anywhere"} /* Long names wrap to new line */}
-              key={goal.name + goalIndex}
+              key={goal.id + goalIndex}
               type="checkbox"
-              label={goal.name}
+              label={goal.id}
               defaultChecked={temp[curGoal].goals[props.charIndex][goalIndex]}
               onChange={(e) => handleChange(e, props.charIndex, goalIndex)}
             />);
@@ -151,7 +150,7 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
             >
               { /* Populate dropdown with roster goal names */
               rosterGoals.map((goal: RosterGoal, index: number) => {
-                return(<option key={index} value={index}>{goal.name}</option>);
+                return(<option key={index} value={index}>{goal.id}</option>);
               })}
             </Form.Select>
           </InputGroup>
@@ -175,7 +174,7 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
   }
 
   return(
-    <div style={{"--table-color": "#777"} as React.CSSProperties}>
+    <div className="mb-4" style={{"--table-color": "#777"} as React.CSSProperties}>
       <SettingsModal/> {/* Hidden until setModalVis(true) onClick*/}
       <div className="settings-tab">
         <Button variant="link" onClick={() => setModalVis(true)}>
@@ -188,17 +187,13 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
           <i className="bi bi-chevron-down"/>
         </Button>
       </div>
-      <Table hover>
-        <TableHeader title={<th>Roster Goals</th>}/>
-        <tbody>
-          <RosterGoalTable
-            goals={tableGoals}
-            updateRosterGoals={updateRosterGoals}
-            updateRosterRem={updateRosterRem}
-          />
-          <RemTable goals={remTableGoals}/>
-        </tbody>
-      </Table>
+      <TableHeader title={<th>Roster Goals</th>}/>
+      <RosterGoalTable
+        goals={tableGoals}
+        updateRosterGoals={updateRosterGoals}
+        updateRosterRem={updateRosterRem}
+      />
+      <RemTable goals={remTableGoals}/>
     </div>
   );
 }

@@ -12,7 +12,6 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
-import Table from 'react-bootstrap/Table';
 
 /** Props interface for CharacterTable. */
 interface CharacterCardProps{
@@ -33,16 +32,37 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
   const [charState, setCharState] = useState({name: char.name, ilvl: char.ilvl, class: char.class, usesClassColor: char.usesClassColor, color: char.color});
   const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
 
-  // Set table color to the character's saved color
-  document.documentElement.style.setProperty("--table-color", charState.color);
+  // Table state variable for materials sources
+  const [goals, setGoals] = useState(char.goals);
 
   // Refs used in RemTable
-  const goalsTotal: RefObject<Goal> = useRef({name: "Total", mats: initMaterials()});
   const matsTotal: RefObject<Materials> = useRef(initMaterials());
 
   /* Character state update signal; uses array signal type because
      sendSignal([]) is guaranteed to update state with a new value. */
   const [charRemUpdateSignal, sendCharRemSignal] = useState([0]);
+
+  /** Updates goal goalIndex and goal total. */
+  function setGoal(goalIndex: number, id?: string, key?: keyof Materials, value?: number){
+    // Deep copy target goal and total goal from state variable
+    let goal: Goal = JSON.parse(JSON.stringify(goals[goalIndex]));
+    let total: Goal = JSON.parse(JSON.stringify(goals[goals.length - 1]));
+
+    if (id) // If defined, update goal.id
+      goal.id = id;
+    if (key){ // If defined, update goal.mats[key] and goalsTotal
+      total.mats[key] -= goal.mats[key]; // Subtract old amount from total
+      goal.mats[key] = value!; // Update goal mat amount
+      total.mats[key] += value!; // Add new amount to total
+    }
+
+    setGoals([ // Update goals state variable
+      ...goals.slice(0, goalIndex), // Goals before specified index
+      goal,
+      ...goals.slice(goalIndex + 1, -1), // Goals after specified index
+      total
+    ]);
+  }
 
   function SettingsModal(){
     const [colorPickerDisabled, setColorPickerDisabled] = useState(charState.usesClassColor);
@@ -150,7 +170,7 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
   }
 
   return(
-    <div style={{"--table-color": charState.color} as React.CSSProperties}>
+    <div className="mb-4" style={{"--table-color": charState.color} as React.CSSProperties}>
       <SettingsModal/> {/* Hidden until setModalVis(true) onClick*/}
       <div className="settings-tab">
         <Button variant="link" onClick={() => setModalVis(true)}>
@@ -166,32 +186,28 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
           <i className="bi bi-trash3-fill"/>
         </Button>
       </div>
-      <Table hover>
-        <TableHeader title={<th>{charState.name}<br/>{charState.ilvl} {charState.class}</th>}/>
-        <tbody>
-          <CharacterGoalTable
-            goals={char.goals}
-            goalsTotalRef={goalsTotal}
-            charIndex={index}
-            updateCharRem={(goalIndex: number) => sendCharRemSignal([goalIndex])}
-            updateRosterGoals={updateRosterGoals}
-            updateRosterRem={updateRosterRem}
-          />
-          <MatsTable
-            matsTotalRef={matsTotal}
-            boundMats={char.boundMats}
-            updateCharRem={() => sendCharRemSignal([])}
-            updateRosterRem={updateRosterRem}
-          />
-          <RemTable
-            goals={char.goals}
-            goalsTotalRef={goalsTotal}
-            matsTotalRef={matsTotal}
-            boundMats={char.boundMats}
-            charRemUpdateSignal={charRemUpdateSignal}
-          />
-        </tbody>
-      </Table>
+      <TableHeader title={<th>{charState.name}<br/>{charState.ilvl} {charState.class}</th>}/>
+      <CharacterGoalTable
+        goals={goals}
+        charIndex={index}
+        charName={charState.name}
+        setGoal={setGoal}
+        setGoals={setGoals}
+        updateRosterGoals={updateRosterGoals}
+        updateRosterRem={updateRosterRem}
+      />
+      <MatsTable
+        matsTotalRef={matsTotal}
+        boundMats={char.boundMats}
+        updateCharRem={() => sendCharRemSignal([])}
+        updateRosterRem={updateRosterRem}
+      />
+      <RemTable
+        goals={goals}
+        matsTotalRef={matsTotal}
+        boundMats={char.boundMats}
+        charRemUpdateSignal={charRemUpdateSignal}
+      />
     </div>
   );
 }

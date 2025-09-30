@@ -7,6 +7,7 @@ import {addRosterGoal, delRosterGoal, getRosterGoals, saveRosterGoals, setRoster
 import {goldValue} from '../../core/market-data';
 
 import Button from 'react-bootstrap/Button';
+import Table from 'react-bootstrap/Table';
 
 /** Props interface for RosterGoalTable. */
 interface RosterGoalTableProps{
@@ -64,7 +65,7 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
       changed = true; // Roster goal data will be saved on next focus out
     }
     else // Over length limit, reject input
-      e.target.value = getRosterGoals()[index].name; // Resets field to last good value
+      e.target.value = getRosterGoals()[index].id; // Resets field to last good value
   }
 
   /**
@@ -80,7 +81,7 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
     // console.log("Roster GoalRow", index, "rendering");
 
     cells.push( // Add writeable name to the table row for this roster goal
-      <Cell key="name" value={goal.name} className="first-col"
+      <Cell key="id" value={goal.id} className="first-col"
         onBlur={() => {if (changed){saveRosterGoals()}; changed = false}}
         onChange={(e) => handleGoalChange(e, index)}
       /> // Always writeable, specify change handlers for writeable field
@@ -97,15 +98,19 @@ export function RosterGoalTable(props: RosterGoalTableProps): JSX.Element{
   }
 
   return(
-    <>
-      <tr className="bold">
-        <td className="section-title goals" colSpan={1}>Goals</td>
-        <td className="section-title goal-btns" colSpan={10}>
-          <Button variant="primary" onClick={addGoal}>Add Goal</Button>
-          <Button variant="primary" onClick={removeGoal}>Remove Goal</Button>
-        </td>
-      </tr>
-      {table}
-    </>
+    <Table className="m-0" hover>
+      <thead>
+        <tr className="bold">
+          <td className="section-title goals" colSpan={1}>Goals</td>
+          <td className="section-title goal-btns" colSpan={10}>
+            <Button variant="primary" onClick={addGoal}>Add Goal</Button>
+            <Button variant="primary" onClick={removeGoal}>Remove Goal</Button>
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        {table}
+      </tbody>
+    </Table>
   );
 }

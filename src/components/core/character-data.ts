@@ -1,4 +1,4 @@
-import {type Character, initCharacter, type RosterGoal, initRosterGoal} from './types';
+import {type Character, initCharacter, type RosterGoal, initRosterGoal, type Goal} from './types';
 
 // Initialize character data and roster goal data at module level
 let chars: Character[] = [];
@@ -81,6 +81,7 @@ export function getRosterGoals(): RosterGoal[]{
 
 
 /** Mutates corresponding entries in rosterGoals after a char goal operation. */
+/*
 export function expandRosterGoals(charIndex: number, expand: boolean){
   rosterGoals.forEach((rosterGoal: RosterGoal) => { // For each roster goal,
     if (expand) // Expand roster goal entry for current character
@@ -91,6 +92,7 @@ export function expandRosterGoals(charIndex: number, expand: boolean){
   saveChars(); // Save updated character data to local storage
   saveRosterGoals(); // Save updated roster goals to local storage
 } // Must save to prevent desync of chars and rosterGoals.
+*/
 
 
 /** Saves current character data to local storage. */
@@ -124,9 +126,14 @@ export function saveCharParams(index: number, name: string, ilvl: string, charCl
 }
 
 
+export function setGoalData(charIndex: number, newData: Goal[]){
+  chars[charIndex].goals = newData;
+}
+
+
 /** Sets the name of the specified roster goal. */
 export function setRosterGoalName(index: number, name: string){
-  rosterGoals[index].name = name;
+  rosterGoals[index].id = name;
 } // Don't save here, saveRosterGoals() will be called by next onBlur event
 
 

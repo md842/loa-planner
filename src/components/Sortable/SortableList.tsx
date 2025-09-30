@@ -14,10 +14,13 @@ interface Props<T extends BaseItem> {
   items: T[];
   onChange(items: T[]): void;
   renderItem(item: T, index: number): ReactNode;
+  /* Optional function to run after moving items (e.g., CharacterGoalTable runs
+     this after updating goals to additionally update roster goals) */
+  moveHandler?(activeIndex: number, overIndex: number): void;
 }
 
 export function SortableList<T extends BaseItem>(props: Props<T>) {
-  let {items, onChange, renderItem} = props; // Unpack props 
+  let {items, onChange, renderItem, moveHandler} = props; // Unpack props 
 
   const [active, setActive] = useState<Active | null>(null);
   const activeItem = useMemo(
@@ -34,8 +37,9 @@ export function SortableList<T extends BaseItem>(props: Props<T>) {
         if (over && active.id !== over?.id) {
           const activeIndex = items.findIndex(({ id }) => id === active.id);
           const overIndex = items.findIndex(({ id }) => id === over.id);
-
           onChange(arrayMove(items, activeIndex, overIndex));
+          if (moveHandler) // If defined, run optional move handler
+            moveHandler(activeIndex, overIndex);
         }
         setActive(null);
       }}

@@ -29,12 +29,7 @@ interface SourceRowProps{
   syncMatIndex?: number; // Index of mat this table represents in the sync pair
 }
 
-/**
- * Generate a table row for the "Roster Storage" section.
- * @param  {boolean}        total     If true, this row represents the table total.
- * @param  {number}         index     The index of the source to use for this row.
- * @return {JSX.Element[]}            The generated table row.
- */
+// Generate a table row for the "Roster Storage" section.
 export function SourceRow(props: SourceRowProps): ReactNode{
   let {total, src, index, combo, setChanged, setSource,
        syncRow, syncMatIndex} = props; // Unpack props
