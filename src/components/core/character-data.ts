@@ -80,21 +80,6 @@ export function getRosterGoals(): RosterGoal[]{
 }
 
 
-/** Mutates corresponding entries in rosterGoals after a char goal operation. */
-/*
-export function expandRosterGoals(charIndex: number, expand: boolean){
-  rosterGoals.forEach((rosterGoal: RosterGoal) => { // For each roster goal,
-    if (expand) // Expand roster goal entry for current character
-      rosterGoal.goals[charIndex].push(false); // Default to false
-    else // Contract roster goal entry for current character
-      rosterGoal.goals[charIndex].pop(); // Removes last item
-  });
-  saveChars(); // Save updated character data to local storage
-  saveRosterGoals(); // Save updated roster goals to local storage
-} // Must save to prevent desync of chars and rosterGoals.
-*/
-
-
 /** Saves current character data to local storage. */
 export function saveChars(){
   let temp: string = JSON.stringify(chars);
@@ -126,9 +111,10 @@ export function saveCharParams(index: number, name: string, ilvl: string, charCl
 }
 
 
+/** Overwrites a character's goals entirely with the specified data. */
 export function setGoalData(charIndex: number, newData: Goal[]){
   chars[charIndex].goals = newData;
-}
+} // Don't save here, saveChars() will be called by next onBlur event
 
 
 /** Sets the name of the specified roster goal. */
@@ -138,7 +124,7 @@ export function setRosterGoalName(index: number, name: string){
 
 
 /** Overwrites rosterGoals entirely with the specified data. */
-export function setRosterGoals(newData: RosterGoal[]){
+export function setRosterGoalData(newData: RosterGoal[]){
   rosterGoals = newData;
   saveRosterGoals();  // Save updated roster goals to local storage
 }

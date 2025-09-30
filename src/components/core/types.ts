@@ -17,7 +17,7 @@ export function initCharacter(): Character{
     class: "(Class)",
     usesClassColor: true,
     color: "#777",
-    goals: [initGoal(), {id: "Total", mats: initMaterials()} as Goal],
+    goals: [initGoal("(Goal 1)"), initGoal("Total")],
     boundMats: initMaterials()
   };
 }
@@ -52,8 +52,8 @@ export interface Goal{
 }
 
 /** Initializes and returns a default Goal object. */
-export function initGoal(): Goal{
-  return {id: "(Goal Name)", mats: initMaterials()};
+export function initGoal(name: string): Goal{
+  return {id: name, mats: initMaterials()};
 }
 
 

@@ -1,13 +1,15 @@
-import {type ReactNode, useEffect, useState} from 'react';
+import {type ChangeEvent, type ReactNode, useEffect, useState} from 'react';
 
 import {arrayMove} from "@dnd-kit/sortable";
 import {GoalRow} from './GoalRow';
 import {SortableList} from '../../Sortable/SortableList';
 
 import {type Goal, initGoal, type Materials, subMaterials, type RosterGoal} from '../../core/types';
-import {getRosterGoals, saveChars, setGoalData, setRosterGoals} from '../../core/character-data';
+import {getRosterGoals, saveChars, setGoalData, setRosterGoalData} from '../../core/character-data';
 
 import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
 
@@ -62,6 +64,7 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
           total={i == goals.length - 1} // Last goal is total
           goal={goals[i]}
           index={i}
+          goalNameUnique={goalNameUnique}
           // Parent component state setters
           setChanged={setChanged}
           setGoal={setGoal}
@@ -71,11 +74,26 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
     return table;
   }
 
+  function goalNameUnique(name: string, ignoreIndex?: number, otherGoals?: Goal[]): boolean{
+    // Search otherGoals, or default to goals if otherGoals not defined
+    let searchGoals: Goal[] = otherGoals ? otherGoals : goals;
+    return searchGoals.every(function(goal: Goal, index: number){
+      if (index == ignoreIndex)
+        return true;
+      return name != goal.id; // Returns false on any match
+    }); // Returns true if no match
+  }
+
   function SettingsModal(){
     // State variables for storing uncommitted changes to goals
     const [tempGoals, setTempGoals] = useState(initTempGoals);
     const [tempTotal, setTempTotal] = useState(initTempTotal);
     const [tempRosterGoals, setTempRosterGoals] = useState(initTempRosterGoals);
+
+    // State variables for "Add Goal" form
+    // Allows disabling "Add Goal" button when name is empty or not unique
+    const [goalName, setGoalName] = useState("");
+    const [uniqueName, setUniqueName] = useState(true);
 
     function initTempGoals(): Goal[]{ // temp state initializer function
       // Deep copy goals excluding "Total" from goals
@@ -92,7 +110,9 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
       return JSON.parse(JSON.stringify(getRosterGoals()));
     }
 
-    function handleAddGoal(){
+    function handleAddGoal(e: React.FormEvent<HTMLFormElement>){
+      e.preventDefault(); // Prevents refreshing page on form submission
+
       // console.log("tempRosterGoals[0] before add:", tempRosterGoals[0].goals[0]);
 
       // Deep copy roster goals from tempRosterGoals
@@ -104,11 +124,20 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
       });
 
       // Update state variable with blank goal
-      setTempGoals([...tempGoals, initGoal()]);
+      setTempGoals([...tempGoals, initGoal(goalName)]);
       // Update state variable with expanded roster goals
       setTempRosterGoals(expandedRosterGoals);
+      setUniqueName(false); // goalName is no longer unique
 
       // console.log("tempRosterGoals[0] after add:", expandedRosterGoals[0].goals[0]);
+    }
+
+    function handleGoalNameChange(e: ChangeEvent<HTMLInputElement>){
+      if (e.target.value.length < 30){ // Under length limit, accept input
+        setGoalName(e.target.value); // Update controlled name input
+        // Search tempGoals for matching name and set uniqueName accordingly
+        setUniqueName(goalNameUnique(e.target.value, undefined, tempGoals));
+      }
     }
 
     function handleDelete(index: number){
@@ -157,7 +186,7 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
 
     function saveChanges(){
       setGoals([...tempGoals, tempTotal]); // Apply uncommitted changes
-      setRosterGoals(tempRosterGoals); // Apply uncommitted changes
+      setRosterGoalData(tempRosterGoals); // Apply uncommitted changes
       updateRosterGoals(); // Send signal to update RosterCard goalsTable
       updateRosterRem(); // Send signal to update RosterCard remTable
       setChanged(true); // Save character data
@@ -185,7 +214,33 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
             )}
             moveHandler={handleSwap}
           />
-          <Button className="d-block mx-auto" variant="primary" onClick={handleAddGoal}>Add Goal</Button>
+          <hr/>
+          <p>Add a new goal using the form below.</p>
+          <Form onSubmit={(e) => handleAddGoal(e)}>
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon3">Name</InputGroup.Text>
+              <Form.Control
+                value={goalName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleGoalNameChange(e)}
+              />
+            <Button className="d-block mx-auto" variant="primary" type="submit"
+              // Disable if goal name is empty, too long, or not unique
+              disabled={!goalName.length || !uniqueName}
+            >
+              Add Goal
+            </Button>
+            </InputGroup>
+            {!goalName.length &&  // If button is disabled, render help string
+              <p style={{color: "var(--bs-warning)"}}>
+                Goal name cannot be empty.
+              </p>
+            }
+            {!uniqueName &&  // If button is disabled, render help string
+              <p style={{color: "var(--bs-warning)"}}>
+                Goal name must be unique.
+              </p>
+            }
+          </Form>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={saveChanges}>Save</Button>

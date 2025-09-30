@@ -48,7 +48,7 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
     let goal: Goal = JSON.parse(JSON.stringify(goals[goalIndex]));
     let total: Goal = JSON.parse(JSON.stringify(goals[goals.length - 1]));
 
-    if (id) // If defined, update goal.id
+    if (id != undefined) // If defined, update goal.id
       goal.id = id;
     if (key){ // If defined, update goal.mats[key] and goalsTotal
       total.mats[key] -= goal.mats[key]; // Subtract old amount from total

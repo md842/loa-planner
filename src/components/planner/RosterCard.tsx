@@ -5,7 +5,7 @@ import {RosterGoalTable} from './tables/RosterGoalTable';
 import {RemTable} from './tables/RemTable';
 
 import {type Character, type Goal, type Materials, addMaterials, initMaterials, subMaterials, type RosterGoal} from '../core/types';
-import {getRosterGoals, setRosterGoals} from '../core/character-data';
+import {getRosterGoals, setRosterGoalData} from '../core/character-data';
 import {getRosterMats} from '../core/roster-storage-data';
 
 import Button from 'react-bootstrap/Button';
@@ -130,7 +130,7 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
   
     function handleSubmit(){
       // Called when "Save" button is clicked
-      setRosterGoals(temp); // Commit changes in temp to rosterGoals
+      setRosterGoalData(temp); // Commit changes in temp to rosterGoals
       updateRosterGoals(); // Update goals table
       updateRosterRem(); // Update remaining materials table(s)
       setModalVis(false); // Close modal
