@@ -17,7 +17,7 @@ interface GoalRowProps{
 
   /* Helper function that checks for uniqueness of a goal name. Passed to 
      GoalRow as a prop because GoalRow only has data for its own goal. */
-  goalNameUnique(name: string, ignoreIndex?: number, otherGoals?: Goal[]): boolean;
+  goalNameUnique(name: string, ignoreIndex?: number): boolean;
 
   /** References to parent component state/state setters */
   // Signals to parent component to save uncommitted changes.

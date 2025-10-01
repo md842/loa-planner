@@ -41,7 +41,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
   // Get const reference to preset sources for this table's material(s)
   const presetSources = getPresetSources(mat);
 
-  const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
+  const [modalVis, setModalVis] = useState(false); // ConfigModal visibility
 
   // Table state variable for materials sources
   const [changed, setChanged] = useState(false);
@@ -132,8 +132,8 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
     setRosterMat(matIndex ? mat2! : mat, total.amt[matIndex]);
   }
 
-  function SettingsModal(){
-    if (!configurable) // Only render SettingsModal if table is configurable
+  function ConfigModal(){
+    if (!configurable) // Only render ConfigModal if table is configurable
       return;
 
     // State variables for storing uncommitted changes to sources
@@ -406,7 +406,7 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
 
   return(
     <Col style={{"--table-color": color, "--mat2-color": color2} as React.CSSProperties}>
-      <SettingsModal/> {/* Hidden until setModalVis(true) onClick*/}
+      <ConfigModal/> {/* Hidden until setModalVis(true) onClick*/}
       <Table hover>
         <thead>
           <tr>

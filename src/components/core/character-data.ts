@@ -1,4 +1,4 @@
-import {type Character, initCharacter, type RosterGoal, initRosterGoal, type Goal} from './types';
+import {type Character, initCharacter, type RosterGoal, type Goal} from './types';
 
 // Initialize character data and roster goal data at module level
 let chars: Character[] = [];
@@ -12,8 +12,6 @@ if (storedChars) // Character data exists in local storage
   chars = JSON.parse(storedChars); // Use local stored data
 if (storedRosterGoals) // Roster goal data exists in local storage
   rosterGoals = JSON.parse(storedRosterGoals); // Use local stored data
-else // Must have at least one roster goal, initialize one
-  rosterGoals = [initRosterGoal(chars)];
 
 console.log("Initialized", chars.length, "characters.");
 console.log("Initialized", rosterGoals.length, "roster goals.");
@@ -34,21 +32,12 @@ export function addChar(): boolean{
   chars.push(initCharacter()); // Add character
   // Each roster goal's goal indices field must be expanded for new character.
   rosterGoals.forEach((rosterGoal: RosterGoal) => {
-    rosterGoal.goals.push([false]); // New char has one goal, default to false
+    rosterGoal.goals.push([]); // New char has no goals
   });
   saveChars(); // Save updated character data to local storage
   saveRosterGoals(); // Save updated roster goals to local storage
   return true; // Adding character succeeded
 } // Must save to prevent desync of chars and rosterGoals.
-
-/** Adds a new blank roster goal to the end of the roster goal data. */
-export function addRosterGoal(): boolean{
-  if (rosterGoals.length == 10) // Limit roster goals to 10
-    return false; // Adding roster goal failed
-
-  rosterGoals.push(initRosterGoal(chars)); // Add roster goal
-  return true; // Adding roster goal succeeded
-} // Don't save goal data; changing anything in new roster goal will save
 
 
 /** Deletes the character with the specified index. */
@@ -59,12 +48,6 @@ export function delChar(index: number){
     rosterGoal.goals.splice(index, 1);
   });
   saveChars(); // Save updated character data to local storage
-  saveRosterGoals(); // Save updated roster goals to local storage
-}
-
-/** Deletes the last roster goal. */
-export function delRosterGoal(){
-  rosterGoals.pop(); // Remove the last roster goal
   saveRosterGoals(); // Save updated roster goals to local storage
 }
 

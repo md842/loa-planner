@@ -1,17 +1,14 @@
-import {type ChangeEvent, type JSX, useEffect, useState} from 'react';
+import {type ReactNode, useEffect, useState} from 'react';
 
 import {TableHeader} from './tables/TableHeader';
 import {RosterGoalTable} from './tables/RosterGoalTable';
 import {RemTable} from './tables/RemTable';
 
 import {type Character, type Goal, type Materials, addMaterials, initMaterials, subMaterials, type RosterGoal} from '../core/types';
-import {getRosterGoals, setRosterGoalData} from '../core/character-data';
+import {getRosterGoals} from '../core/character-data';
 import {getRosterMats} from '../core/roster-storage-data';
 
 import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
-import InputGroup from 'react-bootstrap/InputGroup';
-import Modal from 'react-bootstrap/Modal';
 
 /** Props interface for RosterTable. */
 interface RosterCardProps{
@@ -25,7 +22,7 @@ interface RosterCardProps{
 }
 
 /** Constructs the card for the roster goals. */
-export function RosterCard(props: RosterCardProps): JSX.Element{
+export function RosterCard(props: RosterCardProps): ReactNode{
   let {chars, rosterGoalUpdateSignal, rosterRemUpdateSignal, setOnTop, updateRosterGoals, updateRosterRem} = props; // Unpack props
 
   /* Stores the conversion of roster goals to roster card table goals.
@@ -33,8 +30,6 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
      Will be initialized when useEffect runs on mount, so initialize blank. */
   const [tableGoals, setTableGoals] = useState([] as Goal[]);
   const [remTableGoals, setRemTableGoals] = useState([] as Goal[]);
-
-  const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
 
   // Update signal handlers
   useEffect(() => { // Triggers useEffect in RosterGoalTable with new goal data
@@ -94,92 +89,9 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
     return remTableGoals;
   }
 
-  function SettingsModal(){
-    let rosterGoals: RosterGoal[] = getRosterGoals();
-    const [curGoal, setCurGoal] = useState(0); // Controlled by dropdown
-    const [temp] = useState(initTemp); // Stores uncommitted changes
-
-    function initTemp(): RosterGoal[]{ // temp state initializer function
-      return JSON.parse(JSON.stringify(rosterGoals)); // Deep copy rosterGoals
-    }
-
-    function GoalCheckboxes(props: {goals: Goal[], charIndex: number}): JSX.Element{
-      /* Separating checkbox rendering into its own component function allows
-         defaultChecked to update when changing selected roster goal. */
-      return(
-        <>
-          {props.goals.map((goal: Goal, goalIndex: number) => {
-            return(<Form.Check
-              className="mb-3"
-              style={{overflowWrap: "anywhere"} /* Long names wrap to new line */}
-              key={goal.id + goalIndex}
-              type="checkbox"
-              label={goal.id}
-              defaultChecked={temp[curGoal].goals[props.charIndex][goalIndex]}
-              onChange={(e) => handleChange(e, props.charIndex, goalIndex)}
-            />);
-          })}
-        </>
-      );
-    }
-
-    function handleChange(e: ChangeEvent<HTMLInputElement>, charIndex: number, goalIndex: number){
-      // Called when checkbox is clicked. Directly manipulates booleans in temp
-      temp[curGoal].goals[charIndex][goalIndex] = e.target.checked;
-    }
-  
-    function handleSubmit(){
-      // Called when "Save" button is clicked
-      setRosterGoalData(temp); // Commit changes in temp to rosterGoals
-      updateRosterGoals(); // Update goals table
-      updateRosterRem(); // Update remaining materials table(s)
-      setModalVis(false); // Close modal
-    }
-
-    return(
-      <Modal size="lg" show={modalVis} centered>
-        <Modal.Header>
-          <Modal.Title>Roster Goal Settings</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <InputGroup className="mb-3">
-            <InputGroup.Text id="basic-addon3">Select a roster goal to edit:</InputGroup.Text>
-            <Form.Select
-              defaultValue={0}
-              onChange={(e) => {setCurGoal(Number(e.target.value))}}
-            >
-              { /* Populate dropdown with roster goal names */
-              rosterGoals.map((goal: RosterGoal, index: number) => {
-                return(<option key={index} value={index}>{goal.id}</option>);
-              })}
-            </Form.Select>
-          </InputGroup>
-          <h6 className="mb-4">Select character goals to include in the selected roster goal:</h6>
-          <div className="d-flex flex-wrap">
-            { /* Populate dropdown with character names and corresponding goals */
-            chars.map((char: Character, charIndex: number) => {
-              return(<div className="mb-3 w-25" key={char.name + charIndex}>
-                <h6 className="mb-3">{char.name}</h6>
-                <GoalCheckboxes goals={char.goals} charIndex={charIndex}/>
-              </div>);
-            })}
-          </div>
-          <Form onSubmit={handleSubmit}>
-            <Button variant="primary" type="submit">Save</Button>
-            <Button variant="primary" onClick={() => setModalVis(false)}>Cancel</Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
-    );
-  }
-
   return(
     <div className="mb-4" style={{"--table-color": "#777"} as React.CSSProperties}>
-      <SettingsModal/> {/* Hidden until setModalVis(true) onClick*/}
       <div className="settings-tab">
-        <Button variant="link" onClick={() => setModalVis(true)}>
-          <i className="bi bi-gear-fill"/>
-        </Button>
         <Button variant="link" onClick={() => setOnTop(true)}>
           <i className="bi bi-chevron-up"/>
         </Button>
@@ -190,6 +102,10 @@ export function RosterCard(props: RosterCardProps): JSX.Element{
       <TableHeader title={<th>Roster Goals</th>}/>
       <RosterGoalTable
         goals={tableGoals}
+        remGoals={remTableGoals}
+        chars={chars}
+        setGoals={setTableGoals}
+        setRemGoals={setRemTableGoals}
         updateRosterGoals={updateRosterGoals}
         updateRosterRem={updateRosterRem}
       />

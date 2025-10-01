@@ -4,7 +4,7 @@ import {arrayMove} from "@dnd-kit/sortable";
 import {GoalRow} from './GoalRow';
 import {SortableList} from '../../Sortable/SortableList';
 
-import {type Goal, initGoal, type Materials, subMaterials, type RosterGoal} from '../../core/types';
+import {type Goal, initGoal, goalNameUnique, type Materials, subMaterials, type RosterGoal} from '../../core/types';
 import {getRosterGoals, saveChars, setGoalData, setRosterGoalData} from '../../core/character-data';
 
 import Button from 'react-bootstrap/Button';
@@ -34,7 +34,7 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
        setGoal, setGoals,
        updateRosterGoals, updateRosterRem} = props; // Unpack props
 
-  const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
+  const [modalVis, setModalVis] = useState(false); // ConfigModal visibility
 
   // Table state variable for character goals.
   const [changed, setChanged] = useState(false);
@@ -64,7 +64,9 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
           total={i == goals.length - 1} // Last goal is total
           goal={goals[i]}
           index={i}
-          goalNameUnique={goalNameUnique}
+          /* GoalRow only receives its own goal data, so pass a version of
+             goalNameUnique that captures goals from parent table props. */
+          goalNameUnique={(name: string, ignoreIndex: number) => goalNameUnique(goals, name, ignoreIndex)}
           // Parent component state setters
           setChanged={setChanged}
           setGoal={setGoal}
@@ -74,24 +76,14 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
     return table;
   }
 
-  function goalNameUnique(name: string, ignoreIndex?: number, otherGoals?: Goal[]): boolean{
-    // Search otherGoals, or default to goals if otherGoals not defined
-    let searchGoals: Goal[] = otherGoals ? otherGoals : goals;
-    return searchGoals.every(function(goal: Goal, index: number){
-      if (index == ignoreIndex)
-        return true;
-      return name != goal.id; // Returns false on any match
-    }); // Returns true if no match
-  }
-
-  function SettingsModal(){
+  function ConfigModal(){
     // State variables for storing uncommitted changes to goals
     const [tempGoals, setTempGoals] = useState(initTempGoals);
     const [tempTotal, setTempTotal] = useState(initTempTotal);
     const [tempRosterGoals, setTempRosterGoals] = useState(initTempRosterGoals);
 
-    // State variables for "Add Goal" form
-    // Allows disabling "Add Goal" button when name is empty or not unique
+    /* State variables for "Add Goal" form; allows disabling "Add Goal" button
+       when name is empty or not unique */
     const [goalName, setGoalName] = useState("");
     const [uniqueName, setUniqueName] = useState(true);
 
@@ -110,43 +102,17 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
       return JSON.parse(JSON.stringify(getRosterGoals()));
     }
 
-    function handleAddGoal(e: React.FormEvent<HTMLFormElement>){
-      e.preventDefault(); // Prevents refreshing page on form submission
-
-      // console.log("tempRosterGoals[0] before add:", tempRosterGoals[0].goals[0]);
-
-      // Deep copy roster goals from tempRosterGoals
-      let expandedRosterGoals: RosterGoal[] = JSON.parse(JSON.stringify(tempRosterGoals));
-
-      expandedRosterGoals.forEach((rosterGoal: RosterGoal) => { // For each roster goal,
-        // Expand roster goal entry for current charIndex
-        rosterGoal.goals[charIndex].push(false); // Default to false
-      });
-
-      // Update state variable with blank goal
-      setTempGoals([...tempGoals, initGoal(goalName)]);
-      // Update state variable with expanded roster goals
-      setTempRosterGoals(expandedRosterGoals);
-      setUniqueName(false); // goalName is no longer unique
-
-      // console.log("tempRosterGoals[0] after add:", expandedRosterGoals[0].goals[0]);
-    }
-
-    function handleGoalNameChange(e: ChangeEvent<HTMLInputElement>){
-      if (e.target.value.length < 30){ // Under length limit, accept input
-        setGoalName(e.target.value); // Update controlled name input
-        // Search tempGoals for matching name and set uniqueName accordingly
-        setUniqueName(goalNameUnique(e.target.value, undefined, tempGoals));
-      }
-    }
-
+    /** Called when clicking the trash button in the sortable list section. */
     function handleDelete(index: number){
       // Deep copy goal total from tempTotal
       let total: Goal = JSON.parse(JSON.stringify(tempTotal));
       // Deep copy roster goals from tempRosterGoals
       let contractedRosterGoals: RosterGoal[] = JSON.parse(JSON.stringify(tempRosterGoals));
 
-      // console.log("tempRosterGoals[0] before delete:", tempRosterGoals[0].goals[0]);
+      /* If the current input in the goal name field matches the name of the
+         deleted goal tempGoals[index], free the goal name for re-use. */
+      if (goalName == tempGoals[index].id)
+        setUniqueName(true);
 
       // Subtract deleted goal's mats from total goal
       total.mats = subMaterials(total.mats, tempGoals[index].mats);
@@ -162,15 +128,12 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
       setTempTotal(total); // Update tempTotal with newly computed total.mats
       // Update state variable with contracted roster goals
       setTempRosterGoals(contractedRosterGoals);
-
-      // console.log("tempRosterGoals[0] after delete:", contractedRosterGoals[0].goals[0]);
     }
 
+    /** Called when swapping items in the sortable list section. */
     function handleSwap(activeIndex: number, overIndex: number){
       // Deep copy roster goals from tempRosterGoals
       let movedRosterGoals: RosterGoal[] = JSON.parse(JSON.stringify(tempRosterGoals));
-
-      // console.log("tempRosterGoals[0] before swap:", tempRosterGoals[0].goals[0]);
 
       // Swap roster goal entries for the current charIndex
       movedRosterGoals.forEach((rosterGoal: RosterGoal) => { // For each roster goal,
@@ -180,10 +143,37 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
 
       // Update state variable with moved roster goals
       setTempRosterGoals(movedRosterGoals);
-
-      // console.log("tempRosterGoals[0] after swap:", movedRosterGoals[0].goals[0]);
     }
 
+    /** Called when clicking "Add Goal" in the new goal section. */
+    function handleAddGoal(e: React.FormEvent<HTMLFormElement>){
+      e.preventDefault(); // Prevents refreshing page on form submission
+
+      // Deep copy roster goals from tempRosterGoals
+      let expandedRosterGoals: RosterGoal[] = JSON.parse(JSON.stringify(tempRosterGoals));
+
+      expandedRosterGoals.forEach((rosterGoal: RosterGoal) => { // For each roster goal,
+        // Expand roster goal entry for current charIndex
+        rosterGoal.goals[charIndex].push(false); // Default to false
+      });
+
+      // Update state variable with blank goal
+      setTempGoals([...tempGoals, initGoal(goalName)]);
+      // Update state variable with expanded roster goals
+      setTempRosterGoals(expandedRosterGoals);
+      setUniqueName(false); // goalName is no longer unique
+    }
+
+    /** Handles the controlled name input in the new goal section. */
+    function handleAddGoalNameChange(e: ChangeEvent<HTMLInputElement>){
+      if (e.target.value.length < 30){ // Under length limit, accept input
+        setGoalName(e.target.value); // Update controlled name input
+        // Search tempGoals for matching name and set uniqueName accordingly
+        setUniqueName(goalNameUnique(tempGoals, e.target.value, undefined));
+      }
+    }
+
+    /** Called when clicking "Save" in the modal footer. */
     function saveChanges(){
       setGoals([...tempGoals, tempTotal]); // Apply uncommitted changes
       setRosterGoalData(tempRosterGoals); // Apply uncommitted changes
@@ -200,20 +190,25 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
         </Modal.Header>
         <Modal.Body>
           <p>Drag and drop goals to reorder them, or click the trash button to delete them.</p>
-          <SortableList
-            items={tempGoals}
-            onChange={setTempGoals}
-            renderItem={(item: Goal, index: number) => (
-              <SortableList.Item id={item.id}>
-                {item.id}
-                <div>
-                  <SortableList.DeleteButton handleDelete={handleDelete} index={index}/>
-                  <SortableList.DragHandle/>
-                </div>
-              </SortableList.Item>
-            )}
-            moveHandler={handleSwap}
-          />
+          {tempGoals.length > 0 && // Render SortableList if char goals present
+            <SortableList
+              items={tempGoals}
+              onChange={setTempGoals}
+              renderItem={(item: Goal, index: number) => (
+                <SortableList.Item id={item.id}>
+                  {item.id}
+                  <div>
+                    <SortableList.DeleteButton handleDelete={handleDelete} index={index}/>
+                    <SortableList.DragHandle/>
+                  </div>
+                </SortableList.Item>
+              )}
+              moveHandler={handleSwap}
+            />
+          }
+          {!tempGoals.length && // Render help string if no char goals present
+            <p className="text-center">No goals set, please add one using the form below.</p>
+          }
           <hr/>
           <p>Add a new goal using the form below.</p>
           <Form onSubmit={(e) => handleAddGoal(e)}>
@@ -221,7 +216,7 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
               <InputGroup.Text id="basic-addon3">Name</InputGroup.Text>
               <Form.Control
                 value={goalName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleGoalNameChange(e)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleAddGoalNameChange(e)}
               />
             <Button className="d-block mx-auto" variant="primary" type="submit"
               // Disable if goal name is empty, too long, or not unique
@@ -252,7 +247,7 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
 
   return(
     <>
-      <SettingsModal/> {/* Hidden until setModalVis(true) onClick*/}
+      <ConfigModal/> {/* Hidden until setModalVis(true) onClick*/}
       <Table className="m-0" hover>
         <thead>
           <tr className="bold">

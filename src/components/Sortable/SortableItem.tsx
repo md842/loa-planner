@@ -68,3 +68,11 @@ export function DragHandle(){
     </Button>
   );
 }
+
+export function EditButton(props: {handleEdit(index: number): void, index: number}){
+  return(
+    <Button variant="link" onClick={() => props.handleEdit(props.index)}>
+      <i className="bi bi-pencil-fill"/>
+    </Button>
+  );
+}

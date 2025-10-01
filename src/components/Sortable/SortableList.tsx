@@ -3,7 +3,7 @@ import React, {type ReactNode, useMemo, useState} from "react";
 import {type Active, type UniqueIdentifier, DndContext, PointerSensor, useSensor, useSensors} from "@dnd-kit/core";
 import {arrayMove, SortableContext} from "@dnd-kit/sortable";
 
-import {DeleteButton, DragHandle, SortableItem} from "./SortableItem";
+import {DeleteButton, DragHandle, EditButton, SortableItem} from "./SortableItem";
 import {SortableOverlay} from "./SortableOverlay";
 
 interface BaseItem {
@@ -62,3 +62,4 @@ export function SortableList<T extends BaseItem>(props: Props<T>) {
 SortableList.Item = SortableItem;
 SortableList.DeleteButton = DeleteButton;
 SortableList.DragHandle = DragHandle;
+SortableList.EditButton = EditButton;

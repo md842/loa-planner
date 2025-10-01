@@ -17,7 +17,7 @@ export function initCharacter(): Character{
     class: "(Class)",
     usesClassColor: true,
     color: "#777",
-    goals: [initGoal("(Goal 1)"), initGoal("Total")],
+    goals: [initGoal("Total")],
     boundMats: initMaterials()
   };
 }
@@ -30,16 +30,16 @@ export interface RosterGoal{
 }
 
 /** Initializes and returns a default RosterGoal object. */
-export function initRosterGoal(chars: Character[]): RosterGoal{
-  let out: RosterGoal = {
-    id: "(Goal Name)",
-    goals: []
-  };
-  for (let i = 0; i < chars.length; i++){ // For each character
-    let charGoals: boolean[] = []; // Initialize goals to false (not included)
-    for (let j = 0; j < chars[i].goals.length; j++)
-      charGoals.push(false); // Default to false
-    out.goals.push(charGoals); // Add empty indices array for each character
+export function initRosterGoal(name: string, chars: Character[]): RosterGoal{
+  let out: RosterGoal = {id: name, goals: []};
+
+  // Initialize RosterGoal shape: [chars.length, chars[i].goals.length]
+  for (let i = 0; i < chars.length; i++){ // For each character i
+    let charGoals: boolean[] = []; // Initialize included goals array
+    // For each goal of character i (use length - 1 to exclude "Total")
+    for (let j = 0; j < chars[i].goals.length - 1; j++)
+      charGoals.push(false); // chars[i].goals[j] not included in RosterGoal
+    out.goals.push(charGoals); // Push included goals array for character i
   }
   return out;
 }
@@ -54,6 +54,15 @@ export interface Goal{
 /** Initializes and returns a default Goal object. */
 export function initGoal(name: string): Goal{
   return {id: name, mats: initMaterials()};
+}
+
+/** Searches a Goal or RosterGoal array for the specified name. */
+export function goalNameUnique(goals: Goal[] | RosterGoal[], name: string, ignoreIndex?: number): boolean{
+  return goals.every(function(goal: Goal | RosterGoal, index: number){
+    if (index == ignoreIndex)
+      return true;
+    return name != goal.id; // Returns false on any match
+  }); // Returns true if no match
 }
 
 
