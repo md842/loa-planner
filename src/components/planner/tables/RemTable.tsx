@@ -1,4 +1,4 @@
-import {type JSX, type RefObject, useEffect, useState} from 'react';
+import {type ReactNode, type RefObject, useEffect, useState} from 'react';
 
 import {Cell} from './Cell';
 
@@ -18,12 +18,12 @@ interface RemTableProps{
 }
 
 /** Constructs the "Remaining materials" section(s) of the parent table. */
-export function RemTable(props: RemTableProps): JSX.Element{
+export function RemTable(props: RemTableProps): ReactNode{
   let {goals, boundMats, matsTotalRef, charRemUpdateSignal} = props; // Unpack props
 
   /* Table state variable for remaining materials (character or roster).
      Will be initialized when useEffect runs on mount, so initialize blank. */
-  const [table, updateTable] = useState([] as JSX.Element[][]);
+  const [table, updateTable] = useState([] as ReactNode[][]);
 
   // Update signal handlers
   useEffect(() => { // RosterCard RemTable update hook
@@ -38,16 +38,33 @@ export function RemTable(props: RemTableProps): JSX.Element{
     } // Do nothing if not an initialized character RemTable
   }, [charRemUpdateSignal]); // Runs on mount and when update signal received
   
-  function initTable(): JSX.Element[][]{ // Table state initializer function
-    let remTable: JSX.Element[] = [], remBoundTable: JSX.Element[] = []; // Initialize tables
-
-    goals.forEach((goal: Goal, index: number) => {
-      // Build rows for each goal and push them to the tables
-      remTable.push(<RemRow key={index} goal={goal} subtract={(matsTotalRef) ? matsTotalRef.current : undefined}/>);
-      if (boundMats) // Character table; initialize remBoundTable.
-        remBoundTable.push(<RemRow bound key={index} goal={goal} subtract={boundMats}/>);
-    });
-
+  function initTable(): ReactNode[][]{ // Table state initializer function
+    let remTable: ReactNode[] = [], remBoundTable: ReactNode[] = []; // Initialize tables
+            
+    for (let i = 0; i < goals.length; i++){ // Build row for each goal
+      // If !boundMats, this is a RosterCard RemTable, no "Total" goal. Else:
+      // If goals.length == 1, char has no goals (only "Total"), render nothing
+      // If goals.length == 2, char has only one goal, skip rendering "Total"
+      if (!boundMats || goals.length > 2 || (goals.length == 2 && i == 0)){
+        remTable.push(
+          <RemRow key={i}
+            // If character (boundMats is defined), last goal is "Total"
+            total={boundMats && i == goals.length - 1}
+            goal={goals[i]}
+            subtract={(matsTotalRef) ? matsTotalRef.current : undefined}
+          />
+        );
+        if (boundMats){ // Character table; initialize remBoundTable.
+          remBoundTable.push(
+            <RemRow bound key={i}
+              total={i == goals.length - 1} // Last goal is "Total"
+              goal={goals[i]}
+              subtract={boundMats}
+            />
+          );
+        }
+      }
+    }
     return [remTable, remBoundTable];
   }
 
@@ -59,8 +76,8 @@ export function RemTable(props: RemTableProps): JSX.Element{
    * @param  {Materials}      subtract  The materials to subtract from the goal.
    * @return {JSX.Element[]}            The generated table row.
    */
-  function RemRow(props: {bound?: boolean, total?: boolean, goal: Goal, subtract?: Materials}): JSX.Element{
-    let cells: JSX.Element[] = []; // Initialize table row for this goal
+  function RemRow(props: {bound?: boolean, total?: boolean, goal: Goal, subtract?: Materials}): ReactNode{
+    let cells: ReactNode[] = []; // Initialize table row for this goal
 
     // Add goal name to the table row for this goal
     cells.push(<Cell key="id" className="first-col" value={props.goal.id}/>);

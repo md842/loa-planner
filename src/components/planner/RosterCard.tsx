@@ -109,7 +109,9 @@ export function RosterCard(props: RosterCardProps): ReactNode{
         updateRosterGoals={updateRosterGoals}
         updateRosterRem={updateRosterRem}
       />
-      <RemTable goals={remTableGoals}/>
+      {remTableGoals.length > 0 && // Skip rendering if no roster goals set
+        <RemTable goals={remTableGoals}/>
+      }
     </div>
   );
 }

@@ -202,12 +202,14 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
         updateCharRem={() => sendCharRemSignal([])}
         updateRosterRem={updateRosterRem}
       />
-      <RemTable
-        goals={goals}
-        matsTotalRef={matsTotal}
-        boundMats={char.boundMats}
-        charRemUpdateSignal={charRemUpdateSignal}
-      />
+      {goals.length > 1 && // Skip rendering if char has no goals set
+        <RemTable
+          goals={goals}
+          matsTotalRef={matsTotal}
+          boundMats={char.boundMats}
+          charRemUpdateSignal={charRemUpdateSignal}
+        />
+      }
     </div>
   );
 }

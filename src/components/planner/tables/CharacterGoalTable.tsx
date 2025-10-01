@@ -59,19 +59,23 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
     let table: ReactNode[] = []; // Initialize table
         
     for (let i = 0; i < goals.length; i++){ // Build row for each goal
-      table.push(
-        <GoalRow key={i}
-          total={i == goals.length - 1} // Last goal is total
-          goal={goals[i]}
-          index={i}
-          /* GoalRow only receives its own goal data, so pass a version of
-             goalNameUnique that captures goals from parent table props. */
-          goalNameUnique={(name: string, ignoreIndex: number) => goalNameUnique(goals, name, ignoreIndex)}
-          // Parent component state setters
-          setChanged={setChanged}
-          setGoal={setGoal}
-        />
-      );
+      // If goals.length == 1, char has no goals (only "Total"), render nothing
+      // If goals.length == 2, char has only one goal, skip rendering "Total"
+      if (goals.length > 2 || (goals.length == 2 && i == 0)){
+        table.push(
+          <GoalRow key={i}
+            total={i == goals.length - 1} // Last goal is "Total"
+            goal={goals[i]}
+            index={i}
+            /* GoalRow only receives its own goal data, so pass a version of
+              goalNameUnique that captures goals from parent table props. */
+            goalNameUnique={(name: string, ignoreIndex: number) => goalNameUnique(goals, name, ignoreIndex)}
+            // Parent component state setters
+            setChanged={setChanged}
+            setGoal={setGoal}
+          />
+        );
+      }
     }
     return table;
   }
