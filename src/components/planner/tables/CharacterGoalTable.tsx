@@ -28,7 +28,7 @@ interface GoalTableProps{
   updateRosterRem(): void; // Sends signal to update RosterCard RemTable
 }
 
-/** Constructs the "Goals" section of the parent table. */
+/** Constructs the "Goals" section of CharacterCard. */
 export function CharacterGoalTable(props: GoalTableProps): ReactNode{
   let {goals, charIndex, charName,
        setGoal, setGoals,
@@ -36,13 +36,13 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
 
   const [modalVis, setModalVis] = useState(false); // ConfigModal visibility
 
-  // Table state variable for character goals.
+  // Table state variables for character goals.
   const [changed, setChanged] = useState(false);
   const [table, updateTable] = useState(initTable);
 
   // Update signal handlers
   useEffect(() => {
-    setGoalData(charIndex, goals); // Update goal data
+    setGoalData(charIndex, goals); // Update goal data (does not save)
     updateTable(initTable); // Re-render CharacterGoalTable
     updateRosterGoals(); // Send signal to update RosterGoalTable
     updateRosterRem(); // Send signal to update RosterCard RemTable

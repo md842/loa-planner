@@ -11,7 +11,8 @@ let changed: boolean = false;
 
 /** Props interface for GoalRow. */
 interface GoalRowProps{
-  total?: boolean; // If true, this row represents the table total.
+  roster?: boolean; // If true, this row represents a roster goal.
+  total?: boolean; // If true, this row represents a total goal.
   goal: Goal; // The Goal that this GoalRow is displaying.
   index: number; // The index of the Goal that this GoalRow is displaying.
 
@@ -28,7 +29,7 @@ interface GoalRowProps{
 
 // Generate a table row for the "Goals" section.
 export function GoalRow(props: GoalRowProps): ReactNode{
-  let {total, goal, index, goalNameUnique,
+  let {roster, total, goal, index, goalNameUnique,
        setChanged, setGoal} = props; // Unpack props
   let cells: ReactNode[] = []; // Initialize table row for this goal
 
@@ -84,8 +85,8 @@ export function GoalRow(props: GoalRowProps): ReactNode{
   Object.entries(mats).forEach(([key, value]) => {
     cells.push(
       <Cell key={key} controlledValue={value}
-        onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
-        onChange={total ? undefined : (e) => handleGoalMatChange(e, index, key)}
+        onBlur={(roster || total) ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
+        onChange={(roster || total) ? undefined : (e) => handleGoalMatChange(e, index, key)}
       /> // If not total row, specify change handlers for writeable field
     );
   });

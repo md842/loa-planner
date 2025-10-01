@@ -5,7 +5,7 @@ import {RosterGoalTable} from './tables/RosterGoalTable';
 import {RemTable} from './tables/RemTable';
 
 import {type Character, type Goal, type Materials, addMaterials, initMaterials, subMaterials, type RosterGoal} from '../core/types';
-import {getRosterGoals} from '../core/character-data';
+import {getRosterGoals, setRosterGoalName} from '../core/character-data';
 import {getRosterMats} from '../core/roster-storage-data';
 
 import Button from 'react-bootstrap/Button';
@@ -89,6 +89,24 @@ export function RosterCard(props: RosterCardProps): ReactNode{
     return remTableGoals;
   }
 
+  /** Updates goal goalIndex. */
+  function setGoal(goalIndex: number, id: string){
+    setRosterGoalName(goalIndex, id); // Update roster goal name
+
+    /* Renaming roster goals does not require table goal recalculation
+       (expensive). Skip recalculation by renaming existing table goals. */
+    setTableGoals([ // Update goals state variable
+      ...tableGoals.slice(0, goalIndex), // Goals before goalIndex
+      {...tableGoals[goalIndex], id: id}, // Rename tableGoal goalIndex
+      ...tableGoals.slice(goalIndex + 1) // Goals after goalIndex
+    ]);
+    setRemTableGoals([ // Update remGoals state variable
+      ...remTableGoals.slice(0, goalIndex), // remGoals before goalIndex
+      {...remTableGoals[goalIndex], id: id}, // Rename remTableGoal goalIndex
+      ...remTableGoals.slice(goalIndex + 1) // remGoals after goalIndex
+    ]);
+  }
+
   return(
     <div className="mb-4" style={{"--table-color": "#777"} as React.CSSProperties}>
       <div className="settings-tab">
@@ -104,6 +122,7 @@ export function RosterCard(props: RosterCardProps): ReactNode{
         goals={tableGoals}
         remGoals={remTableGoals}
         chars={chars}
+        setGoal={setGoal}
         setGoals={setTableGoals}
         setRemGoals={setRemTableGoals}
         updateRosterGoals={updateRosterGoals}

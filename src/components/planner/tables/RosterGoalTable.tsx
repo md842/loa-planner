@@ -1,12 +1,11 @@
 import {type ChangeEvent, type ReactNode, useEffect, useState} from 'react';
 
 import {arrayMove} from "@dnd-kit/sortable";
-import {Cell} from './Cell';
+import {GoalRow} from './GoalRow';
 import {SortableList} from '../../Sortable/SortableList';
 
 import {type Goal, initGoal, goalNameUnique, type RosterGoal, initRosterGoal, type Character} from '../../core/types';
-import {getRosterGoals, saveRosterGoals, setRosterGoalData, setRosterGoalName} from '../../core/character-data';
-import {goldValue} from '../../core/market-data';
+import {getRosterGoals, saveRosterGoals, setRosterGoalData} from '../../core/character-data';
 
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -21,6 +20,8 @@ interface RosterGoalTableProps{
   chars: Character[]; // The characters in the roster
 
   // References to parent component state/state setters
+  // Wrapper for updating the target goal in parent component state
+  setGoal(goalIndex: number, id: string): void;
   // Directly updates parent component goal state (used by SettingsModal)
   setGoals(goals: Goal[]): void;
   setRemGoals(goals: Goal[]): void;
@@ -28,70 +29,49 @@ interface RosterGoalTableProps{
   updateRosterRem: () => void; // Send signal to update RosterCard RemTable
 }
 
-// If true, changes will be committed by saveChanges() on next onBlur event.
-let changed: boolean = false;
-
-/** Constructs the "Roster Goals" section of the parent table. */
+/** Constructs the "Goals" section of RosterCard. */
 export function RosterGoalTable(props: RosterGoalTableProps): ReactNode{
   let {goals, remGoals, chars,
-       setGoals, setRemGoals,
+       setGoal, setGoals, setRemGoals,
        updateRosterGoals, updateRosterRem} = props; // Unpack props
 
   const [modalVis, setModalVis] = useState(false); // ConfigModal visibility
 
-  /* Table state variable for roster goals.
-     Will be initialized when useEffect runs on mount, so initialize blank. */
+  // Table state variables for roster goals.
+  const [changed, setChanged] = useState(false);
+  // Will be initialized when useEffect runs on mount, so initialize blank
   const [table, updateTable] = useState([] as ReactNode[]);
 
   useEffect(() => {
     updateTable(initTable); // Re-render goals table
   }, [goals]); // Runs on mount and when table goals change
+
+  useEffect(() => {
+    if (changed){ // Uncommitted changes are present
+      saveRosterGoals(); // Save updated roster goal data
+      setChanged(false); // Signal that changes were committed
+    }
+  }, [changed]); // Runs when changed changes, does nothing on mount due to initial state false
+  
   
   function initTable(): ReactNode[]{ // Table state initializer function
     let table: ReactNode[] = []; // Initialize table
-  
-    goals.forEach((goal: Goal, index: number) => {
-      // Build a row for each goal and push it to the table
-      table.push(<GoalRow key={index} goal={goal} index={index}/>);
-    });
-    return table;
-  }
-
-  function handleGoalChange(e: ChangeEvent<HTMLInputElement>, index: number){
-    if (e.target.value.length < 30){ // Under length limit, accept input
-      setRosterGoalName(index, e.target.value); // Update roster goal name
-      updateRosterRem(); // Update remaining materials table(s)
-      changed = true; // Roster goal data will be saved on next focus out
+        
+    for (let i = 0; i < goals.length; i++){ // Build row for each goal
+      table.push(
+        <GoalRow roster key={i}
+          goal={goals[i]}
+          index={i}
+          /* GoalRow only receives its own goal data, so pass a version of
+            goalNameUnique that captures goals from parent table props. */
+          goalNameUnique={(name: string, ignoreIndex: number) => goalNameUnique(goals, name, ignoreIndex)}
+          // Parent component state setters
+          setChanged={setChanged}
+          setGoal={setGoal}
+        />
+      );
     }
-    else // Over length limit, reject input
-      e.target.value = getRosterGoals()[index].id; // Resets field to last good value
-  }
-
-  /**
-   * Generate a table row for the "Goals" section.
-   * @param  {Goal}           goal      The goal being used to generate the row.
-   * @param  {number}         index     The index of the goal being used to generate the row.
-   * @return {JSX.Element[]}            The generated table row.
-   */
-  function GoalRow(props: {goal: Goal, index: number}): ReactNode{
-    let {goal, index} = props;  // Unpack props
-    let cells: ReactNode[] = []; // Initialize table row for this goal
-
-    cells.push( // Add writeable name to the table row for this roster goal
-      <Cell key="id" value={goal.id} className="first-col"
-        onBlur={() => {if (changed){saveRosterGoals()}; changed = false}}
-        onChange={(e) => handleGoalChange(e, index)}
-      /> // Always writeable, specify change handlers for writeable field
-    );
-    
-    // Add calculated gold value to the table row for this goal
-    cells.push(<Cell bold key="goldValue" value={goldValue(goal.mats)}/>);
-
-    // Build rest of row for this goal by pushing values as Cells
-    Object.entries(goal.mats).forEach(([key, value]) => {
-      cells.push(<Cell key={key} value={value}/>);
-    }); // Always read-only, do not specify change handlers
-    return <tr>{cells}</tr>;
+    return table;
   }
 
   function ConfigModal(){
