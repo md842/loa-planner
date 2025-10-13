@@ -134,7 +134,7 @@ export function SourceRow(props: SourceRowProps): ReactNode{
 
   return(
     <tr>
-      <Cell bold key="label" value={src.id}/>
+      <Cell bold key="label" className="src-label" value={src.id}/>
       <Cell key="qty" controlledValue={total ? undefined : qty[0]} // Empty if total
         onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
         onChange={total ? undefined : (e) => handleQtyChange(e, index, 0)}

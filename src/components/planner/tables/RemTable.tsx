@@ -80,7 +80,7 @@ export function RemTable(props: RemTableProps): ReactNode{
     let cells: ReactNode[] = []; // Initialize table row for this goal
 
     // Add goal name to the table row for this goal
-    cells.push(<Cell key="id" className="first-col" value={props.goal.id}/>);
+    cells.push(<Cell key="id" className="goal-name" value={props.goal.id}/>);
 
     // Subtract specified materials (if defined) from goal materials
     let mats: Materials = (props.subtract) ? subMaterials(props.goal.mats, props.subtract) : props.goal.mats;

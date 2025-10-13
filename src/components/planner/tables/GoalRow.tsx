@@ -93,7 +93,7 @@ export function GoalRow(props: GoalRowProps): ReactNode{
 
   return(
     <tr className={total ? "bold" : undefined}>
-      <Cell key="id" controlledValue={id} className="first-col"
+      <Cell key="id" controlledValue={id} className="goal-name"
         onBlur={total ? undefined : handleGoalNameFocusOut}
         onChange={total ? undefined : (e) => handleGoalNameChange(e, index)}
       />

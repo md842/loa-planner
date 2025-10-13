@@ -9,7 +9,6 @@ import {type Materials, type Source, findSource} from '../core/types';
 import {getPresetSources, getSources, saveSources, setRosterMat, setSourceData} from '../core/roster-storage-data';
 
 import Button from 'react-bootstrap/Button';
-import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
@@ -159,6 +158,28 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
       return JSON.parse(JSON.stringify(sources[sources.length - 1]));
     }
 
+    /** Called when clicking the trash button in the sortable list section. */
+    function handleDelete(index: number){
+      // Deep copy source total from tempTotal
+      let total: Source = JSON.parse(JSON.stringify(tempTotal));
+
+      // Subtract deleted source's amounts from total amount
+      total.amt[0] -= temp[index].amt[0];
+      if (mat2) // Combo source: subtract both amounts
+        total.amt[1] -= temp[index].amt[1];
+
+      /* If the current input in the custom source name field matches the name
+         of the deleted source temp[index], and the deleted source name does
+         not match a preset source, free the custom source name for re-use. */
+      if (customName == temp[index].id)
+        setUniqueName(findSource(customName, presetSources) == -1);
+
+      // Delete the specified source by slicing out specified index from temp
+      setTemp([...temp.slice(0, index), ...temp.slice(index + 1)]);
+      setTempTotal(total); // Update tempTotal with newly computed total.amt
+    }
+
+    /** Called when clicking "Add Source" in the new source section. */
     function handleAddSource(e: React.FormEvent<HTMLFormElement>){
       e.preventDefault(); // Prevents refreshing page on form submission
       let target: HTMLFormElement = e.target as HTMLFormElement;
@@ -209,33 +230,17 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
       }
     }
 
-    function handleDelete(index: number){
-      // Deep copy source total from tempTotal
-      let total: Source = JSON.parse(JSON.stringify(tempTotal));
-
-      // Subtract deleted source's amounts from total amount
-      total.amt[0] -= temp[index].amt[0];
-      if (mat2) // Combo source: subtract both amounts
-        total.amt[1] -= temp[index].amt[1];
-
-      /* If the current input in the custom source name field matches the name
-         of the deleted source temp[index], and the deleted source name does
-         not match a preset source, free the custom source name for re-use. */
-      if (customName == temp[index].id)
-        setUniqueName(findSource(customName, presetSources) == -1);
-
-      // Delete the specified source by slicing out specified index from temp
-      setTemp([...temp.slice(0, index), ...temp.slice(index + 1)]);
-      setTempTotal(total); // Update tempTotal with newly computed total.amt
-    }
-
+    /** Handles the controlled name input in the new source section. */
     function handleCustomSourceNameChange(e: ChangeEvent<HTMLInputElement>){
-      setCustomName(e.target.value); // Update controlled name input
-      // Search for name in temp and presetSources; false if found in either
-      setUniqueName((findSource(e.target.value, temp)) == -1 &&
-                    (findSource(e.target.value, presetSources) == -1));
+      if (e.target.value.length < 30){ // Under length limit, accept input
+        setCustomName(e.target.value); // Update controlled name input
+        // Search for name in temp and presetSources; false if found in either
+        setUniqueName((findSource(e.target.value, temp)) == -1 &&
+                      (findSource(e.target.value, presetSources) == -1));
+      }
     }
 
+    /** Called when clicking "Save" in the modal footer. */
     function saveChanges(){
       setSources([
         ...temp, // Uncommitted changes
@@ -405,9 +410,9 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
   }
 
   return(
-    <Col style={{"--table-color": color, "--mat2-color": color2} as React.CSSProperties}>
+    <>
       <ConfigModal/> {/* Hidden until setModalVis(true) onClick*/}
-      <Table hover>
+      <Table hover style={{"--table-color": color, "--mat2-color": color2} as React.CSSProperties}>
         <thead>
           <tr>
             <th>{title}</th>
@@ -437,6 +442,6 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
           {table}
         </tbody>
       </Table>
-    </Col>
+    </>
   );
 }

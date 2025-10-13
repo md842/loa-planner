@@ -73,7 +73,7 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
     // console.log("MatsRow", name, "rendering");
 
     // Add goal name and calculated gold value to the table row for this goal
-    cells.push(<Cell bold key="name" className="first-col" value={name}/>);
+    cells.push(<Cell bold key="name" className="goal-name" value={name}/>);
     cells.push(<Cell bold key="goldValue" value={goldValue(mats)}/>);
 
     // Build rest of row for this goal by pushing values as Cells
