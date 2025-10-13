@@ -38,6 +38,10 @@ input:disabled{ /* Disabled input has same text color as surroundings */
   min-width: 15em;
 }
 
+.qty{ /* Max width of quantity, use, and amount columns in SourceRow */
+  max-width: 6em;
+}
+
 .bold{ /* Custom bold font weight for gold value and total cells */
   font-weight: 400;
 }

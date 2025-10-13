@@ -108,7 +108,7 @@ export function RosterCard(props: RosterCardProps): ReactNode{
   }
 
   return(
-    <div className="mb-4" style={{"--table-color": "#777"} as React.CSSProperties}>
+    <div className="mb-4 d-flex" style={{"--table-color": "#777"} as React.CSSProperties}>
       <div className="settings-tab">
         <Button variant="link" onClick={() => setOnTop(true)}>
           <i className="bi bi-chevron-up"/>
@@ -117,20 +117,22 @@ export function RosterCard(props: RosterCardProps): ReactNode{
           <i className="bi bi-chevron-down"/>
         </Button>
       </div>
-      <TableHeader title={<th>Roster Goals</th>}/>
-      <RosterGoalTable
-        goals={tableGoals}
-        remGoals={remTableGoals}
-        chars={chars}
-        setGoal={setGoal}
-        setGoals={setTableGoals}
-        setRemGoals={setRemTableGoals}
-        updateRosterGoals={updateRosterGoals}
-        updateRosterRem={updateRosterRem}
-      />
-      {remTableGoals.length > 0 && // Skip rendering if no roster goals set
-        <RemTable goals={remTableGoals}/>
-      }
+      <div className="w-100">
+        <TableHeader title={<th>Roster Goals</th>}/>
+        <RosterGoalTable
+          goals={tableGoals}
+          remGoals={remTableGoals}
+          chars={chars}
+          setGoal={setGoal}
+          setGoals={setTableGoals}
+          setRemGoals={setRemTableGoals}
+          updateRosterGoals={updateRosterGoals}
+          updateRosterRem={updateRosterRem}
+        />
+        {remTableGoals.length > 0 && // Skip rendering if no roster goals set
+          <RemTable goals={remTableGoals}/>
+        }
+      </div>
     </div>
   );
 }

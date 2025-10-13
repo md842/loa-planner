@@ -170,7 +170,7 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
   }
 
   return(
-    <div className="mb-4" style={{"--table-color": charState.color} as React.CSSProperties}>
+    <div className="mb-4 d-flex" style={{"--table-color": charState.color} as React.CSSProperties}>
       <SettingsModal/> {/* Hidden until setModalVis(true) onClick*/}
       <div className="settings-tab">
         <Button variant="link" onClick={() => setModalVis(true)}>
@@ -186,30 +186,32 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
           <i className="bi bi-trash3-fill"/>
         </Button>
       </div>
-      <TableHeader title={<th>{charState.name}<br/>{charState.ilvl} {charState.class}</th>}/>
-      <CharacterGoalTable
-        goals={goals}
-        charIndex={index}
-        charName={charState.name}
-        setGoal={setGoal}
-        setGoals={setGoals}
-        updateRosterGoals={updateRosterGoals}
-        updateRosterRem={updateRosterRem}
-      />
-      <MatsTable
-        matsTotalRef={matsTotal}
-        boundMats={char.boundMats}
-        updateCharRem={() => sendCharRemSignal([])}
-        updateRosterRem={updateRosterRem}
-      />
-      {goals.length > 1 && // Skip rendering if char has no goals set
-        <RemTable
+      <div className="w-100">
+        <TableHeader title={<th>{charState.name}<br/>{charState.ilvl} {charState.class}</th>}/>
+        <CharacterGoalTable
           goals={goals}
+          charIndex={index}
+          charName={charState.name}
+          setGoal={setGoal}
+          setGoals={setGoals}
+          updateRosterGoals={updateRosterGoals}
+          updateRosterRem={updateRosterRem}
+        />
+        <MatsTable
           matsTotalRef={matsTotal}
           boundMats={char.boundMats}
-          charRemUpdateSignal={charRemUpdateSignal}
+          updateCharRem={() => sendCharRemSignal([])}
+          updateRosterRem={updateRosterRem}
         />
-      }
+        {goals.length > 1 && // Skip rendering if char has no goals set
+          <RemTable
+            goals={goals}
+            matsTotalRef={matsTotal}
+            boundMats={char.boundMats}
+            charRemUpdateSignal={charRemUpdateSignal}
+          />
+        }
+      </div>
     </div>
   );
 }

@@ -38,6 +38,10 @@
   background-color: color-mix(in srgb, var(--mat2-color) 25%, white) !important;
 }
 
+.mat2.th{ /* Set border color to the table's theme color */
+  border: 1px solid var(--mat2-color);
+}
+
 /* Checkbox color formatting */
 
 .mat1-checkbox .form-check-input{

@@ -1,3 +1,5 @@
+import '../RosterStorageCard.css';
+
 import {type ReactNode, useEffect, useState} from 'react';
 
 import {SourceRow} from './SourceRow';
@@ -11,12 +13,13 @@ import Table from 'react-bootstrap/Table';
 interface MarketDataTableProps{
   title: string; // Displayed in the top-left corner of the table
   color: string; // The color used for this table
+  image: string; // The image used for this table
   mat: keyof Materials; // The material associated with this table
 }
 
 /** Constructs the market data table. */
 export function MarketDataTable(props: MarketDataTableProps): ReactNode{
-  let {title, color, mat} = props; // Unpack props
+  let {title, color, image, mat} = props; // Unpack props
 
   // Table state variable for materials sources
   const [changed, setChanged] = useState(false);
@@ -124,7 +127,15 @@ export function MarketDataTable(props: MarketDataTableProps): ReactNode{
     <Table className="m-0" hover style={{"--table-color": color} as React.CSSProperties}>
       <thead>
         <tr>
-          <th colSpan={4}>{title}</th>
+          <th>
+            <div className="d-flex align-items-end">
+              <img src={image}/>
+              <p className="mx-2 mb-0">{title}</p>
+            </div>
+          </th>
+          <th>Market Price</th>
+          <th>Use?</th>
+          <th>Unit Price</th>
         </tr>
       </thead>
       <tbody>

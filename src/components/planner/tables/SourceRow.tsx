@@ -135,17 +135,17 @@ export function SourceRow(props: SourceRowProps): ReactNode{
   return(
     <tr>
       <Cell bold key="label" className="src-label" value={src.id}/>
-      <Cell key="qty" controlledValue={total ? undefined : qty[0]} // Empty if total
+      <Cell key="qty" className="qty" controlledValue={total ? undefined : qty[0]} // Empty if total
         onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
         onChange={total ? undefined : (e) => handleQtyChange(e, index, 0)}
       />{/* Input disabled if total */}
 
       {/* "Use?" column may be empty, a checkbox, or an input. */}
       {!src.sel && !use && // src.sel, src.use not defined, render empty cell
-        <td className="read-only" key="use"></td>
+        <td key="use" className="read-only qty"></td>
       }
       {src.sel && // src.sel defined, render checkbox
-        <td className="read-only" key="use">
+        <td key="use" className="read-only qty">
           <Form.Check className="mat1-checkbox"
             type="checkbox"
             defaultChecked={src.sel[0]}
@@ -154,27 +154,28 @@ export function SourceRow(props: SourceRowProps): ReactNode{
         </td>
       }
       {use && // src.use defined, render input
-        <Cell key="use" controlledValue={use[0]}
+        <Cell key="use" className="qty" controlledValue={use[0]}
           onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
           onChange={total ? undefined : (e) => handleUseChange(e, index, 0)}
         />
       }
 
-      <Cell bold key="amt" value={src.amt[0]}/>
+      <Cell bold key="amt" className="qty" value={src.amt[0]}/>
 
       {combo && // Render cells for second material
         <>
-          <Cell key="qty2" className="mat2" controlledValue={total ? undefined : qty[1]} // Empty if total
+          <Cell bold key="label2" className="mat2 src-label" value={src.id}/>
+          <Cell key="qty2" className="mat2 qty" controlledValue={total ? undefined : qty[1]} // Empty if total
             onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
             onChange={total ? undefined : (e) => handleQtyChange(e, index, 1)}
           />{/* Input disabled if total */}
 
           {/* "Use?" column may be empty, a checkbox, or an input. */}
           {!src.sel && !use && // src.sel, src.use not defined, render empty cell
-            <td className="read-only mat2" key="use2"></td>
+            <td key="use2" className="read-only mat2 qty"></td>
           }
           {src.sel && // src.sel defined, render checkbox
-            <td className="read-only mat2" key="use2">
+            <td key="use2" className="read-only mat2 qty">
               <Form.Check className="mat2-checkbox"
                 type="checkbox"
                 defaultChecked={src.sel[1]}
@@ -183,13 +184,13 @@ export function SourceRow(props: SourceRowProps): ReactNode{
             </td>
           }
           {use && // src.use defined, render input
-            <Cell key="use2" className="mat2" controlledValue={use[1]}
+            <Cell key="use2" className="mat2 qty" controlledValue={use[1]}
               onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
               onChange={total ? undefined : (e) => handleUseChange(e, index, 1)}
             />
           }
 
-          <Cell bold key="amt2" className="mat2" value={src.amt[1]}/>
+          <Cell bold key="amt2" className="mat2 qty" value={src.amt[1]}/>
         </>
       }
     </tr>

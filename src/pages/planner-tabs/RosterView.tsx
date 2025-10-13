@@ -6,6 +6,7 @@ import {type Character} from '../../components/core/types';
 import {addChar, delChar, getChars, swapChar} from '../../components/core/character-data';
 
 import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container';
 
 export function RosterView(){
   const [chars, setChars] = useState(getChars); // Load characters into state
@@ -34,7 +35,7 @@ export function RosterView(){
   }
 
 	return(
-    <main>
+    <Container fluid="md">
       {rosterOnTop && /* If true, render RosterCard above CharacterCards. */
         <RosterCard
           chars={chars}
@@ -70,6 +71,6 @@ export function RosterView(){
         <Button className="d-block mx-auto" variant="primary" onClick={handleAddChar}>
           Add Character
         </Button>}
-    </main>
+    </Container>
 	);
 }
