@@ -1,9 +1,9 @@
 import './Planner.css';
-import '../components/planner/tables/common.css';
+import '../components/container-table/container-table.css';
 
-import {RosterView} from './planner-tabs/RosterView';
-import {RosterStorageView} from './planner-tabs/RosterStorageView';
-import {MarketDataView} from './planner-tabs/MarketDataView';
+import {RosterView} from '../components/planner/RosterView';
+import {RosterStorageView} from '../components/planner/RosterStorageView';
+import {MarketDataView} from '../components/planner/MarketDataView';
 
 import {Tab, Tabs} from 'react-bootstrap';
 

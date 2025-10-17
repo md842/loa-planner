@@ -1,6 +1,6 @@
 import {type ReactNode, type RefObject, useEffect, useState} from 'react';
 
-import {Cell} from './Cell';
+import {Cell} from '../../container-table/Cell';
 
 import {type Goal, type Materials, subMaterials} from '../../core/types';
 import {goldValue} from '../../core/market-data';

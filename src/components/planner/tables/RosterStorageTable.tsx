@@ -1,12 +1,12 @@
-import './RosterStorageCard.css';
+import './RosterStorageTable.css';
 
 import {type ChangeEvent, type ReactNode, useEffect, useState} from 'react';
 
-import {SortableList} from '../Sortable/SortableList';
-import {SourceRow} from './tables/SourceRow';
+import {SortableList} from '../../Sortable/SortableList';
+import {SourceRow} from '../table-components/SourceRow';
 
-import {type Materials, type Source, findSource} from '../core/types';
-import {getPresetSources, getSources, saveSources, setRosterMat, setSourceData} from '../core/roster-storage-data';
+import {type Materials, type Source, findSource} from '../../core/types';
+import {getPresetSources, getSources, saveSources, setRosterMat, setSourceData} from '../../core/roster-storage-data';
 
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -16,8 +16,8 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 
-/** Props interface for RosterStorageCard. */
-interface RosterStorageCardProps{
+/** Props interface for RosterStorageTable. */
+interface RosterStorageTableProps{
   configurable?: boolean; // If defined, this table's sources are configurable.
   title: string; // Displayed in the top-left corner of the table
   color: string; // The color used for this table
@@ -35,7 +35,7 @@ interface RosterStorageCardProps{
 }
 
 /** Constructs the "Goals" section of the parent table. */
-export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
+export function RosterStorageTable(props: RosterStorageTableProps): ReactNode{
   let {configurable, title, color, image, mat,
        title2, color2, image2, mat2,
        syncMatIndex} = props; // Unpack props

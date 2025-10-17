@@ -1,8 +1,8 @@
-import '../RosterStorageCard.css';
+import './RosterStorageTable.css';
 
 import {type ReactNode, useEffect, useState} from 'react';
 
-import {SourceRow} from './SourceRow';
+import {SourceRow} from '../table-components/SourceRow';
 
 import {type Materials, type Source} from '../../core/types';
 import {getSources, saveSources, setMarketData, setSourceData} from '../../core/market-data';

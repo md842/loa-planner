@@ -1,9 +1,9 @@
 import {type ChangeEvent, type ReactNode, type RefObject, useState} from 'react';
 
-import {Cell} from './Cell';
+import {Cell} from '../../container-table/Cell';
 
 import {type Materials, addMaterials, initMaterials} from '../../core/types';
-import {sanitizeInput, saveChanges} from './common';
+import {sanitizeInput, saveChanges} from '../table-components/common';
 import {goldValue} from '../../core/market-data';
 import {getRosterMats} from '../../core/roster-storage-data';
 

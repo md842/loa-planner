@@ -1,6 +1,6 @@
 import {type ChangeEvent, type ReactNode, useEffect, useState} from 'react';
 
-import {Cell} from './Cell';
+import {Cell} from '../../container-table/Cell';
 
 import {type Goal, type Materials} from '../../core/types';
 import {sanitizeInput} from './common';

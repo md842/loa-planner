@@ -1,12 +1,12 @@
 import {type ReactNode, useEffect, useState} from 'react';
 
-import {TableHeader} from './tables/TableHeader';
-import {RosterGoalTable} from './tables/RosterGoalTable';
-import {RemTable} from './tables/RemTable';
+import {TableHeader} from '../tables/TableHeader';
+import {RosterGoalTable} from '../tables/RosterGoalTable';
+import {RemTable} from '../tables/RemTable';
 
-import {type Character, type Goal, type Materials, addMaterials, initMaterials, subMaterials, type RosterGoal} from '../core/types';
-import {getRosterGoals, setRosterGoalName} from '../core/character-data';
-import {getRosterMats} from '../core/roster-storage-data';
+import {type Character, type Goal, type Materials, addMaterials, initMaterials, subMaterials, type RosterGoal} from '../../core/types';
+import {getRosterGoals, setRosterGoalName} from '../../core/character-data';
+import {getRosterMats} from '../../core/roster-storage-data';
 
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';

@@ -1,7 +1,7 @@
 import {type ChangeEvent, type ReactNode, useEffect, useState} from 'react';
 
 import {arrayMove} from "@dnd-kit/sortable";
-import {GoalRow} from './GoalRow';
+import {GoalRow} from '../table-components/GoalRow';
 import {SortableList} from '../../Sortable/SortableList';
 
 import {type Goal, initGoal, goalNameUnique, type RosterGoal, initRosterGoal, type Character} from '../../core/types';

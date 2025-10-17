@@ -1,4 +1,4 @@
-import {MarketDataTable} from '../../components/planner/tables/MarketDataTable';
+import {MarketDataTable} from './tables/MarketDataTable';
 
 import t4_blue from '../../assets/t4_blue.png';
 import t4_blueSolar from '../../assets/t4_bluesolar.png';

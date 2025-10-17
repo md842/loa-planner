@@ -1,7 +1,7 @@
 import {type ChangeEvent, type ReactNode, useContext, useEffect, useState} from 'react';
 
-import {Cell} from './Cell';
-import {SyncContext} from '../../../pages/planner-tabs/RosterStorageView';
+import {Cell} from '../../container-table/Cell';
+import {SyncContext} from '../RosterStorageView';
 
 import {type Source} from '../../core/types';
 import {sanitizeInput} from './common';

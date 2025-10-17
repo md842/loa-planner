@@ -1,6 +1,6 @@
 import {createContext, useState} from 'react';
 
-import {RosterStorageCard} from '../../components/planner/RosterStorageCard';
+import {RosterStorageTable} from './tables/RosterStorageTable';
 
 import gold from '../../assets/gold.png';
 import silver from '../../assets/silver.png';
@@ -34,13 +34,13 @@ export function RosterStorageView(){
       <h3 className="mb-3">Roster Storage</h3>
       <Row>
         <Col className="d-flex flex-column">
-          <RosterStorageCard
+          <RosterStorageTable
             title="Silver"
             color="#999"
             image={silver}
             mat="silver"
           />
-          <RosterStorageCard
+          <RosterStorageTable
             title="Gold"
             color="#FC4"
             image={gold}
@@ -48,7 +48,7 @@ export function RosterStorageView(){
           />
         </Col>
         <Col>
-          <RosterStorageCard configurable
+          <RosterStorageTable configurable
             title="Fusion Materials"
             color="#F90"
             image={t4_fusion}
@@ -66,7 +66,7 @@ export function RosterStorageView(){
           } as SyncState}
         >
           <Col>
-            <RosterStorageCard configurable
+            <RosterStorageTable configurable
               title="Shards"
               color="#E47"
               image={t4_shard}
@@ -76,7 +76,7 @@ export function RosterStorageView(){
             />
           </Col>
           <Col>
-            <RosterStorageCard configurable
+            <RosterStorageTable configurable
               title="Leapstones"
               color="#D36"
               image={t4_leap}
@@ -89,7 +89,7 @@ export function RosterStorageView(){
       </Row>
       <Row>
         <Col>
-          <RosterStorageCard configurable
+          <RosterStorageTable configurable
             title="Destruction Stones"
             color="#F44"
             image={t4_red}
@@ -103,7 +103,7 @@ export function RosterStorageView(){
       </Row>
       <Row>
         <Col>
-          <RosterStorageCard configurable
+          <RosterStorageTable configurable
             title="Lava's Breaths"
             color="#F43"
             image={t4_redSolar}

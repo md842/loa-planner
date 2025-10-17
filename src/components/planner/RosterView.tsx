@@ -1,9 +1,9 @@
 import {useState} from 'react';
 
-import {RosterCard} from '../../components/planner/RosterCard';
-import {CharacterCard} from '../../components/planner/CharacterCard';
-import {type Character} from '../../components/core/types';
-import {addChar, delChar, getChars, swapChar} from '../../components/core/character-data';
+import {RosterCard} from './cards/RosterCard';
+import {CharacterCard} from './cards/CharacterCard';
+import {type Character} from '../core/types';
+import {addChar, delChar, getChars, swapChar} from '../core/character-data';
 
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
