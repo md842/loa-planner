@@ -1,7 +1,8 @@
-import {type ReactNode, type RefObject, useEffect, useState} from 'react';
+import {type ReactNode, type RefObject, useContext, useEffect, useState} from 'react';
 
 import {Cell} from '../../container-table/Cell';
 
+import {PlannerSyncContext} from '../../../pages/Planner';
 import {type Goal, type Materials, subMaterials} from '../../core/types';
 import {goldValue} from '../../core/market-data';
 
@@ -27,7 +28,20 @@ export function RemTable(props: RemTableProps): ReactNode{
      Will be initialized when useEffect runs on mount, so initialize blank. */
   const [table, updateTable] = useState([] as ReactNode[][]);
 
+  const plannerSyncContext = useContext(PlannerSyncContext);
+  let {marketDataChanged, rosterMatsChanged} = plannerSyncContext; // Unpack sync context
+
   // Update signal handlers
+  useEffect(() => {
+    console.log("RemTable got change in marketData");
+    updateTable(initTable); // Re-renders table
+  }, [marketDataChanged]); // Runs on mount and when marketData changes
+
+  useEffect(() => {
+    console.log("RemTable got change in rosterMats");
+    updateTable(initTable); // Re-renders table
+  }, [rosterMatsChanged]); // Runs on mount and when rosterMats changes
+
   useEffect(() => { // RosterCard RemTable update hook
     updateTable(initTable); // Re-render entire remaining materials table
   }, [goals]); // Runs on mount and when table goals change

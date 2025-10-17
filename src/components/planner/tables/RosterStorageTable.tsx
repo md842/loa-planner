@@ -1,10 +1,11 @@
 import './RosterStorageTable.css';
 
-import {type ChangeEvent, type ReactNode, useEffect, useState} from 'react';
+import {type ChangeEvent, type ReactNode, useContext, useEffect, useState} from 'react';
 
 import {SortableList} from '../../Sortable/SortableList';
 import {SourceRow} from '../table-components/SourceRow';
 
+import {PlannerSyncContext} from '../../../pages/Planner';
 import {type Materials, type Source, findSource} from '../../core/types';
 import {getPresetSources, getSources, saveSources, setRosterMat, setSourceData} from '../../core/roster-storage-data';
 
@@ -50,6 +51,8 @@ export function RosterStorageTable(props: RosterStorageTableProps): ReactNode{
   const [sources, setSources] = useState(() => getSources(mat));
   const [table, updateTable] = useState([] as ReactNode[]);
 
+  const plannerSyncContext = useContext(PlannerSyncContext);
+
   // Update signal handlers
   useEffect(() => {
     setSourceData(mat, sources); // Updates source data
@@ -60,6 +63,7 @@ export function RosterStorageTable(props: RosterStorageTableProps): ReactNode{
     if (changed){ // Uncommitted changes are present
       saveSources(mat); // Save roster storage data for specified mat
       setChanged(false); // Signal that changes were committed
+      plannerSyncContext.setRosterMatsChanged([]);
     }
   }, [changed]); // Runs when changed changes, does nothing on mount due to initial state false
 

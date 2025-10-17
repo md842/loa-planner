@@ -1,7 +1,8 @@
-import {type ChangeEvent, type ReactNode, type RefObject, useState} from 'react';
+import {type ChangeEvent, type ReactNode, type RefObject, useContext, useEffect, useState} from 'react';
 
 import {Cell} from '../../container-table/Cell';
 
+import {PlannerSyncContext} from '../../../pages/Planner';
 import {type Materials, addMaterials, initMaterials} from '../../core/types';
 import {sanitizeInput, saveChanges} from '../table-components/common';
 import {goldValue} from '../../core/market-data';
@@ -29,6 +30,21 @@ export function MatsTable(props: MatsTableProps): ReactNode{
 
   // Table state variable for owned materials.
   const [table, updateTable] = useState(initTable);
+
+  const plannerSyncContext = useContext(PlannerSyncContext);
+  let {marketDataChanged, rosterMatsChanged} = plannerSyncContext; // Unpack sync context
+
+  // Update signal handlers
+  useEffect(() => {
+    console.log("MatsTable got change in marketData");
+    updateTable(initTable); // Re-renders table
+  }, [marketDataChanged]); // Runs on mount and when marketData changes
+
+  // Update signal handlers
+  useEffect(() => {
+    console.log("MatsTable got change in rosterMats");
+    updateTable(initTable); // Re-renders table
+  }, [rosterMatsChanged]); // Runs on mount and when rosterMats changes
 
   function initTable(): ReactNode[]{ // Table state initializer function
     let table: ReactNode[] = []; // Initialize table and matsTotal

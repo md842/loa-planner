@@ -1,9 +1,10 @@
-import {type ChangeEvent, type ReactNode, useEffect, useState} from 'react';
+import {type ChangeEvent, type ReactNode, useContext, useEffect, useState} from 'react';
 
 import {arrayMove} from "@dnd-kit/sortable";
 import {GoalRow} from '../table-components/GoalRow';
 import {SortableList} from '../../Sortable/SortableList';
 
+import {PlannerSyncContext} from '../../../pages/Planner';
 import {type Goal, initGoal, goalNameUnique, type Materials, subMaterials, type RosterGoal} from '../../core/types';
 import {getRosterGoals, saveChars, setGoalData, setRosterGoalData} from '../../core/character-data';
 
@@ -41,6 +42,14 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
   // Table state variables for character goals.
   const [changed, setChanged] = useState(false);
   const [table, updateTable] = useState(initTable);
+
+  const plannerSyncContext = useContext(PlannerSyncContext);
+
+  // Update signal handlers
+  useEffect(() => {
+    console.log("CharacterGoalTable got change in marketData");
+    updateTable(initTable); // Re-renders table
+  }, [plannerSyncContext.marketDataChanged]); // Runs on mount and when marketData changes
 
   // Update signal handlers
   useEffect(() => {

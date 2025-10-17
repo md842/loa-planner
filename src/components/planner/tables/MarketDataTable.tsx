@@ -1,7 +1,8 @@
 import './RosterStorageTable.css';
 
-import {type ReactNode, useEffect, useState} from 'react';
+import {type ReactNode, useContext, useEffect, useState} from 'react';
 
+import {PlannerSyncContext} from '../../../pages/Planner';
 import {SourceRow} from '../table-components/SourceRow';
 
 import {type Materials, type Source} from '../../core/types';
@@ -28,6 +29,8 @@ export function MarketDataTable(props: MarketDataTableProps): ReactNode{
   const [sources, setSources] = useState(() => getSources(mat));
   const [table, updateTable] = useState([] as ReactNode[]);
 
+  const plannerSyncContext = useContext(PlannerSyncContext);
+
   // Update signal handlers
   useEffect(() => {
     setSourceData(mat, sources); // Updates source data
@@ -38,6 +41,7 @@ export function MarketDataTable(props: MarketDataTableProps): ReactNode{
     if (changed){ // Uncommitted changes are present
       saveSources(mat); // Save roster storage data for specified mat
       setChanged(false); // Signal that changes were committed
+      plannerSyncContext.setMarketDataChanged([]);
     }
   }, [changed]); // Runs when changed changes, does nothing on mount due to initial state false
 
