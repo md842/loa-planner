@@ -8,10 +8,12 @@ import {type Goal, initGoal, goalNameUnique, type RosterGoal, initRosterGoal, ty
 import {getRosterGoals, saveRosterGoals, setRosterGoalData} from '../../core/character-data';
 
 import Button from 'react-bootstrap/Button';
+import Col from 'react-bootstrap/Col';
+import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
-import Table from 'react-bootstrap/Table';
+import Row from 'react-bootstrap/Row';
 
 /** Props interface for RosterGoalTable. */
 interface RosterGoalTableProps{
@@ -310,19 +312,18 @@ export function RosterGoalTable(props: RosterGoalTableProps): ReactNode{
   return(
     <>
       <ConfigModal/> {/* Hidden until setModalVis(true) onClick*/}
-      <Table className="m-0" hover>
-        <thead>
-          <tr className="bold">
-            <td className="section-title goals" colSpan={1}>Goals</td>
-            <td className="section-title goal-btns" colSpan={10}>
-              <Button variant="primary" onClick={() => setModalVis(true)}>Configure Roster Goals</Button>
-            </td>
-          </tr>
-        </thead>
-        <tbody>
-          {table}
-        </tbody>
-      </Table>
+      <Container className="container-table m-0">
+        <Row className="table-head">
+          <Col
+            className="bold section-title d-flex justify-content-between"
+            xs={12}
+          >
+            Goals
+            <Button variant="primary" onClick={() => setModalVis(true)}>Configure Roster Goals</Button>
+          </Col>
+        </Row>
+        {table}
+      </Container>
     </>
   );
 }

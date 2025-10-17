@@ -9,6 +9,7 @@ import {getRosterGoals, setRosterGoalName} from '../core/character-data';
 import {getRosterMats} from '../core/roster-storage-data';
 
 import Button from 'react-bootstrap/Button';
+import Col from 'react-bootstrap/Col';
 
 /** Props interface for RosterTable. */
 interface RosterCardProps{
@@ -118,7 +119,7 @@ export function RosterCard(props: RosterCardProps): ReactNode{
         </Button>
       </div>
       <div className="w-100">
-        <TableHeader title={<th>Roster Goals</th>}/>
+        <TableHeader title={<Col className="table-cell" xs={2}>Roster Goals</Col>}/>
         <RosterGoalTable
           goals={tableGoals}
           remGoals={remTableGoals}

@@ -1,4 +1,4 @@
-import {type JSX, type RefObject, useRef, useState} from 'react';
+import {type ReactNode, type RefObject, useRef, useState} from 'react';
 
 import {TableHeader} from './tables/TableHeader';
 import {CharacterGoalTable} from './tables/CharacterGoalTable';
@@ -9,6 +9,7 @@ import {type Character, type Goal, type Materials, initMaterials} from '../core/
 import {saveCharParams} from '../core/character-data';
 
 import Button from 'react-bootstrap/Button';
+import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
@@ -25,7 +26,7 @@ interface CharacterCardProps{
 }
 
 /** Constructs a table for a single character. */
-export function CharacterCard(props: CharacterCardProps): JSX.Element{
+export function CharacterCard(props: CharacterCardProps): ReactNode{
   let {char, index, handleDelete, handleSwap, updateRosterGoals, updateRosterRem} = props; // Unpack props
 
   // Load initial character info into state so SettingsModal can change them
@@ -186,8 +187,8 @@ export function CharacterCard(props: CharacterCardProps): JSX.Element{
           <i className="bi bi-trash3-fill"/>
         </Button>
       </div>
-      <div className="w-100">
-        <TableHeader title={<th>{charState.name}<br/>{charState.ilvl} {charState.class}</th>}/>
+      <div>
+        <TableHeader title={<Col className="table-cell" xs={2}>{charState.name}<br/>{charState.ilvl} {charState.class}</Col>}/>
         <CharacterGoalTable
           goals={goals}
           charIndex={index}

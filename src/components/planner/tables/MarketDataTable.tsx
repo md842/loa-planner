@@ -7,7 +7,9 @@ import {SourceRow} from './SourceRow';
 import {type Materials, type Source} from '../../core/types';
 import {getSources, saveSources, setMarketData, setSourceData} from '../../core/market-data';
 
-import Table from 'react-bootstrap/Table';
+import Col from 'react-bootstrap/Col';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
 
 /** Props interface for MarketDataTable. */
 interface MarketDataTableProps{
@@ -124,23 +126,17 @@ export function MarketDataTable(props: MarketDataTableProps): ReactNode{
   }
 
   return(
-    <Table className="m-0" hover style={{"--table-color": color} as React.CSSProperties}>
-      <thead>
-        <tr>
-          <th>
-            <div className="d-flex align-items-end">
-              <img src={image}/>
-              <p className="mx-2 mb-0">{title}</p>
-            </div>
-          </th>
-          <th>Market Price</th>
-          <th>Use?</th>
-          <th>Unit Price</th>
-        </tr>
-      </thead>
-      <tbody>
-        {table}
-      </tbody>
-    </Table>
+    <Container className="container-table m-0" style={{"--table-color": color} as React.CSSProperties}>
+      <Row className="table-head">
+        <Col className="table-cell" xs={6}>
+          <img src={image}/>
+          <p className="mx-2 mb-0">{title}</p>
+        </Col>
+        <Col className="table-cell" xs={2}>Market Price</Col>
+        <Col className="table-cell" xs={2}>Use?</Col>
+        <Col className="table-cell" xs={2}>Unit Price</Col>
+      </Row>
+      {table}
+    </Container>
   );
 }

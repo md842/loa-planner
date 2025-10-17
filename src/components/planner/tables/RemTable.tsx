@@ -5,7 +5,9 @@ import {Cell} from './Cell';
 import {type Goal, type Materials, subMaterials} from '../../core/types';
 import {goldValue} from '../../core/market-data';
 
-import Table from 'react-bootstrap/Table';
+import Col from 'react-bootstrap/Col';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
 
 /** Props interface for RemTable. */
 interface RemTableProps{
@@ -80,7 +82,7 @@ export function RemTable(props: RemTableProps): ReactNode{
     let cells: ReactNode[] = []; // Initialize table row for this goal
 
     // Add goal name to the table row for this goal
-    cells.push(<Cell key="id" className="goal-name" value={props.goal.id}/>);
+    cells.push(<Cell key="id" colSpan={2} value={props.goal.id}/>);
 
     // Subtract specified materials (if defined) from goal materials
     let mats: Materials = (props.subtract) ? subMaterials(props.goal.mats, props.subtract) : props.goal.mats;
@@ -93,29 +95,29 @@ export function RemTable(props: RemTableProps): ReactNode{
       cells.push(<Cell key={key} value={(props.bound && key == "silver") ? "--" : value}/>);
     }); // Always read-only, do not specify change handlers
 
-    return <tr className={props.total ? "bold" : undefined}>{cells}</tr>;
+    return(
+      <Row className={props.total ? "bold table-row" : "table-row"}>
+        {cells}
+      </Row>
+    );
   }
 
   return(
     <>
-      <Table className="m-0" hover>
-        <thead>
-          <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining materials"}</td></tr>
-        </thead>
-        <tbody>
-          {table[0]}
-        </tbody>
-      </Table>
+      <Container className="container-table m-0">
+        <Row className="table-head">
+          <Col className="bold section-title" xs={12}>Remaining materials</Col>
+        </Row>
+        {table[0]}
+      </Container>
 
       {(boundMats) &&
-        <Table className="m-0" hover>
-          <thead>
-            <tr className="bold section-title"><td className="section-title" colSpan={11}>{"Remaining bound materials"}</td></tr>
-          </thead>
-          <tbody>
-            {table[1]}
-          </tbody>
-        </Table>
+        <Container className="container-table m-0">
+          <Row className="table-head">
+            <Col className="bold section-title" xs={12}>Remaining bound materials</Col>
+          </Row>
+          {table[1]}
+        </Container>
       }
     </>
   );

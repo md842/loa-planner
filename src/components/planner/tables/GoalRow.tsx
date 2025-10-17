@@ -6,6 +6,8 @@ import {type Goal, type Materials} from '../../core/types';
 import {sanitizeInput} from './common';
 import {goldValue} from '../../core/market-data';
 
+import Row from 'react-bootstrap/Row';
+
 // If true, changes will be committed by saveSources() on next onBlur event.
 let changed: boolean = false;
 
@@ -92,13 +94,13 @@ export function GoalRow(props: GoalRowProps): ReactNode{
   });
 
   return(
-    <tr className={total ? "bold" : undefined}>
-      <Cell key="id" controlledValue={id} className="goal-name"
+    <Row className={total ? "bold table-row" : "table-row"}>
+      <Cell key="id" colSpan={2} controlledValue={id}
         onBlur={total ? undefined : handleGoalNameFocusOut}
         onChange={total ? undefined : (e) => handleGoalNameChange(e, index)}
       />
       <Cell bold key="goldValue" value={goldValue(mats)}/>
       {cells}
-    </tr>
+    </Row>
   );
 }

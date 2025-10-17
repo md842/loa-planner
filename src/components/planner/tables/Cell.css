@@ -10,7 +10,7 @@
 
 /* Cell formatting */
 
-.cell{
+.table-cell.input{
   /* Hide the visual aspects of the input element */
   background: none;
   border: none;
@@ -24,22 +24,6 @@
 
   /* Inherit global font weight specified in App.css */
   font-weight: inherit;
-}
-
-input:disabled{ /* Disabled input has same text color as surroundings */
-  color: unset;
-}
-
-.goal-name{
-  min-width: 10em;
-}
-
-.src-label{
-  min-width: 15em;
-}
-
-.qty{ /* Max width of quantity, use, and amount columns in SourceRow */
-  max-width: 6em;
 }
 
 .bold{ /* Custom bold font weight for gold value and total cells */

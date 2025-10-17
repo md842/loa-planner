@@ -1,36 +1,61 @@
 /* Table color formatting */
 
-.table > :not(caption) > * > * { /* Override Bootstrap table selector */
-  background-color: var(--table-color); /* Override background color */
-  /* Override text color within table so dark mode doesn't impact visibility */
+.container-table{
   color: #212529; /* Set light mode default text color */
 }
 
-td, th{ /* Set border color to the table's theme color */
+.table-head .table-cell{
+  display: flex; /* Required for align-items to work */
+  align-items: end; /* Align text to bottom of row */
+
   border: 1px solid var(--table-color);
+  background-color: var(--table-color);
+
+  font-weight: 500; /* Bolder font */
+
+  height: calc(64px + 1em + 2px); /* 64px image + padding + border */
 }
+
+.table-row{ /* Acts as border for rightmost table cell */
+  border-right: 1px solid var(--table-color);
+}
+
+.table-cell{
+  /* Prevent double borders by only having bottom and left borders per cell */
+  border-width: 0 0 1px 1px; /* top, right, bottom, left */
+  border-style: solid;
+  border-color: var(--table-color);
+  padding: 0.5em;
+}
+
+/* Section title formatting */
 
 .section-title{ /* Sets derived color for section titles */
+  display: flex; /* Required for align-items to work */
+  align-items: center; /* Align text to center of row */
+
   background-color: color-mix(in srgb, var(--table-color) 75%, white) !important;
-  border-width: 0 1px; /* top/bottom, left/right */
+  border-width: 0 1px 1px 1px; /* top, right, bottom, left */
+  border-style: solid;
+  border-color: var(--table-color);
+
+  /* Maintain row height for section titles without buttons.
+     1em text height
+     + 2 * 0.25em div padding
+     + 2 * 0.375rem button padding (from Bootstrap var)
+     + 2 * 1px button border
+     + 1px due to rounding error on button padding */
+  height: calc(1.5em + 0.75rem + 3px);
+
+  /* Reduce padding around button while maintaining padding to the left of
+     the section title text */
+  padding: 0.25em 0.25em 0.25em 0.5em; /* top, right, bottom, left */
 }
 
-/* Goal buttons formatting */
-
-.section-title.goals{
-  border-right: none; /* Hide extra border to the right of "Goals" */
-}
-
-.section-title.goal-btns{
-  border-left: none; /* Hide extra border to the right of "Goals" */
-  text-align: right;
-  padding: calc(0.375em - 1px); /* Reduce padding according to button height to maintain row size */
-}
-
-.section-title.goal-btns button{
+.section-title button{
   background-color: var(--table-color);
   border: 1px solid var(--table-color);
-  color: #212529; /* Set light mode default text color */
-  margin-left: 0.5em; /* Separate buttons */
+  color: inherit; /* Inherit color from table */
+  font-size: inherit; /* Inherit font size from main */
   line-height: 1em; /* Reduce button height to fit in row */
 }

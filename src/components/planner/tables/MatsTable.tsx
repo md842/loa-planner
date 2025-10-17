@@ -1,4 +1,4 @@
-import {type ChangeEvent, type JSX, type RefObject, useState} from 'react';
+import {type ChangeEvent, type ReactNode, type RefObject, useState} from 'react';
 
 import {Cell} from './Cell';
 
@@ -7,7 +7,9 @@ import {sanitizeInput, saveChanges} from './common';
 import {goldValue} from '../../core/market-data';
 import {getRosterMats} from '../../core/roster-storage-data';
 
-import Table from 'react-bootstrap/Table';
+import Col from 'react-bootstrap/Col';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
 
 /** Props interface for MatsTable. */
 interface MatsTableProps{
@@ -22,14 +24,14 @@ interface MatsTableProps{
 let changed: boolean = false;
 
 /** Constructs the "Owned materials" section of the parent table. */
-export function MatsTable(props: MatsTableProps): JSX.Element{
+export function MatsTable(props: MatsTableProps): ReactNode{
   let {boundMats, matsTotalRef, updateCharRem, updateRosterRem} = props; // Unpack props
 
   // Table state variable for owned materials.
   const [table, updateTable] = useState(initTable);
 
-  function initTable(): JSX.Element[]{ // Table state initializer function
-    let table: JSX.Element[] = []; // Initialize table and matsTotal
+  function initTable(): ReactNode[]{ // Table state initializer function
+    let table: ReactNode[] = []; // Initialize table and matsTotal
     matsTotalRef.current = initMaterials();
 
     let rosterMats: Materials = getRosterMats();
@@ -66,14 +68,12 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
    *                                "Bound" is writeable other than "silver", the rest are read-only.
    * @return {JSX.Element[]}        The generated table row.
    */
-  function MatsRow(props: {mats: Materials, name: string}): JSX.Element{
+  function MatsRow(props: {mats: Materials, name: string}): ReactNode{
     let {mats, name} = props; // Unpack props
-    let cells: JSX.Element[] = []; // Initialize table row for this goal
-
-    // console.log("MatsRow", name, "rendering");
+    let cells: ReactNode[] = []; // Initialize table row for this goal
 
     // Add goal name and calculated gold value to the table row for this goal
-    cells.push(<Cell bold key="name" className="goal-name" value={name}/>);
+    cells.push(<Cell bold key="name" colSpan={2} value={name}/>);
     cells.push(<Cell bold key="goldValue" value={goldValue(mats)}/>);
 
     // Build rest of row for this goal by pushing values as Cells
@@ -92,17 +92,20 @@ export function MatsTable(props: MatsTableProps): JSX.Element{
       else // Always read-only if total or roster mats
         cells.push(<Cell key={key} value={value}/>);
     });
-    return <tr className={name == "Total" ? "bold" : undefined}>{cells}</tr>;
+
+    return(
+      <Row className={name == "Total" ? "bold table-row" : "table-row"}>
+        {cells}
+      </Row>
+    );
   }
 
   return(
-    <Table className="m-0" hover>
-      <thead>
-        <tr className="bold"><td className="section-title" colSpan={11}>Owned materials</td></tr>
-      </thead>
-      <tbody>
-        {table}
-      </tbody>
-    </Table>
+    <Container className="container-table m-0">
+      <Row className="table-head">
+        <Col className="bold section-title" xs={12}>Owned materials</Col>
+      </Row>
+      {table}
+    </Container>
   );
 }

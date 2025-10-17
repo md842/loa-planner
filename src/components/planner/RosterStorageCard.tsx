@@ -9,10 +9,12 @@ import {type Materials, type Source, findSource} from '../core/types';
 import {getPresetSources, getSources, saveSources, setRosterMat, setSourceData} from '../core/roster-storage-data';
 
 import Button from 'react-bootstrap/Button';
+import Col from 'react-bootstrap/Col';
+import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Modal from 'react-bootstrap/Modal';
-import Table from 'react-bootstrap/Table';
+import Row from 'react-bootstrap/Row';
 
 /** Props interface for RosterStorageCard. */
 interface RosterStorageCardProps{
@@ -413,47 +415,43 @@ export function RosterStorageCard(props: RosterStorageCardProps): ReactNode{
   return(
     <>
       <ConfigModal/> {/* Hidden until setModalVis(true) onClick*/}
-      <Table hover style={{"--table-color": color, "--mat2-color": color2} as React.CSSProperties}>
-        <thead>
-          <tr>
-            <th>
+      <Container className="container-table mb-3" style={{"--table-color": color, "--mat2-color": color2} as React.CSSProperties}>
+        <Row className="table-head">
+          <Col className="table-cell" xs={mat2 ? 3 : 6}>
+            <div className="d-flex align-items-end">
+              <img src={image}/>
+              <p className="mx-2 mb-0">{title}</p>
+            </div>
+          </Col>
+          <Col className="table-cell" xs={mat2 ? 1 : 2}>Quantity</Col>
+          <Col className="table-cell" xs={mat2 ? 1 : 2}>Use?</Col>
+          <Col className="table-cell" xs={mat2 ? 1 : 2}>Amount</Col>
+          {mat2 && <>
+            <Col className="mat2 table-cell" xs={3}>
               <div className="d-flex align-items-end">
-                <img src={image}/>
-                <p className="mx-2 mb-0">{title}</p>
+                <img src={image2}/>
+                <p className="mx-2 mb-0">{title2}</p>
               </div>
-            </th>
-            <th>Quantity</th>
-            <th>Use?</th>
-            <th>Amount</th>
-            {mat2 && <>
-              <th className="mat2">
-                <div className="d-flex align-items-end">
-                  <img src={image2}/>
-                  <p className="mx-2 mb-0">{title2}</p>
-                </div>
-              </th>
-              <th className="mat2">Quantity</th>
-              <th className="mat2">Use?</th>
-              <th className="mat2">Amount</th>
-            </>}
-          </tr>
-          {configurable && <tr>
-            <td className="configure goal-btns" colSpan={4}>
-              {!mat2 &&
-                <Button variant="primary" onClick={() => setModalVis(true)}>Configure Sources</Button>
-              }
-            </td>
-            {mat2 &&
-              <td className="mat2 configure goal-btns" colSpan={4}>
-                <Button variant="primary" onClick={() => setModalVis(true)}>Configure Sources</Button>
-              </td>
+            </Col>
+            <Col className="mat2 table-cell">Quantity</Col>
+            <Col className="mat2 table-cell">Use?</Col>
+            <Col className="mat2 table-cell">Amount</Col>
+          </>}
+        </Row>
+        {configurable && <Row>
+          <Col className="section-title justify-content-end" xs={mat2 ? 6 : 12}>
+            {!mat2 &&
+              <Button variant="primary" onClick={() => setModalVis(true)}>Configure Sources</Button>
             }
-          </tr>}
-        </thead>
-        <tbody>
-          {table}
-        </tbody>
-      </Table>
+          </Col>
+          {mat2 &&
+            <Col className="mat2 section-title justify-content-end" xs={6}>
+              <Button variant="primary" onClick={() => setModalVis(true)}>Configure Sources</Button>
+            </Col>
+          }
+        </Row>}
+        {table}
+      </Container>
     </>
   );
 }

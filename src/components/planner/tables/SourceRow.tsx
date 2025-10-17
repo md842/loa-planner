@@ -6,7 +6,9 @@ import {SyncContext} from '../../../pages/planner-tabs/RosterStorageView';
 import {type Source} from '../../core/types';
 import {sanitizeInput} from './common';
 
+import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
+import Row from 'react-bootstrap/Row';
 
 // If true, changes will be committed by saveSources() on next onBlur event.
 let changed: boolean = false;
@@ -133,38 +135,38 @@ export function SourceRow(props: SourceRowProps): ReactNode{
   }
 
   return(
-    <tr>
-      <Cell bold key="label" className="src-label" value={src.id}/>
-      <Cell key="qty" className="qty" controlledValue={total ? undefined : qty[0]} // Empty if total
+    <Row className={combo ? "mat2 table-row" : "table-row"}>
+      <Cell bold key="label" colSpan={combo ? 3 : 6} value={src.id}/>
+      <Cell key="qty" colSpan={combo ? 1 : 2} controlledValue={total ? undefined : qty[0]} // Empty if total
         onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
         onChange={total ? undefined : (e) => handleQtyChange(e, index, 0)}
       />{/* Input disabled if total */}
 
       {/* "Use?" column may be empty, a checkbox, or an input. */}
       {!src.sel && !use && // src.sel, src.use not defined, render empty cell
-        <td key="use" className="read-only qty"></td>
+        <Col key="use" className="read-only table-cell" xs={combo ? 1 : 2}></Col>
       }
       {src.sel && // src.sel defined, render checkbox
-        <td key="use" className="read-only qty">
+        <Col key="use" className="read-only table-cell" xs={combo ? 1 : 2}>
           <Form.Check className="mat1-checkbox"
             type="checkbox"
             defaultChecked={src.sel[0]}
             onChange={(e) => handleChecked(e, index, 0)}
           />
-        </td>
+        </Col>
       }
       {use && // src.use defined, render input
-        <Cell key="use" className="qty" controlledValue={use[0]}
+        <Cell key="use" controlledValue={use[0]} colSpan={combo ? 1 : 2}
           onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
           onChange={total ? undefined : (e) => handleUseChange(e, index, 0)}
         />
       }
 
-      <Cell bold key="amt" className="qty" value={src.amt[0]}/>
+      <Cell bold key="amt" value={src.amt[0]} colSpan={combo ? 1 : 2}/>
 
       {combo && // Render cells for second material
         <>
-          <Cell bold key="label2" className="mat2 src-label" value={src.id}/>
+          <Cell bold key="label2" colSpan={3} className="mat2" value={src.id}/>
           <Cell key="qty2" className="mat2 qty" controlledValue={total ? undefined : qty[1]} // Empty if total
             onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
             onChange={total ? undefined : (e) => handleQtyChange(e, index, 1)}
@@ -172,27 +174,27 @@ export function SourceRow(props: SourceRowProps): ReactNode{
 
           {/* "Use?" column may be empty, a checkbox, or an input. */}
           {!src.sel && !use && // src.sel, src.use not defined, render empty cell
-            <td key="use2" className="read-only mat2 qty"></td>
+            <Col key="use2" className="read-only table-cell mat2"></Col>
           }
           {src.sel && // src.sel defined, render checkbox
-            <td key="use2" className="read-only mat2 qty">
+            <Col key="use2" className="read-only table-cell mat2">
               <Form.Check className="mat2-checkbox"
                 type="checkbox"
                 defaultChecked={src.sel[1]}
                 onChange={(e) => handleChecked(e, index, 1)}
               />
-            </td>
+            </Col>
           }
           {use && // src.use defined, render input
-            <Cell key="use2" className="mat2 qty" controlledValue={use[1]}
+            <Cell key="use2" className="mat2" controlledValue={use[1]}
               onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
               onChange={total ? undefined : (e) => handleUseChange(e, index, 1)}
             />
           }
 
-          <Cell bold key="amt2" className="mat2 qty" value={src.amt[1]}/>
+          <Cell bold key="amt2" className="mat2" value={src.amt[1]}/>
         </>
       }
-    </tr>
+    </Row>
   );
 }
