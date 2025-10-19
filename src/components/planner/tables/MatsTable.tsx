@@ -3,7 +3,7 @@ import {type ChangeEvent, type ReactNode, type RefObject, useContext, useEffect,
 import {Cell} from '../../container-table/Cell';
 
 import {PlannerSyncContext} from '../../../pages/Planner';
-import {type Materials, addMaterials, initMaterials} from '../../core/types';
+import {type Materials, addMaterials} from '../../core/types';
 import {sanitizeInput} from '../table-components/common';
 import {saveChar} from '../../core/character-data';
 import {goldValue} from '../../core/market-data';
@@ -28,30 +28,25 @@ let changed: boolean = false;
 
 /** Constructs the "Owned materials" section of the parent table. */
 export function MatsTable(props: MatsTableProps): ReactNode{
-  let {charIndex, boundMats, matsTotalRef, updateCharRem, updateRosterRem} = props; // Unpack props
+  let {charIndex, boundMats, matsTotalRef,
+       updateCharRem, updateRosterRem} = props; // Unpack props
 
-  // Table state variable for owned materials.
-  const [table, updateTable] = useState(initTable);
+  /* Table state variable for owned materials.
+     Will be initialized when useEffect runs on mount, so initialize empty. */
+  const [table, updateTable] = useState([] as ReactNode[]);
 
-  const plannerSyncContext = useContext(PlannerSyncContext);
-  let {marketDataChanged, rosterMatsChanged} = plannerSyncContext; // Unpack sync context
-
-  // Update signal handlers
-  useEffect(() => {
-    console.log("MatsTable got change in marketData");
-    updateTable(initTable); // Re-renders table
-  }, [marketDataChanged]); // Runs on mount and when marketData changes
+  // Signals used to sync with other child components of Planner
+  const plannerSyncSignals = useContext(PlannerSyncContext);
+  let {marketDataChanged, rosterMatsChanged} = plannerSyncSignals; // Unpack signals
 
   // Update signal handlers
-  useEffect(() => {
-    console.log("MatsTable got change in rosterMats");
+  useEffect(() => { // Signaled by MarketDataTable, RosterStorageTable (onBlur)
     updateTable(initTable); // Re-renders table
-  }, [rosterMatsChanged]); // Runs on mount and when rosterMats changes
+  }, [marketDataChanged, rosterMatsChanged]);
+  // Runs on mount and when marketData or rosterMats changes
 
   function initTable(): ReactNode[]{ // Table state initializer function
-    let table: ReactNode[] = []; // Initialize table and matsTotal
-    matsTotalRef.current = initMaterials();
-
+    let table: ReactNode[] = []; // Initialize table, rosterMats, and matsTotal
     let rosterMats: Materials = getRosterMats();
     matsTotalRef.current = addMaterials(rosterMats, boundMats); // Total mats
 

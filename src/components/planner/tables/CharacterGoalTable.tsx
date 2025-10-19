@@ -41,30 +41,31 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
 
   // Table state variables for character goals.
   const [changed, setChanged] = useState(false);
-  const [table, updateTable] = useState(initTable);
+  // Will be initialized when useEffect runs on mount, so initialize empty
+  const [table, updateTable] = useState([] as ReactNode[]);
 
-  const plannerSyncContext = useContext(PlannerSyncContext);
-
-  // Update signal handlers
-  useEffect(() => {
-    console.log("CharacterGoalTable got change in marketData");
-    updateTable(initTable); // Re-renders table
-  }, [plannerSyncContext.marketDataChanged]); // Runs on mount and when marketData changes
+  // Signals used to sync with other child components of Planner
+  const plannerSyncSignals = useContext(PlannerSyncContext);
 
   // Update signal handlers
-  useEffect(() => {
-    setGoalData(charIndex, goals); // Update goal data (does not save)
-    updateTable(initTable); // Re-render CharacterGoalTable
-    updateRosterGoals(); // Send signal to update RosterGoalTable
-    updateRosterRem(); // Send signal to update RosterCard RemTable
-  }, [goals]); // Runs on mount and when sources change
-
-  useEffect(() => {
+  useEffect(() => { // Signaled by GoalRow (onBlur)
     if (changed){ // Uncommitted changes are present
       saveChar(charIndex); // Save updated character data
       setChanged(false); // Signal that changes were committed
     }
-  }, [changed]); // Runs when changed changes, does nothing on mount due to initial state false
+  }, [changed]); // Does nothing on mount due to initial state false
+
+  useEffect(() => { // Signaled by GoalRow (onChange)
+    setGoalData(charIndex, goals); // Update goal data (does not save)
+    updateTable(initTable); // Re-render CharacterGoalTable
+    updateRosterGoals(); // Send signal to update RosterGoalTable
+    updateRosterRem(); // Send signal to update RosterCard RemTable
+  }, [goals]); // Runs on mount and when goals change
+
+  useEffect(() => { // Signaled by MarketDataTable (onBlur)
+    updateTable(initTable); // Re-renders table
+  }, [plannerSyncSignals.marketDataChanged]);
+  // Runs on mount and when marketData changes
 
   function initTable(): ReactNode[]{ // Table state initializer function
     let table: ReactNode[] = []; // Initialize table

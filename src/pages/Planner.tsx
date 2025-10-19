@@ -12,14 +12,14 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import {Tab, Tabs} from 'react-bootstrap';
 
-interface PlannerSyncState{
+interface PlannerSyncSignals{
   marketDataChanged: boolean[];
   setMarketDataChanged: (data: boolean[]) => void;
   rosterMatsChanged: boolean[];
   setRosterMatsChanged: (data: boolean[]) => void;
 }
 
-export const PlannerSyncContext = createContext({} as PlannerSyncState);
+export const PlannerSyncContext = createContext({} as PlannerSyncSignals);
 
 export function Planner(){
   const [marketDataChanged, setMarketDataChanged] = useState([false]);
@@ -33,7 +33,7 @@ export function Planner(){
           setMarketDataChanged: setMarketDataChanged,
           rosterMatsChanged: rosterMatsChanged,
           setRosterMatsChanged: setRosterMatsChanged
-        } as PlannerSyncState}
+        } as PlannerSyncSignals}
       >
         <Tabs defaultActiveKey="roster-view" className="planner-tabs mb-5" justify>
           <Tab eventKey="roster-view" title="Roster View">

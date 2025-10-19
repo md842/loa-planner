@@ -22,38 +22,35 @@ interface RemTableProps{
 
 /** Constructs the "Remaining materials" section(s) of the parent table. */
 export function RemTable(props: RemTableProps): ReactNode{
-  let {goals, boundMats, matsTotalRef, charRemUpdateSignal} = props; // Unpack props
+  let {goals, boundMats, matsTotalRef,
+       charRemUpdateSignal} = props; // Unpack props
 
   /* Table state variable for remaining materials (character or roster).
-     Will be initialized when useEffect runs on mount, so initialize blank. */
+     Will be initialized when useEffect runs on mount, so initialize empty. */
   const [table, updateTable] = useState([] as ReactNode[][]);
 
-  const plannerSyncContext = useContext(PlannerSyncContext);
-  let {marketDataChanged, rosterMatsChanged} = plannerSyncContext; // Unpack sync context
+  // Signals used to sync with other child components of Planner
+  const plannerSyncSignals = useContext(PlannerSyncContext);
+  let {marketDataChanged, rosterMatsChanged} = plannerSyncSignals; // Unpack signals
 
   // Update signal handlers
-  useEffect(() => {
-    console.log("RemTable got change in marketData");
-    updateTable(initTable); // Re-renders table
-  }, [marketDataChanged]); // Runs on mount and when marketData changes
-
-  useEffect(() => {
-    console.log("RemTable got change in rosterMats");
-    updateTable(initTable); // Re-renders table
-  }, [rosterMatsChanged]); // Runs on mount and when rosterMats changes
-
-  useEffect(() => { // RosterCard RemTable update hook
-    updateTable(initTable); // Re-render entire remaining materials table
-  }, [goals]); // Runs on mount and when table goals change
-
-  useEffect(() => { // CharacterCard RemTable update hook
+  useEffect(() => { // Signaled by CharacterCard (goal or mats change)
     // Allows updating individual rows of an initialized character RemTable.
     if (table[1]){ // Character's remBoundTable is initialized
       if (charRemUpdateSignal!.length == 0) // Empty signal from MatsTable
         updateTable(initTable); // Re-render entire remaining materials table
     } // Do nothing if not an initialized character RemTable
   }, [charRemUpdateSignal]); // Runs on mount and when update signal received
-  
+
+  useEffect(() => { // Signaled by MarketDataTable, RosterStorageTable (onBlur)
+    updateTable(initTable); // Re-renders table
+  }, [marketDataChanged, rosterMatsChanged]);
+  // Runs on mount and when marketData or rosterMats changes
+
+  useEffect(() => { // Signaled by RosterCard (goal or mats change)
+    updateTable(initTable); // Re-render entire remaining materials table
+  }, [goals]); // Runs on mount and when table goals change
+
   function initTable(): ReactNode[][]{ // Table state initializer function
     let remTable: ReactNode[] = [], remBoundTable: ReactNode[] = []; // Initialize tables
             

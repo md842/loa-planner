@@ -42,29 +42,29 @@ export function RosterGoalTable(props: RosterGoalTableProps): ReactNode{
 
   // Table state variables for roster goals.
   const [changed, setChanged] = useState(false);
-  // Will be initialized when useEffect runs on mount, so initialize blank
+  // Will be initialized when useEffect runs on mount, so initialize empty
   const [table, updateTable] = useState([] as ReactNode[]);
 
-  const plannerSyncContext = useContext(PlannerSyncContext);
+  // Signals used to sync with other child components of Planner
+  const plannerSyncSignals = useContext(PlannerSyncContext);
 
   // Update signal handlers
-  useEffect(() => {
-    console.log("RosterGoalTable got change in marketData");
-    updateTable(initTable); // Re-renders table
-  }, [plannerSyncContext.marketDataChanged]); // Runs on mount and when marketData changes
-
-  useEffect(() => {
-    updateTable(initTable); // Re-render goals table
-  }, [goals]); // Runs on mount and when table goals change
-
-  useEffect(() => {
+  useEffect(() => { // Signaled by GoalRow (onBlur)
     if (changed){ // Uncommitted changes are present
       saveRosterGoals(); // Save updated roster goal data
       setChanged(false); // Signal that changes were committed
     }
-  }, [changed]); // Runs when changed changes, does nothing on mount due to initial state false
-  
-  
+  }, [changed]); // Does nothing on mount due to initial state false
+
+  useEffect(() => { // Signaled by MarketDataTable (onBlur)
+    updateTable(initTable); // Re-renders table
+  }, [plannerSyncSignals.marketDataChanged]);
+  // Runs on mount and when marketData changes
+
+  useEffect(() => { // Signaled by RosterCard (calculateTableGoals)
+    updateTable(initTable); // Re-render goals table
+  }, [goals]); // Runs on mount and when table goals change
+
   function initTable(): ReactNode[]{ // Table state initializer function
     let table: ReactNode[] = []; // Initialize table
         

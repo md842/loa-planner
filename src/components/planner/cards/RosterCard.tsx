@@ -24,7 +24,8 @@ interface RosterCardProps{
 
 /** Constructs the card for the roster goals. */
 export function RosterCard(props: RosterCardProps): ReactNode{
-  let {chars, rosterGoalUpdateSignal, rosterRemUpdateSignal, setOnTop, updateRosterGoals, updateRosterRem} = props; // Unpack props
+  let {chars, rosterGoalUpdateSignal, rosterRemUpdateSignal, setOnTop,
+       updateRosterGoals, updateRosterRem} = props; // Unpack props
 
   /* Stores the conversion of roster goals to roster card table goals.
      RosterGoalTable and RemTable sync with this state via useEffect hooks.
@@ -33,11 +34,13 @@ export function RosterCard(props: RosterCardProps): ReactNode{
   const [remTableGoals, setRemTableGoals] = useState([] as Goal[]);
 
   // Update signal handlers
-  useEffect(() => { // Triggers useEffect in RosterGoalTable with new goal data
+  useEffect(() => { // Signaled by CharacterGoalTable (onChange)
+    // Triggers useEffect in RosterGoalTable with new goal data
     setTableGoals(calculateTableGoals); // Re-calculate table goals
   }, [rosterGoalUpdateSignal]); // Runs on mount and when signal received
 
-  useEffect(() => { // Triggers useEffect in RemTable with new goal data
+  useEffect(() => { // Signaled by CharacterGoalTable, MatsTable (onChange)
+    // Triggers useEffect in RemTable with new goal data
     setRemTableGoals(calculateRemTableGoals); // Re-calculate table goals
   }, [rosterRemUpdateSignal]); // Runs on mount and when signal received
 

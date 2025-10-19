@@ -51,21 +51,22 @@ export function RosterStorageTable(props: RosterStorageTableProps): ReactNode{
   const [sources, setSources] = useState(() => getSources(mat));
   const [table, updateTable] = useState([] as ReactNode[]);
 
-  const plannerSyncContext = useContext(PlannerSyncContext);
+  // Signals used to sync with other child components of Planner
+  const plannerSyncSignals = useContext(PlannerSyncContext);
 
   // Update signal handlers
-  useEffect(() => {
-    setSourceData(mat, sources); // Updates source data
-    updateTable(initTable); // Re-renders table
-  }, [sources]); // Runs on mount and when sources change
-
-  useEffect(() => {
+  useEffect(() => { // Signaled by SourceRow (onBlur)
     if (changed){ // Uncommitted changes are present
       saveSources(mat); // Save roster storage data for specified mat
       setChanged(false); // Signal that changes were committed
-      plannerSyncContext.setRosterMatsChanged([]);
+      plannerSyncSignals.setRosterMatsChanged([]); // Send signal to RosterView
     }
-  }, [changed]); // Runs when changed changes, does nothing on mount due to initial state false
+  }, [changed]); // Does nothing on mount due to initial state false
+
+  useEffect(() => { // Signaled by SourceRow (onChange)
+    setSourceData(mat, sources); // Updates source data
+    updateTable(initTable); // Re-renders table
+  }, [sources]); // Runs on mount and when sources change
 
   function initTable(): ReactNode[]{ // Table state initializer function
     let table: ReactNode[] = []; // Initialize table

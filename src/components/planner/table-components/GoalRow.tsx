@@ -40,9 +40,9 @@ export function GoalRow(props: GoalRowProps): ReactNode{
   const [mats, setMats] = useState(goal.mats);
 
   // Update signal handler
-  useEffect(() => {
-    setId(goal.id);
-    setMats(goal.mats);
+  useEffect(() => { // Signaled by GoalRow (onChange)
+    setId(goal.id); // Set controlled input fields
+    setMats(goal.mats); // Set controlled input fields
   }, [goal]); // Runs on mount and when goal changes
 
   function handleGoalMatChange(e: ChangeEvent<HTMLInputElement>, index: number, key: keyof Materials){

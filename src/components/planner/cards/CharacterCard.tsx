@@ -27,16 +27,23 @@ interface CharacterCardProps{
 
 /** Constructs a table for a single character. */
 export function CharacterCard(props: CharacterCardProps): ReactNode{
-  let {char, index, handleDelete, handleSwap, updateRosterGoals, updateRosterRem} = props; // Unpack props
+  let {char, index, handleDelete, handleSwap,
+       updateRosterGoals, updateRosterRem} = props; // Unpack props
 
   // Load initial character info into state so SettingsModal can change them
-  const [charState, setCharState] = useState({name: char.name, ilvl: char.ilvl, class: char.class, usesClassColor: char.usesClassColor, color: char.color});
+  const [charState, setCharState] = useState({
+    name: char.name,
+    ilvl: char.ilvl,
+    class: char.class,
+    usesClassColor: char.usesClassColor,
+    color: char.color
+  });
   const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
 
   // Table state variable for materials sources
   const [goals, setGoals] = useState(char.goals);
 
-  // Refs used in RemTable
+  // Ref used in RemTable to avoid re-calculation
   const matsTotal: RefObject<Materials> = useRef(initMaterials());
 
   /* Character state update signal; uses array signal type because
