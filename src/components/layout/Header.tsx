@@ -54,7 +54,6 @@ export default function Header(){
           > {/* Highlights active page in nav bar */}
             <Navbar.Brand as={Link} to="/">LOA Planner</Navbar.Brand>
             <Nav.Link as={Link} eventKey="/" to="/">Planner</Nav.Link>
-            <Nav.Link as={Link} eventKey="/calculators" to="/calculators">Calculators</Nav.Link>
             <Nav.Link as={Link} eventKey="/planned-features" to="/planned-features">Planned Features</Nav.Link>
           </Nav>
           <Button
