@@ -10,39 +10,36 @@ import Navbar from 'react-bootstrap/Navbar';
 
 export default function Header(){
   const [icon, setIcon] = useState("sun"); // Default to dark mode
-  const [mode, setMode] = useState("dark"); // Default to dark mode
+  const [darkMode, setDarkMode] = useState(true); // Default to dark mode
 
   useEffect(() => {
-    /* Load and set saved dark/light mode setting from local storage */
-    const storedMode = window.localStorage.getItem('mode');
-    if (storedMode){
-      setMode(storedMode);
-      document.documentElement.setAttribute('data-bs-theme', storedMode);
-      if (storedMode == "light") // Switch to light mode
-        setIcon("moon");
-      else // Switch to dark mode
-        setIcon("sun");
-    } // Stick with default if undefined (e.g., first session)
-  }, []); // Trigger on component mount
-
-  useEffect(() => {
-    /* Save dark/light mode setting to local storage, allows dark/light mode
-       setting to persist between sessions */
-    window.localStorage.setItem('mode', mode);
-  }, [mode]); // Trigger on mode switch
-
-  const switchColorMode = () => {
-    if (mode == "dark"){ // Switch to light mode
-      setIcon("moon"); // Set icon to moon as a "switch to dark mode" button
-      setMode("light");
-      document.documentElement.setAttribute('data-bs-theme', "light");
+    // Attempt to load saved dark mode setting from local storage
+    const storedDarkMode = localStorage.getItem('darkMode');
+    if (storedDarkMode){ // Data for dark mode setting exists in local storage
+      try{ // JSON.parse() throws exception if storedDarkMode not valid boolean
+        setDarkMode(JSON.parse(storedDarkMode)); // Use local stored data
+      }
+      catch(e){ // Error parsing storedDarkMode from string to boolean
+        // May occur if local stored data was corrupted or tampered with
+        setDarkMode(true); // Default to true
+      }
     }
-    else{ // Switch to dark mode
+    // Stick with default if undefined (e.g., first session)
+  }, []); // Runs on mount
+
+  useEffect(() => {
+    if (darkMode){ // Apply dark mode
       setIcon("sun"); // Set icon to sun as a "switch to light mode" button
-      setMode("dark");
       document.documentElement.setAttribute('data-bs-theme', "dark");
     }
-  }
+    else{ // Apply light mode
+      setIcon("moon"); // Set icon to moon as a "switch to dark mode" button
+      document.documentElement.setAttribute('data-bs-theme', "light");
+    }
+    /* Save dark/light mode setting to local storage, allows dark/light mode
+       setting to persist between sessions */
+    localStorage.setItem('darkMode', darkMode.toString());
+  }, [darkMode]); // Runs on mount and when darkMode changes
 
   return(
     <header className="sticky-top">
@@ -58,7 +55,7 @@ export default function Header(){
           </Nav>
           <Button
             variant="link"
-            onClick={() => switchColorMode()}
+            onClick={() => setDarkMode(prev => !prev)}
           >
             <i className={"bi bi-" + icon + "-fill"}></i>
           </Button>
