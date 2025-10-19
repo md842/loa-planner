@@ -1,5 +1,6 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css'
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './components/container-table/container-table.css';
 
 import {createBrowserRouter, Outlet, RouterProvider} from "react-router-dom";
 

@@ -13,7 +13,6 @@ import Container from 'react-bootstrap/Container';
 export function MarketDataView(){
 	return(
     <Container fluid>
-      <h3 className="mb-3">Market Data</h3>
       <MarketDataTable
         title="Fusion Materials"
         color="#F90"

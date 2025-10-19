@@ -31,7 +31,6 @@ export function RosterStorageView(){
 
 	return(
     <Container fluid="md">
-      <h3 className="mb-3">Roster Storage</h3>
       <Row>
         <Col className="d-flex flex-column">
           <RosterStorageTable
