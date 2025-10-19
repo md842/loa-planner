@@ -6,7 +6,7 @@ import {SortableList} from '../../Sortable/SortableList';
 
 import {PlannerSyncContext} from '../../../pages/Planner';
 import {type Goal, initGoal, goalNameUnique, type Materials, subMaterials, type RosterGoal} from '../../core/types';
-import {getRosterGoals, saveChars, setGoalData, setRosterGoalData} from '../../core/character-data';
+import {getRosterGoals, saveChar, setGoalData, setRosterGoalData} from '../../core/character-data';
 
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -61,7 +61,7 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
 
   useEffect(() => {
     if (changed){ // Uncommitted changes are present
-      saveChars(); // Save updated character data
+      saveChar(charIndex); // Save updated character data
       setChanged(false); // Signal that changes were committed
     }
   }, [changed]); // Runs when changed changes, does nothing on mount due to initial state false

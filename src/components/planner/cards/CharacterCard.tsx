@@ -199,6 +199,7 @@ export function CharacterCard(props: CharacterCardProps): ReactNode{
           updateRosterRem={updateRosterRem}
         />
         <MatsTable
+          charIndex={index}
           matsTotalRef={matsTotal}
           boundMats={char.boundMats}
           updateCharRem={() => sendCharRemSignal([])}

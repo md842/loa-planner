@@ -4,7 +4,8 @@ import {Cell} from '../../container-table/Cell';
 
 import {PlannerSyncContext} from '../../../pages/Planner';
 import {type Materials, addMaterials, initMaterials} from '../../core/types';
-import {sanitizeInput, saveChanges} from '../table-components/common';
+import {sanitizeInput} from '../table-components/common';
+import {saveChar} from '../../core/character-data';
 import {goldValue} from '../../core/market-data';
 import {getRosterMats} from '../../core/roster-storage-data';
 
@@ -14,6 +15,7 @@ import Row from 'react-bootstrap/Row';
 
 /** Props interface for MatsTable. */
 interface MatsTableProps{
+  charIndex: number; // The index of the character this MatsTable is for.
   boundMats: Materials; // Bound materials owned by the character for which this table is being generated
   matsTotalRef: RefObject<Materials>; // Passed to RemTable to avoid re-calculation
   // References to parent component state/state setters
@@ -26,7 +28,7 @@ let changed: boolean = false;
 
 /** Constructs the "Owned materials" section of the parent table. */
 export function MatsTable(props: MatsTableProps): ReactNode{
-  let {boundMats, matsTotalRef, updateCharRem, updateRosterRem} = props; // Unpack props
+  let {charIndex, boundMats, matsTotalRef, updateCharRem, updateRosterRem} = props; // Unpack props
 
   // Table state variable for owned materials.
   const [table, updateTable] = useState(initTable);
@@ -100,7 +102,7 @@ export function MatsTable(props: MatsTableProps): ReactNode{
         else // Always writeable if bound mat other than silver
           cells.push(
             <Cell key={key} value={value}
-              onBlur={() => {saveChanges(changed); changed = false}}
+              onBlur={() => {if (changed){saveChar(charIndex)}; changed = false}}
               onChange={(e) => handleBoundMatChange(e, key)}
             /> // Specify change handlers for writeable field
           );

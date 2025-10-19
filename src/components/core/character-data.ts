@@ -4,12 +4,17 @@ import {type Character, initCharacter, type RosterGoal, type Goal} from './types
 let chars: Character[] = [];
 let rosterGoals: RosterGoal[] = [];
 
-// Attempt to load data from local storage
-const storedChars = window.localStorage.getItem('chars');
-const storedRosterGoals = window.localStorage.getItem('rosterGoals');
+let i: number = 0; // Character index
+// Attempt to load data for character index i from local storage
+let charData = localStorage.getItem("chr_" + i);
+while (charData){ // Data for character index i exists in local storage
+  chars.push(JSON.parse(charData) as Character); // Use local stored data
+  i += 1;
+  charData = localStorage.getItem("chr_" + i); // Load next character
+}
 
-if (storedChars) // Character data exists in local storage
-  chars = JSON.parse(storedChars); // Use local stored data
+// Attempt to load roster goals data from local storage
+const storedRosterGoals = localStorage.getItem('rosterGoals');
 if (storedRosterGoals) // Roster goal data exists in local storage
   rosterGoals = JSON.parse(storedRosterGoals); // Use local stored data
 
@@ -17,10 +22,7 @@ console.log("Initialized", chars.length, "characters.");
 console.log("Initialized", rosterGoals.length, "roster goals.");
 
 
-/* I have some concerns about how much data is being saved with the current
-   implementations, so tracking how much is being saved over the course of a
-   testing session. May need to implement saving of individual characters or
-   even individual fields to reduce (will complicate all data operations). */
+// Tracking how much data is being saved over the course of a testing session
 let totalSaved: number = 0; // This can be deleted later.
 
 
@@ -34,7 +36,7 @@ export function addChar(): boolean{
   rosterGoals.forEach((rosterGoal: RosterGoal) => {
     rosterGoal.goals.push([]); // New char has no goals
   });
-  saveChars(); // Save updated character data to local storage
+  saveChar(chars.length - 1); // Save new character data to local storage
   saveRosterGoals(); // Save updated roster goals to local storage
   return true; // Adding character succeeded
 } // Must save to prevent desync of chars and rosterGoals.
@@ -43,19 +45,25 @@ export function addChar(): boolean{
 /** Deletes the character with the specified index. */
 export function delChar(index: number){
   chars.splice(index, 1); // Remove the specified character from chars
+
+  // Update (shift up) all character data in local storage after deleted index
+  for (let i = index; i < chars.length; i++)
+    saveChar(i); // Save updated character data to local storage
+  localStorage.removeItem("chr_" + chars.length); // Remove last chr data slot
+
   // Remove the specified character from all roster goals
   rosterGoals.forEach((rosterGoal: RosterGoal) => {
     rosterGoal.goals.splice(index, 1);
   });
-  saveChars(); // Save updated character data to local storage
   saveRosterGoals(); // Save updated roster goals to local storage
 }
 
 
-/** Returns the contents of chars in a new array to a state setter. */
+/** Returns the contents of chars. */
 export function getChars(): Character[]{
-  return [...chars]; // Returning as a new array triggers re-render.
+  return chars;
 }
+
 
 /** Returns the contents of rosterGoals. */
 export function getRosterGoals(): RosterGoal[]{
@@ -64,13 +72,14 @@ export function getRosterGoals(): RosterGoal[]{
 
 
 /** Saves current character data to local storage. */
-export function saveChars(){
-  let temp: string = JSON.stringify(chars);
+export function saveChar(index: number){
+  let temp: string = JSON.stringify(chars[index]);
   totalSaved += temp.length;
   console.log("Character data: Saved", temp.length, "B,", totalSaved, "B total");
 
-  window.localStorage.setItem('chars', temp);
+  localStorage.setItem('chr_' + index, temp);
 }
+
 
 /** Saves current roster goal data to local storage. */
 export function saveRosterGoals(){
@@ -78,7 +87,7 @@ export function saveRosterGoals(){
   totalSaved += temp.length;
   console.log("Character data: Saved", temp.length, "B,", totalSaved, "B total");
 
-  window.localStorage.setItem('rosterGoals', temp);
+  localStorage.setItem('rosterGoals', temp);
 }
 
 
@@ -90,14 +99,14 @@ export function saveCharParams(index: number, name: string, ilvl: string, charCl
   char.class = charClass;
   char.usesClassColor = usesClassColor;
   char.color = color;
-  saveChars(); // Save updated character data to local storage
+  saveChar(index); // Save updated character data to local storage
 }
 
 
 /** Overwrites a character's goals entirely with the specified data. */
 export function setGoalData(charIndex: number, newData: Goal[]){
   chars[charIndex].goals = newData;
-} // Don't save here, saveChars() will be called by next onBlur event
+} // Don't save here, saveChar() will be called by next onBlur event
 
 
 /** Sets the name of the specified roster goal. */
@@ -126,7 +135,9 @@ export function swapChar(index: number, direction: number): boolean{
     [rosterGoal.goals[index], rosterGoal.goals[index + direction]] =
       [rosterGoal.goals[index + direction], rosterGoal.goals[index]];
   });
-  saveChars(); // Save updated character data to local storage
+
+  saveChar(index); // Save updated character data to local storage
+  saveChar(index + direction); // Save other character
   saveRosterGoals(); // Save updated roster goals to local storage
   return true; // Swapping characters succeeded
 }

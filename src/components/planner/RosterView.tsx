@@ -20,18 +20,18 @@ export function RosterView(){
   // Character operation handlers
   function handleAddChar(){ // Called when "Add Character" button is clicked
     if (addChar()) // May not succeed if character limit is reached
-      setChars(getChars); // Update state and re-render only if add succeeds
+      setChars([...getChars()]); // Update state and re-render if add succeeds
   }
   function handleDeleteChar(index: number){
     // Called when a trash button associated with a CharacterCard is clicked
     delChar(index); // Always succeeds, no delete button if no char exists
-    setChars(getChars); // Always update state and re-render
+    setChars([...getChars()]); // Always update state and re-render
   }
   function handleSwapChar(index: number, direction: number){
     // Called when an up/down button associated with a CharacterCard is clicked
     // May not succeed if swapping first character up or last character down
     if (swapChar(index, direction))
-      setChars(getChars); // Update state and re-render only if swap succeeds
+      setChars([...getChars()]); // Update state and re-render if swap succeeds
   }
 
 	return(

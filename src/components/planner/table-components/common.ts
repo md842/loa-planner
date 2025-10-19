@@ -1,13 +1,5 @@
 import {type ChangeEvent} from 'react';
 
-import {saveChars} from '../../core/character-data';
-
-/** Prevents unnecessary saving of character data when no changes were made. */
-export function saveChanges(changed: boolean){
-  if (changed) // Check for unsaved changes
-    saveChars(); // Save updated character data
-}
-
 /** Sanitizes input and improves user experience with numeric inputs. */
 export function sanitizeInput(e: ChangeEvent<HTMLInputElement>, prevValue: number): boolean{
   if (e.target.value == "") // Input sanitization: allow deleting last digit

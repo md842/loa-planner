@@ -148,9 +148,7 @@ for (let [key] of Object.entries(rosterMats)){
 console.log("Initialized roster materials:", rosterMats);
 
 
-/* I have some concerns about how much data is being saved with the current
-   implementations, so tracking how much is being saved over the course of a
-   testing session. */
+// Tracking how much data is being saved over the course of a testing session
 let totalSaved: number = 0; // This can be deleted later.
 
 
