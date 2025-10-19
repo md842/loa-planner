@@ -42,11 +42,12 @@ export function RosterGoalTable(props: RosterGoalTableProps): ReactNode{
 
   // Table state variables for roster goals.
   const [changed, setChanged] = useState(false);
-  // Will be initialized when useEffect runs on mount, so initialize empty
+  // Will be initialized when useEffect runs on mount, so initialize empty.
   const [table, updateTable] = useState([] as ReactNode[]);
 
   // Signals used to sync with other child components of Planner
-  const plannerSyncSignals = useContext(PlannerSyncContext);
+  const syncCtx = useContext(PlannerSyncContext);
+  let {marketDataChanged, setMarketDataChanged} = syncCtx; // Unpack signals
 
   // Update signal handlers
   useEffect(() => { // Signaled by GoalRow (onBlur)
@@ -57,9 +58,11 @@ export function RosterGoalTable(props: RosterGoalTableProps): ReactNode{
   }, [changed]); // Does nothing on mount due to initial state false
 
   useEffect(() => { // Signaled by MarketDataTable (onBlur)
-    updateTable(initTable); // Re-renders table
-  }, [plannerSyncSignals.marketDataChanged]);
-  // Runs on mount and when marketData changes
+    if (marketDataChanged){
+      updateTable(initTable); // Re-renders table
+      setMarketDataChanged(false);
+    }
+  }, [marketDataChanged]); // Runs when marketData changes
 
   useEffect(() => { // Signaled by RosterCard (calculateTableGoals)
     updateTable(initTable); // Re-render goals table

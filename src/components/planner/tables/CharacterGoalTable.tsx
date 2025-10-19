@@ -41,11 +41,12 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
 
   // Table state variables for character goals.
   const [changed, setChanged] = useState(false);
-  // Will be initialized when useEffect runs on mount, so initialize empty
+  // Will be initialized when useEffect runs on mount, so initialize empty.
   const [table, updateTable] = useState([] as ReactNode[]);
 
   // Signals used to sync with other child components of Planner
-  const plannerSyncSignals = useContext(PlannerSyncContext);
+  const syncCtx = useContext(PlannerSyncContext);
+  let {marketDataChanged, setMarketDataChanged} = syncCtx; // Unpack signals
 
   // Update signal handlers
   useEffect(() => { // Signaled by GoalRow (onBlur)
@@ -63,9 +64,11 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
   }, [goals]); // Runs on mount and when goals change
 
   useEffect(() => { // Signaled by MarketDataTable (onBlur)
-    updateTable(initTable); // Re-renders table
-  }, [plannerSyncSignals.marketDataChanged]);
-  // Runs on mount and when marketData changes
+    if (marketDataChanged){
+      updateTable(initTable); // Re-renders table
+      setMarketDataChanged(false);
+    }
+  }, [marketDataChanged]); // Runs when marketData changes
 
   function initTable(): ReactNode[]{ // Table state initializer function
     let table: ReactNode[] = []; // Initialize table

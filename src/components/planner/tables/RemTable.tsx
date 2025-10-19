@@ -30,8 +30,9 @@ export function RemTable(props: RemTableProps): ReactNode{
   const [table, updateTable] = useState([] as ReactNode[][]);
 
   // Signals used to sync with other child components of Planner
-  const plannerSyncSignals = useContext(PlannerSyncContext);
-  let {marketDataChanged, rosterMatsChanged} = plannerSyncSignals; // Unpack signals
+  const syncCtx = useContext(PlannerSyncContext);
+  let {marketDataChanged, setMarketDataChanged,
+       rosterMatsChanged, setRosterMatsChanged} = syncCtx; // Unpack signals
 
   // Update signal handlers
   useEffect(() => { // Signaled by CharacterCard (goal or mats change)
@@ -42,14 +43,24 @@ export function RemTable(props: RemTableProps): ReactNode{
     } // Do nothing if not an initialized character RemTable
   }, [charRemUpdateSignal]); // Runs on mount and when update signal received
 
-  useEffect(() => { // Signaled by MarketDataTable, RosterStorageTable (onBlur)
-    updateTable(initTable); // Re-renders table
-  }, [marketDataChanged, rosterMatsChanged]);
-  // Runs on mount and when marketData or rosterMats changes
+  // Update signal handlers
+  useEffect(() => { // Signaled by MarketDataTable (onBlur)
+    if (marketDataChanged){
+      updateTable(initTable); // Re-renders table
+      setMarketDataChanged(false);
+    }
+  }, [marketDataChanged]); // Runs when marketData changes
 
   useEffect(() => { // Signaled by RosterCard (goal or mats change)
     updateTable(initTable); // Re-render entire remaining materials table
   }, [goals]); // Runs on mount and when table goals change
+
+  useEffect(() => { // Signaled by RosterStorageTable (onBlur)
+    if (rosterMatsChanged){
+      updateTable(initTable); // Re-renders table
+      setRosterMatsChanged(false);
+    }
+  }, [rosterMatsChanged]); // Runs when rosterMats changes
 
   function initTable(): ReactNode[][]{ // Table state initializer function
     let remTable: ReactNode[] = [], remBoundTable: ReactNode[] = []; // Initialize tables

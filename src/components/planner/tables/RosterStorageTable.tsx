@@ -55,14 +55,14 @@ export function RosterStorageTable(props: RosterStorageTableProps): ReactNode{
   const [table, updateTable] = useState([] as ReactNode[]);
 
   // Signals used to sync with other child components of Planner
-  const plannerSyncSignals = useContext(PlannerSyncContext);
+  const syncCtx = useContext(PlannerSyncContext);
 
   // Update signal handlers
   useEffect(() => { // Signaled by SourceRow (onBlur)
     if (changed){ // Uncommitted changes are present
       saveSources(mat); // Save roster storage data for specified mat
       setChanged(false); // Signal that changes were committed
-      plannerSyncSignals.setRosterMatsChanged([]); // Send signal to RosterView
+      syncCtx.setRosterMatsChanged(true); // Send signal to RosterView
     }
   }, [changed]); // Does nothing on mount due to initial state false
 

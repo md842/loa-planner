@@ -18,10 +18,10 @@ const verticalMonitorWidthThreshold: number = 1200;
 /* Update signals used to synchronize RosterView with the RosterStorageView and
    MarketDataView components upon changes to their underlying data. */
 interface PlannerSyncSignals{
-  marketDataChanged: boolean[];
-  setMarketDataChanged: (data: boolean[]) => void;
-  rosterMatsChanged: boolean[];
-  setRosterMatsChanged: (data: boolean[]) => void;
+  marketDataChanged: boolean;
+  setMarketDataChanged: (changed: boolean) => void;
+  rosterMatsChanged: boolean;
+  setRosterMatsChanged: (changed: boolean) => void;
 }
 export const PlannerSyncContext = createContext({} as PlannerSyncSignals);
 
@@ -32,21 +32,13 @@ export function Planner(){
      If false, they are rendered as a combined tab. */
   const [verticalMonitor, setVerticalMonitor] = useState(window.innerWidth <= verticalMonitorWidthThreshold);
 
-  function updateActiveKeyOnResize(): string{ // Async state updater function
-    if (activeKey == "market-data")
-      // Market Data combines into Roster Storage, fallback to Roster Storage
-      return "roster-storage";
-    return activeKey; // If Market Data is not the active tab, do nothing
-  }
-
   useEffect(() => { // Adds an event listener for window resizing
     const onResize = () => {
       let isVerticalMonitor: boolean = window.innerWidth <= verticalMonitorWidthThreshold;
       if (!isVerticalMonitor) // Resizing to horizontal monitor
-        /* Market Data tab will no longer display, so ensure activeKey is not
-           market-data. Must be done in an asynchronous state updater function
-           in order to access the correct value of activeKey. */
-        setActiveKey(updateActiveKeyOnResize);
+        /* Market Data tab will combine into the Roster Storage tab, so if
+           activeKey == market-data, fallback to activeKey = roster-storage. */
+        setActiveKey(prev => prev == "market-data" ? "roster-storage" : prev);
       // Set verticalMonitor state to determine which tabs are rendered
       setVerticalMonitor(isVerticalMonitor);
     }
@@ -58,8 +50,8 @@ export function Planner(){
   }, []); // Runs on mount
 
   // Update signal state variables
-  const [marketDataChanged, setMarketDataChanged] = useState([false]);
-  const [rosterMatsChanged, setRosterMatsChanged] = useState([false]);
+  const [marketDataChanged, setMarketDataChanged] = useState(false);
+  const [rosterMatsChanged, setRosterMatsChanged] = useState(false);
 
   return(
     <main>
@@ -73,7 +65,7 @@ export function Planner(){
       >
         <Tabs
           activeKey={activeKey}
-          onSelect={(key) => setActiveKey(key ? key : defaultTabKey)}
+          onSelect={(key) => setActiveKey(key!)}
           className="planner-tabs mb-5" justify
         >
           <Tab eventKey="roster-view" title="Roster View">
@@ -82,13 +74,13 @@ export function Planner(){
           {!verticalMonitor && // Render combined tab on horizontal monitors
             <Tab eventKey="roster-storage" title="Roster Storage and Market Data">
               <Container fluid>
-                <Row xl={1} xxl={2}>
-                  <Col className="mb-3" xl={12} xxl={8}>
-                    <h3 className="mb-3">Roster Storage</h3>
+                <Row>
+                  <Col xs={8}>
+                    <h3 className="text-center mb-3">Roster Storage</h3>
                     <RosterStorageView/>
                   </Col>
-                  <Col className="mx-auto" xl={8} xxl={4}>
-                    <h3 className="mb-3">Market Data</h3>
+                  <Col xs={4}>
+                    <h3 className="text-center mb-3">Market Data</h3>
                     <MarketDataView/>
                   </Col>
                 </Row>

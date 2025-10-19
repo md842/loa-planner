@@ -31,19 +31,28 @@ export function MatsTable(props: MatsTableProps): ReactNode{
   let {charIndex, boundMats, matsTotalRef,
        updateCharRem, updateRosterRem} = props; // Unpack props
 
-  /* Table state variable for owned materials.
-     Will be initialized when useEffect runs on mount, so initialize empty. */
-  const [table, updateTable] = useState([] as ReactNode[]);
+  // Table state variable for owned materials
+  const [table, updateTable] = useState(initTable);
 
   // Signals used to sync with other child components of Planner
-  const plannerSyncSignals = useContext(PlannerSyncContext);
-  let {marketDataChanged, rosterMatsChanged} = plannerSyncSignals; // Unpack signals
+  const syncCtx = useContext(PlannerSyncContext);
+  let {marketDataChanged, setMarketDataChanged,
+       rosterMatsChanged, setRosterMatsChanged} = syncCtx; // Unpack signals
 
   // Update signal handlers
-  useEffect(() => { // Signaled by MarketDataTable, RosterStorageTable (onBlur)
-    updateTable(initTable); // Re-renders table
-  }, [marketDataChanged, rosterMatsChanged]);
-  // Runs on mount and when marketData or rosterMats changes
+  useEffect(() => { // Signaled by MarketDataTable (onBlur)
+    if (marketDataChanged){
+      updateTable(initTable); // Re-renders table
+      setMarketDataChanged(false);
+    }
+  }, [marketDataChanged]); // Runs when marketData changes
+
+  useEffect(() => { // Signaled by RosterStorageTable (onBlur)
+    if (rosterMatsChanged){
+      updateTable(initTable); // Re-renders table
+      setRosterMatsChanged(false);
+    }
+  }, [rosterMatsChanged]); // Runs when rosterMats changes
 
   function initTable(): ReactNode[]{ // Table state initializer function
     let table: ReactNode[] = []; // Initialize table, rosterMats, and matsTotal
