@@ -39,12 +39,14 @@ export function RosterStorageView(){
             color="#999"
             image={silver}
             mat="silver"
+            wideQty
           />
           <RosterStorageTable
             title="Gold"
             color="#FC4"
             image={gold}
             mat="gold"
+            wideQty
           />
         </Col>
         <Col>
@@ -71,6 +73,7 @@ export function RosterStorageView(){
               color="#E47"
               image={t4_shard}
               mat="shards"
+              wideQty
               // Synchronized table: syncs daily chests with "leaps" table
               syncMatIndex={0}
             />

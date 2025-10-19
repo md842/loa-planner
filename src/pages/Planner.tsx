@@ -35,17 +35,17 @@ export function Planner(){
           setRosterMatsChanged: setRosterMatsChanged
         } as PlannerSyncSignals}
       >
-        <Tabs defaultActiveKey="roster-view" className="planner-tabs mb-5" justify>
+        <Tabs defaultActiveKey="roster-storage" className="planner-tabs mb-5" justify>
           <Tab eventKey="roster-view" title="Roster View">
             <RosterView/>
           </Tab>
           <Tab eventKey="roster-storage" title="Roster Storage and Market Data">
             <Container fluid>
               <Row xl={1} xxl={2}>
-                <Col xl={12} xxl={8}>
+                <Col className="mb-3" xl={12} xxl={8}>
                   <RosterStorageView/>
                 </Col>
-                <Col xl={12} xxl={4}>
+                <Col className="mx-auto" xl={8} xxl={4}>
                   <MarketDataView/>
                 </Col>
               </Row>

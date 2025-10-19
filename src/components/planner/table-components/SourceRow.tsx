@@ -18,6 +18,9 @@ interface SourceRowProps{
   total?: boolean; // If true, this row represents the table total.
   src: Source; // The Source that this SourceRow is displaying.
   index: number; // The index of the Source that this SourceRow is displaying.
+
+  // At most one of the following properties may be true for any SourceRow.
+  wideQty?: boolean; // If true, render a wider quantity field.
   combo?: boolean; // If true, src is a combo source (e.g., reds/blues)
 
   /** References to parent component state/state setters */
@@ -33,8 +36,8 @@ interface SourceRowProps{
 
 // Generate a table row for the "Roster Storage" section.
 export function SourceRow(props: SourceRowProps): ReactNode{
-  let {total, src, index, combo, setChanged, setSource,
-       syncRow, syncMatIndex} = props; // Unpack props
+  let {total, src, index, wideQty, combo,
+       setChanged, setSource, syncRow, syncMatIndex} = props; // Unpack props
 
   // State variables for controlled input fields, initialize with source data
   const [use, setUse] = useState(src.use);
@@ -136,8 +139,8 @@ export function SourceRow(props: SourceRowProps): ReactNode{
 
   return(
     <Row className={combo ? "mat2 table-row" : "table-row"}>
-      <Cell bold key="label" colSpan={combo ? 3 : 6} value={src.id}/>
-      <Cell key="qty" colSpan={combo ? 1 : 2} controlledValue={total ? undefined : qty[0]} // Empty if total
+      <Cell bold key="label" colSpan={wideQty ? 4 : (combo ? 3 : 6)} value={src.id}/>
+      <Cell key="qty" colSpan={wideQty ? 3 : (combo ? 1 : 2)} controlledValue={total ? undefined : qty[0]} // Empty if total
         onBlur={total ? undefined : () => {if (changed){setChanged(true)}; changed = false}}
         onChange={total ? undefined : (e) => handleQtyChange(e, index, 0)}
       />{/* Input disabled if total */}
@@ -162,7 +165,7 @@ export function SourceRow(props: SourceRowProps): ReactNode{
         />
       }
 
-      <Cell bold key="amt" value={src.amt[0]} colSpan={combo ? 1 : 2}/>
+      <Cell bold key="amt" value={src.amt[0]} colSpan={wideQty ? 3 : (combo ? 1 : 2)}/>
 
       {combo && // Render cells for second material
         <>

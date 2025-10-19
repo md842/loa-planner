@@ -25,8 +25,11 @@ interface RosterStorageTableProps{
   image: string; // The image used for this table
   mat: keyof Materials; // The material associated with this table
 
+  // If defined, the parameters below this one should not be defined.
+  wideQty?: boolean; // If true, render a wider quantity field.
+
   // If defined, this RosterStorageTable is a combo table (e.g., reds/blues)
-  title2?: string;
+  title2?: string; // Displayed in the top-left corner of second material area of this table
   color2?: string; // The color used for the second material area of this table
   image2?: string; // The image used for the second material area of this table
   mat2?: keyof Materials; // The second material associated with this table
@@ -37,7 +40,7 @@ interface RosterStorageTableProps{
 
 /** Constructs the "Goals" section of the parent table. */
 export function RosterStorageTable(props: RosterStorageTableProps): ReactNode{
-  let {configurable, title, color, image, mat,
+  let {configurable, title, color, image, mat, wideQty,
        title2, color2, image2, mat2,
        syncMatIndex} = props; // Unpack props
 
@@ -77,6 +80,7 @@ export function RosterStorageTable(props: RosterStorageTableProps): ReactNode{
           total={i == sources.length - 1} // Last source is total
           src={sources[i]}
           index={i}
+          wideQty={wideQty}
           combo={mat2 ? true : false}
           // Parent component state setters
           setChanged={setChanged}
@@ -422,15 +426,15 @@ export function RosterStorageTable(props: RosterStorageTableProps): ReactNode{
       <ConfigModal/> {/* Hidden until setModalVis(true) onClick*/}
       <Container className="container-table mb-3" style={{"--table-color": color, "--mat2-color": color2} as React.CSSProperties}>
         <Row className="table-head">
-          <Col className="table-cell" xs={mat2 ? 3 : 6}>
+          <Col className="table-cell" xs={wideQty ? 4 : (mat2 ? 3 : 6)}>
             <div className="d-flex align-items-end">
               <img src={image}/>
               <p className="mx-2 mb-0">{title}</p>
             </div>
           </Col>
-          <Col className="table-cell" xs={mat2 ? 1 : 2}>Quantity</Col>
+          <Col className="table-cell" xs={wideQty ? 3 : (mat2 ? 1 : 2)}>Quantity</Col>
           <Col className="table-cell" xs={mat2 ? 1 : 2}>Use?</Col>
-          <Col className="table-cell" xs={mat2 ? 1 : 2}>Amount</Col>
+          <Col className="table-cell" xs={wideQty ? 3 : (mat2 ? 1 : 2)}>Amount</Col>
           {mat2 && <>
             <Col className="mat2 table-cell" xs={3}>
               <div className="d-flex align-items-end">
