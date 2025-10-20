@@ -131,7 +131,12 @@ export function MarketDataTable(props: MarketDataTableProps): ReactNode{
   }
 
   return(
-    <Container className="container-table m-0" style={{"--table-color": color} as React.CSSProperties}>
+    <Container
+      className="container-table m-0"
+      style={{
+        "--table-color": color
+      } as React.CSSProperties}
+    >
       <Row className="table-head">
         <Col className="table-cell" xs={6}>
           <img src={image}/>

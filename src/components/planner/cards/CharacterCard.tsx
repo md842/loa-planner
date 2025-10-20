@@ -30,7 +30,7 @@ export function CharacterCard(props: CharacterCardProps): ReactNode{
   let {char, index, handleDelete, handleSwap,
        updateRosterGoals, updateRosterRem} = props; // Unpack props
 
-  // Load initial character info into state so SettingsModal can change them
+  // Load initial character info into state so ConfigModal can change them
   const [charState, setCharState] = useState({
     name: char.name,
     ilvl: char.ilvl,
@@ -199,17 +199,17 @@ export function CharacterCard(props: CharacterCardProps): ReactNode{
               />
             </InputGroup>
           </Modal.Body>
-          <Modal.Footer
+          <Modal.Footer // "Save" button and help strings
             // If a help string is being rendered, change flexbox justify
             className={customName.length > 0 && uniqueName ? undefined : "justify-content-between"}
           >
             {!customName.length && // If button is disabled, render help string
-              <p style={{color: "var(--bs-warning)"}}>
+              <p className="text-warning">
                 Character name cannot be empty.
               </p>
             }
             {!uniqueName &&  // If button is disabled, render help string
-              <p style={{color: "var(--bs-warning)"}}>
+              <p className="text-warning">
                 Character name must be unique.
               </p>
             }
@@ -238,7 +238,12 @@ export function CharacterCard(props: CharacterCardProps): ReactNode{
   }
 
   return(
-    <div className="mb-4 d-flex" style={{"--table-color": charState.color} as React.CSSProperties}>
+    <div
+      className="mb-4 d-flex"
+      style={{
+        "--table-color": charState.color
+      } as React.CSSProperties}
+    >
       <ConfigModal/>
       <div className="settings-tab">
         <Button variant="link" onClick={() => setModalVis(true)}>

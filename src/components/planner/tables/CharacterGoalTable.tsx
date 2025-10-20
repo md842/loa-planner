@@ -25,7 +25,7 @@ interface GoalTableProps{
   // References to parent component state/state setters
   // Wrapper for updating the target and total goal in parent component state
   setGoal(goalIndex: number, id?: string, key?: keyof Materials, value?: number): void;
-  // Directly updates parent component goal state (used by SettingsModal)
+  // Directly updates parent component goal state (used by ConfigModal)
   setGoals(goals: Goal[]): void;
   updateRosterGoals(): void; // Sends signal to update RosterCard GoalTable
   updateRosterRem(): void; // Sends signal to update RosterCard RemTable
@@ -237,23 +237,31 @@ export function CharacterGoalTable(props: GoalTableProps): ReactNode{
                 value={goalName}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleAddGoalNameChange(e)}
               />
-            <Button className="d-block mx-auto" variant="primary" type="submit"
-              // Disable if goal name is empty, too long, or not unique
-              disabled={!goalName.length || !uniqueName}
-            >
-              Add Goal
-            </Button>
             </InputGroup>
-            {!goalName.length &&  // If button is disabled, render help string
-              <p style={{color: "var(--bs-warning)"}}>
-                Goal name cannot be empty.
-              </p>
-            }
-            {!uniqueName &&  // If button is disabled, render help string
-              <p style={{color: "var(--bs-warning)"}}>
-                Goal name must be unique.
-              </p>
-            }
+            <div // "Add Goal" button and help strings
+              // If a help string is being rendered, change flexbox justify
+              className={"d-flex align-items-center " + (
+                !goalName.length || !uniqueName ?
+                "justify-content-between" : "justify-content-end")
+              }
+            >
+              {!goalName.length &&  // If button is disabled, render help string
+                <p className="text-warning m-0">
+                  Goal name cannot be empty.
+                </p>
+              }
+              {!uniqueName &&  // If button is disabled, render help string
+                <p className="text-warning m-0">
+                  Goal name must be unique.
+                </p>
+              }
+              <Button className="m-0" variant="primary" type="submit"
+                // Disable if goal name is empty, too long, or not unique
+                disabled={!goalName.length || !uniqueName}
+              >
+                Add Goal
+              </Button>
+            </div>
           </Form>
         </Modal.Body>
         <Modal.Footer>

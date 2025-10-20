@@ -302,25 +302,18 @@ export function RosterStorageTable(props: RosterStorageTableProps): ReactNode{
 
           <Form onSubmit={(e) => handleAddSource(e)}>
             {preset && // Render preset sources dropdown
-              <>
-                <InputGroup className="mb-3">
-                  <InputGroup.Text id="basic-addon3">Preset Sources</InputGroup.Text>
-                  <Form.Select>
-                    { /* Populate sources dropdown with sourceOptions */
-                    presetSources.map((src: Source) => {
-                      if (findSource(src.id, temp) == -1){ // Not found in temp
-                        presetsRemaining = true;
-                        return(<option key={src.id} value={src.id}>{src.id}</option>);
-                      }
-                    })}
-                  </Form.Select>
-                </InputGroup>
-                {!presetsRemaining && // If button is disabled, render help string
-                  <p style={{color: "var(--bs-warning)"}}>
-                    All preset sources are already active, nothing to add.
-                  </p>
-                }
-              </>
+              <InputGroup className="mb-3">
+                <InputGroup.Text id="basic-addon3">Preset Sources</InputGroup.Text>
+                <Form.Select>
+                  { /* Populate sources dropdown with sourceOptions */
+                  presetSources.map((src: Source) => {
+                    if (findSource(src.id, temp) == -1){ // Not found in temp
+                      presetsRemaining = true;
+                      return(<option key={src.id} value={src.id}>{src.id}</option>);
+                    }
+                  })}
+                </Form.Select>
+              </InputGroup>
             }
             {!preset && // Render custom sources form
               <>
@@ -390,27 +383,40 @@ export function RosterStorageTable(props: RosterStorageTableProps): ReactNode{
                   <InputGroup.Text id="basic-addon3">Floor divisor</InputGroup.Text>
                   <Form.Control type="number" defaultValue={1} min={1}/>
                 </InputGroup>
-
-                {!customName.length &&  // If button is disabled, render help string
-                  <p style={{color: "var(--bs-warning)"}}>
-                    Custom source name cannot be empty.
-                  </p>
-                }
-                {!uniqueName &&  // If button is disabled, render help string
-                  <p style={{color: "var(--bs-warning)"}}>
-                    Custom source name must be unique.
-                  </p>
-                }
               </>
             }
-            <Button className="d-block mx-auto" variant="primary" type="submit"
-              /* Disable if preset source selected but no presets to add,
-                 or custom source selected but name is empty or not unique. */
-              disabled={preset && !presetsRemaining ||
-                        !preset && (!customName.length || !uniqueName)}
+            <div // "Add Source" button and help strings
+              // If a help string is being rendered, change flexbox justify
+              className={"d-flex align-items-center " + (
+                ((preset && !presetsRemaining) ||
+                 (!preset && (!customName.length || !uniqueName))) ?
+                "justify-content-between" : "justify-content-end")
+              }
             >
-              Add Source
-            </Button>
+              {preset && !presetsRemaining && // If button is disabled, render help string
+                <p className="text-warning m-0">
+                  No more preset sources to add.
+                </p>
+              }
+              {!preset && !customName.length &&  // If button is disabled, render help string
+                <p className="text-warning m-0">
+                  Custom source name cannot be empty.
+                </p>
+              }
+              {!preset && !uniqueName &&  // If button is disabled, render help string
+                <p className="text-warning m-0">
+                  Custom source name must be unique.
+                </p>
+              }
+              <Button className="m-0" variant="primary" type="submit"
+                /* Disable if preset source selected but no presets to add,
+                  or custom source selected but name is empty or not unique. */
+                disabled={preset && !presetsRemaining ||
+                          !preset && (!customName.length || !uniqueName)}
+              >
+                Add Source
+              </Button>
+            </div>
           </Form>
         </Modal.Body>
         <Modal.Footer>
@@ -424,7 +430,13 @@ export function RosterStorageTable(props: RosterStorageTableProps): ReactNode{
   return(
     <>
       <ConfigModal/> {/* Hidden until setModalVis(true) onClick*/}
-      <Container className="container-table mb-3" style={{"--table-color": color, "--mat2-color": color2} as React.CSSProperties}>
+      <Container
+        className="container-table mb-3"
+        style={{
+          "--table-color": color,
+          "--mat2-color": color2
+        } as React.CSSProperties}
+      >
         <Row className="table-head">
           <Col className="table-cell" xs={wideQty ? 4 : (mat2 ? 3 : 6)}>
             <div className="d-flex align-items-end">
