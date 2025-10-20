@@ -28,7 +28,7 @@ let totalSaved: number = 0; // This can be deleted later.
 
 /** Adds a new blank character to the end of the character data. */
 export function addChar(): boolean{
-  if (chars.length == 10) // Limit characters to 10
+  if (chars.length == 12) // Limit characters to 12
     return false; // Adding character failed
 
   chars.push(initCharacter()); // Add character

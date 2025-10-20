@@ -73,11 +73,19 @@ export function RosterView(){
             updateRosterRem={() => sendRosterRemUpdateSignal([])}
           />}
         <div className="text-center">
-          {(chars.length < 10) && /* Hide button if character limit reached */
+          {(chars.length < 12) && /* Hide button if character limit reached */
             <Button className="mx-1" variant="primary" onClick={handleAddChar}>
               Add Character
             </Button>}
-          <Button className="mx-1" variant="primary" onClick={() => setModalVis(true)}>
+          <Button className="mx-1" variant="primary"
+            href="https://maxroll.gg/lost-ark/upgrade-calculator"
+            target="_blank"
+          >
+            Open Maxroll Upgrade Calculator &nbsp;<i className="bi bi-box-arrow-up-right"/>
+          </Button>
+          <Button className="mx-1" variant="primary"
+            onClick={() => setModalVis(true)}
+          >
             Show Help
           </Button>
         </div>
