@@ -1,12 +1,12 @@
-import {type ReactNode, type RefObject, useRef, useState} from 'react';
+import {type ChangeEvent, type ReactNode, type RefObject, useRef, useState} from 'react';
 
 import {TableHeader} from '../tables/TableHeader';
 import {CharacterGoalTable} from '../tables/CharacterGoalTable';
 import {MatsTable} from '../tables/MatsTable';
 import {RemTable} from '../tables/RemTable';
 
-import {type Character, type Goal, type Materials, initMaterials} from '../../core/types';
-import {saveCharParams} from '../../core/character-data';
+import {type Character, type Goal, type Materials, charNameUnique, initMaterials} from '../../core/types';
+import {getChars, saveCharParams} from '../../core/character-data';
 
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
@@ -38,7 +38,12 @@ export function CharacterCard(props: CharacterCardProps): ReactNode{
     usesClassColor: char.usesClassColor,
     color: char.color
   });
-  const [modalVis, setModalVis] = useState(false); // SettingsModal visibility
+
+  /* Configuring a new character replaces char.class with a value from the
+     class dropdown, so only a new character has this placeholder class. For
+     new characters, show ConfigModal by default, otherwise hide by default. */
+  let isNewChar: boolean = char.class == "(New Character)";
+  const [modalVis, setModalVis] = useState(isNewChar); // ConfigModal visibility
 
   // Table state variable for materials sources
   const [goals, setGoals] = useState(char.goals);
@@ -72,8 +77,13 @@ export function CharacterCard(props: CharacterCardProps): ReactNode{
     ]);
   }
 
-  function SettingsModal(){
+  function ConfigModal(){
     const [colorPickerDisabled, setColorPickerDisabled] = useState(charState.usesClassColor);
+
+    // Allows disabling "Save" button when name is empty or not unique
+    const [customName, setCustomName] = useState(charState.name);
+    const [uniqueName, setUniqueName] = useState(true);
+
     const classNames: string[] = ["Aeromancer", "Arcanist", "Artillerist",
     "Artist", "Bard", "Berserker", "Breaker", "Deadeye", "Deathblade",
     "Destroyer", "Glaivier", "Gunlancer", "Gunslinger", "Machinist", "Paladin",
@@ -111,7 +121,17 @@ export function CharacterCard(props: CharacterCardProps): ReactNode{
       "Wildsoul": "#3A945E"
     };
 
-    function handleSubmit(e: React.FormEvent<HTMLFormElement>){
+    /** Handles the controlled character name input. */
+    function handleNameChange(e: ChangeEvent<HTMLInputElement>){
+      if (e.target.value.length < 16){ // Under length limit, accept input
+        setCustomName(e.target.value); // Update controlled name input
+        // Search for name in chars; false if found
+        setUniqueName(charNameUnique(getChars(), e.target.value, index));
+      }
+    }
+
+    /** Called when clicking "Save" in the modal footer. */
+    function saveChanges(e: React.FormEvent<HTMLFormElement>){
       // Extract form information
       let target: HTMLFormElement = e.target as HTMLFormElement;
       let name: string = (target[0] as HTMLFormElement).value;
@@ -125,7 +145,13 @@ export function CharacterCard(props: CharacterCardProps): ReactNode{
         color = (target[4] as HTMLFormElement).value; // Get color from form
 
       // Update (re-render) character info in top left of table
-      setCharState({name: name, ilvl: ilvl, class: charClass, usesClassColor: usesClassColor, color: color});
+      setCharState({
+        name: name,
+        ilvl: ilvl,
+        class: charClass,
+        usesClassColor: usesClassColor,
+        color: color
+      });
       saveCharParams(index, name, ilvl, charClass, usesClassColor, color);
       setModalVis(false); // Close modal
     }
@@ -133,13 +159,16 @@ export function CharacterCard(props: CharacterCardProps): ReactNode{
     return(
       <Modal show={modalVis} centered>
         <Modal.Header>
-          <Modal.Title>Character Settings</Modal.Title>
+          <Modal.Title>{isNewChar ? "Configure New Character" : "Configure Character: " + charState.name}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={(e) => handleSubmit(e)}>
+        <Form onSubmit={(e) => saveChanges(e)}>
+          <Modal.Body>
             <InputGroup className="mb-3">
               <InputGroup.Text id="basic-addon3">Name</InputGroup.Text>
-              <Form.Control defaultValue={charState.name}/>
+              <Form.Control
+                value={customName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleNameChange(e)}
+              />
             </InputGroup>
             <InputGroup className="mb-3">
               <InputGroup.Text id="basic-addon3">Item Level</InputGroup.Text>
@@ -157,11 +186,11 @@ export function CharacterCard(props: CharacterCardProps): ReactNode{
             <Form.Check
               className="mb-3"
               type="checkbox"
-              label="Use class color"
+              label="Use default class color"
               defaultChecked={charState.usesClassColor}
               onChange={(e) => setColorPickerDisabled(e.target.checked)}
             />
-            <InputGroup className="mb-3">
+            <InputGroup>
               <InputGroup.Text id="basic-addon3">Custom color</InputGroup.Text>
               <Form.Control
                 type="color"
@@ -169,17 +198,48 @@ export function CharacterCard(props: CharacterCardProps): ReactNode{
                 disabled={colorPickerDisabled}
               />
             </InputGroup>
-            <Button variant="primary" type="submit">Save</Button>
-            <Button variant="primary" onClick={() => setModalVis(false)}>Cancel</Button>
-          </Form>
-        </Modal.Body>
+          </Modal.Body>
+          <Modal.Footer
+            // If a help string is being rendered, change flexbox justify
+            className={customName.length > 0 && uniqueName ? undefined : "justify-content-between"}
+          >
+            {!customName.length && // If button is disabled, render help string
+              <p style={{color: "var(--bs-warning)"}}>
+                Character name cannot be empty.
+              </p>
+            }
+            {!uniqueName &&  // If button is disabled, render help string
+              <p style={{color: "var(--bs-warning)"}}>
+                Character name must be unique.
+              </p>
+            }
+            <div>
+              <Button variant="primary" type="submit"
+                // Disable if character name field is empty or not unique.
+                disabled={!customName.length || !uniqueName}
+              >
+                Save
+              </Button>
+              <Button variant="primary"
+                onClick={() => {
+                  if (isNewChar)
+                    handleDelete(index);
+                  else
+                    setModalVis(false);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </Modal.Footer>
+        </Form>
       </Modal>
     );
   }
 
   return(
     <div className="mb-4 d-flex" style={{"--table-color": charState.color} as React.CSSProperties}>
-      <SettingsModal/> {/* Hidden until setModalVis(true) onClick*/}
+      <ConfigModal/>
       <div className="settings-tab">
         <Button variant="link" onClick={() => setModalVis(true)}>
           <i className="bi bi-gear-fill"/>

@@ -12,15 +12,25 @@ export interface Character{
 /** Initializes and returns a default Character object. */
 export function initCharacter(): Character{
   return {
-    name: "(Name)",
-    ilvl: "(Ilvl)",
-    class: "(Class)",
+    name: "",
+    ilvl: "",
+    class: "(New Character)",
     usesClassColor: true,
     color: "#777",
     goals: [initGoal("Total")],
     boundMats: initMaterials()
   };
 }
+
+/** Searches a Character array for the specified name. */
+export function charNameUnique(chars: Character[], name: string, ignoreIndex?: number): boolean{
+  return chars.every(function(char: Character, index: number){
+    if (index == ignoreIndex)
+      return true;
+    return name != char.name; // Returns false on any match
+  }); // Returns true if no match
+}
+
 
 /** Roster goal data structure. */
 export interface RosterGoal{
