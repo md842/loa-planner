@@ -1,5 +1,19 @@
-main{
-  font-size: 14px;
+@media (min-width: 1920px){
+  main{
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1081px){
+  main{
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 1080px){
+  main{
+    font-size: 12px;
+  }
 }
 
 .planner-tabs{

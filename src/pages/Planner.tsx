@@ -94,7 +94,13 @@ export function Planner(){
           }
           {verticalMonitor && // Render separate tabs on vertical monitors
             <Tab eventKey="market-data" title="Market Data">
-              <MarketDataView/>
+              <Container fluid>
+                <Row>
+                  <Col className="mx-auto" xs={8}>
+                    <MarketDataView/>
+                  </Col>
+                </Row>
+              </Container>
             </Tab>
           }
         </Tabs>

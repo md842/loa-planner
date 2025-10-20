@@ -103,11 +103,11 @@ export function MarketDataTable(props: MarketDataTableProps): ReactNode{
       /* sources is an async state variable and may have an outdated unit price
          if referenced here, so use the locally calculated new unit price as
          initial min (if src is active) and ignore sources[srcIndex]. */
-      let min: number = (src.sel![0]) ? src.amt[0] : -1;
+      let min: number = (src.sel![0]) ? src.amt[0] : 0;
       for (let i = 0; i < sources.length - 1; i++){ // Ignore "Optimal" source
         if (i != srcIndex){ // Ignore sources[srcIndex]
           if (sources[i].sel![0]){ // Ignore inactive sources
-            if ((min == -1) || // src not active, replace initial min immediately
+            if ((min == 0) || // src not active, replace initial min immediately
                 (sources[i].amt[0] != 0 && // Source has non-zero unit price
                  sources[i].amt[0] < min)) // Source unit price less than min
               min = sources[i].amt[0]; // Update min with sources[i] unit price
