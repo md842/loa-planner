@@ -1,10 +1,40 @@
 import {type ReactNode} from 'react';
 
 import Accordion from 'react-bootstrap/Accordion';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
 
-export function PlannerTutorial(): ReactNode{
+/** Props interface for PlannerTutorialModal. */
+interface PlannerTutorialModalProps{
+  defaultActiveKey: string; // The tab to open by default
+
+  // References to parent component state/state setters
+  modalVis: boolean;
+  setModalVis(modalVis: boolean): void;
+}
+
+export function PlannerTutorialModal(props: PlannerTutorialModalProps): ReactNode{
+  let {defaultActiveKey, modalVis, setModalVis} = props; // Unpack props
+
   return(
-    <Accordion defaultActiveKey="0">
+    <Modal show={modalVis} centered size="lg">
+      <Modal.Header>
+        <Modal.Title>LOA Planner Help</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p>Click on any of the items below for an overview.</p>
+        <PlannerTutorial defaultActiveKey={defaultActiveKey}/>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="primary" onClick={() => setModalVis(false)}>Dismiss</Button>
+      </Modal.Footer>
+    </Modal>
+  );
+}
+
+export function PlannerTutorial(props: {defaultActiveKey: string}): ReactNode{
+  return(
+    <Accordion defaultActiveKey={props.defaultActiveKey}>
       <Accordion.Item eventKey="0">
         <Accordion.Header>Planner: Overview</Accordion.Header>
         <Accordion.Body>
@@ -71,10 +101,10 @@ export function PlannerTutorial(): ReactNode{
           </p>
           <p>
             Roster goals may be added, reordered, and deleted via the
-            "Configure Roster Goals" button on the roster goals card at the top
-            or bottom of the "Roster View" tab. Custom roster goal names may be
-            input directly into the roster goals card via the input field
-            (indicated by lighter background).
+            "Configure Roster Goals" button on the (gray) Roster Goals card at
+            the top or bottom of the "Roster View" tab. Custom roster goal
+            names may be input directly into the Roster Goals card via the
+            input field (indicated by lighter background).
           </p>
           <p>
             Editing roster goal values must be done via the "Configure Roster
@@ -98,7 +128,7 @@ export function PlannerTutorial(): ReactNode{
             For materials other than Silver and Gold, material sources may be
             added, reordered, and deleted via the "Configure Sources" button on
             the material's Roster Storage table. Preset material sources are
-            provided, but custom material sources may also be added.
+            provided, and custom material sources may also be added.
           </p>
           <p>
             Some material sources (generally tradable sources), display a
@@ -118,7 +148,8 @@ export function PlannerTutorial(): ReactNode{
           </p>
           <p>
             On horizontal monitors, "Roster Storage" displays side by side with
-            "Market Data".
+            "Market Data". On vertical monitors, they are separated into two
+            tabs for a better viewing experience.
           </p>
         </Accordion.Body>
       </Accordion.Item>
@@ -128,21 +159,24 @@ export function PlannerTutorial(): ReactNode{
           <p>
             The "Market Data" tab allows data entry of market prices for
             various honing materials. Market data is used to calculate total
-            gold values of goal materials, owned materials, remaining
-            materials, etc. 
+            gold values of goal materials, owned materials, etc. 
           </p>
           <p>
-            For honing materials that come in various
-            bundle sizes or have exchanges available, the optimal price for the
+            For honing materials that come in various bundle sizes (e.g., shard
+            pouches) or have exchanges available, the optimal price for the
             honing material will be automatically calculated.
           </p>
           <p>
             If desired, a market item may be excluded from consideration using
-            the checkboxes in the "Use?" column of the market data table.
+            the checkboxes in the "Use?" column of the market data table. If
+            all sources for a particular material are excluded, the material is
+            assigned a gold value of 0. This is useful if you will never buy
+            that material from the market (e.g., shards).
           </p>
           <p>
             On horizontal monitors, "Market Data" displays side by side with
-            "Roster Storage".
+            "Roster Storage". On vertical monitors, they are separated into two
+            tabs for a better viewing experience.
           </p>
         </Accordion.Body>
       </Accordion.Item>

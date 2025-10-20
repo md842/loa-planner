@@ -2,6 +2,7 @@ import {useState} from 'react';
 
 import {RosterCard} from './cards/RosterCard';
 import {CharacterCard} from './cards/CharacterCard';
+import {PlannerTutorialModal} from '../tutorials/PlannerTutorial';
 import {type Character} from '../core/types';
 import {addChar, delChar, getChars, swapChar} from '../core/character-data';
 
@@ -11,6 +12,8 @@ import Container from 'react-bootstrap/Container';
 export function RosterView(){
   const [chars, setChars] = useState(getChars); // Load characters into state
   const [rosterOnTop, setRosterOnTop] = useState(true); // RosterCard position
+
+  const [modalVis, setModalVis] = useState(false); // PlannerTutorialModal visibility
   
   /* Roster state update signals; uses array signal type because
      sendSignal([]) is guaranteed to update state with a new value. */
@@ -35,42 +38,50 @@ export function RosterView(){
   }
 
 	return(
-    <Container fluid="md">
-      {rosterOnTop && /* If true, render RosterCard above CharacterCards. */
-        <RosterCard
-          chars={chars}
-          rosterGoalUpdateSignal={rosterGoalUpdateSignal}
-          rosterRemUpdateSignal={rosterRemUpdateSignal}
-          setOnTop={setRosterOnTop}
-          updateRosterGoals={() => sendRosterGoalUpdateSignal([])}
-          updateRosterRem={() => sendRosterRemUpdateSignal([])}
-        />}
-      {chars.map((char: Character, index: number) => {
-        return( /* Render a CharacterCard for each character. */
-          <CharacterCard
-            key={char.name + index}
-            char={char}
-            index={index}
-            handleDelete={handleDeleteChar}
-            handleSwap={handleSwapChar}
+    <>
+      <PlannerTutorialModal defaultActiveKey="1" modalVis={modalVis} setModalVis={setModalVis}/>
+      <Container fluid="md">
+        {rosterOnTop && /* If true, render RosterCard above CharacterCards. */
+          <RosterCard
+            chars={chars}
+            rosterGoalUpdateSignal={rosterGoalUpdateSignal}
+            rosterRemUpdateSignal={rosterRemUpdateSignal}
+            setOnTop={setRosterOnTop}
             updateRosterGoals={() => sendRosterGoalUpdateSignal([])}
             updateRosterRem={() => sendRosterRemUpdateSignal([])}
-          />
-        );
-      })}
-      {!rosterOnTop && /* If false, render RosterCard below CharacterCards. */
-        <RosterCard
-          chars={chars}
-          rosterGoalUpdateSignal={rosterGoalUpdateSignal}
-          rosterRemUpdateSignal={rosterRemUpdateSignal}
-          setOnTop={setRosterOnTop}
-          updateRosterGoals={() => sendRosterGoalUpdateSignal([])}
-          updateRosterRem={() => sendRosterRemUpdateSignal([])}
-        />}
-      {(chars.length < 10) && /* Hide button if character limit reached */
-        <Button className="d-block mx-auto" variant="primary" onClick={handleAddChar}>
-          Add Character
-        </Button>}
-    </Container>
+          />}
+        {chars.map((char: Character, index: number) => {
+          return( /* Render a CharacterCard for each character. */
+            <CharacterCard
+              key={char.name + index}
+              char={char}
+              index={index}
+              handleDelete={handleDeleteChar}
+              handleSwap={handleSwapChar}
+              updateRosterGoals={() => sendRosterGoalUpdateSignal([])}
+              updateRosterRem={() => sendRosterRemUpdateSignal([])}
+            />
+          );
+        })}
+        {!rosterOnTop && /* If false, render RosterCard below CharacterCards. */
+          <RosterCard
+            chars={chars}
+            rosterGoalUpdateSignal={rosterGoalUpdateSignal}
+            rosterRemUpdateSignal={rosterRemUpdateSignal}
+            setOnTop={setRosterOnTop}
+            updateRosterGoals={() => sendRosterGoalUpdateSignal([])}
+            updateRosterRem={() => sendRosterRemUpdateSignal([])}
+          />}
+        <div className="text-center">
+          {(chars.length < 10) && /* Hide button if character limit reached */
+            <Button className="mx-1" variant="primary" onClick={handleAddChar}>
+              Add Character
+            </Button>}
+          <Button className="mx-1" variant="primary" onClick={() => setModalVis(true)}>
+            Show Help
+          </Button>
+        </div>
+      </Container>
+    </>
 	);
 }

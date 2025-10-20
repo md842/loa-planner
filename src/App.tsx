@@ -79,7 +79,7 @@ export default function App(){
     return(
       <Modal show={modalVis} centered size="lg">
         <Modal.Header>
-          <Modal.Title>Welcome to LOA Planner!</Modal.Title>
+          <Modal.Title>Welcome to LOA Planner (v1.0)!</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Accordion defaultActiveKey="0">
@@ -88,17 +88,15 @@ export default function App(){
               <Accordion.Body>
                 <h6>What's new:</h6>
                 <p>
-                  Implemented Planner with two tabs: "Roster View", and "Roster
-                  Storage and Market Data".
-                </p>
-                <p>
-                  Note: On vertical monitors, the "Roster Storage and Market
-                  Data" tab is separated into "Roster Storage" and "Market
-                  Data" tabs for an improved viewing experience.
+                  Implemented Roster View, Roster Storage, and Market Data.
                 </p>
                 <br/>
-                <p>Click on any of the items below for an overview.</p>
-                <PlannerTutorial/>
+                <p>
+                  Click on any of the items below for an overview. This help
+                  section may be viewed at any time by clicking the "Show Help"
+                  button at the bottom of each Planner tab.
+                </p>
+                <PlannerTutorial defaultActiveKey="0"/>
               </Accordion.Body>
             </Accordion.Item>
           </Accordion>
