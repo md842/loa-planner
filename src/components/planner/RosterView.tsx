@@ -81,7 +81,7 @@ export function RosterView(){
             href="https://maxroll.gg/lost-ark/upgrade-calculator"
             target="_blank"
           >
-            Open Maxroll Upgrade Calculator &nbsp;<i className="bi bi-box-arrow-up-right"/>
+            Maxroll Upgrade Calculator &nbsp;<i className="bi bi-box-arrow-up-right"/>
           </Button>
           <Button className="mx-1" variant="primary"
             onClick={() => setModalVis(true)}
