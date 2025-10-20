@@ -37,6 +37,14 @@ export function PlannedFeatures(){
 
       <h5 className="mb-4">Here's a look at features I'm considering, in no particular order:</h5>
 
+      <h6>Goal Milestones (Planner: Roster/Focused View Feature)</h6>
+      <p className="mb-4">
+        Allows a goal to be a milestone of another goal (e.g, +19 to +21 as a
+        milestone of +19 to +23). Goal milestones would not be reflected in the
+        goal total. This might be more intuitive than having to separate goals
+        (e.g., +19 to +21 separate from +21 to +23) to get an accurate total.
+      </p>
+
       <h6>Automatic Market Data/Market API? (General Feature)</h6>
       <p className="mb-4">
         Market Data will populate automatically rather than requiring manual
