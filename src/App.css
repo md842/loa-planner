@@ -1,5 +1,43 @@
 /* All pages common styling */
 
+/* Responsive font size scaling */
+@media (min-width: 1920px){
+  :root{
+    font-size: 1rem;
+  }
+}
+@media (max-width: 1920px){
+  :root{
+    font-size: 0.875rem;
+  }
+}
+@media (max-width: 1080px){
+  :root{
+    font-size: 0.75rem;
+  }
+}
+
+/* Override link colors for both light and dark themes */
+[data-bs-theme="dark"], [data-bs-theme="light"]{
+  --bs-link-color: var(--bs-body-color) !important;
+  --bs-link-hover-color: var(--bs-secondary-color) !important;
+
+  /* Bootstrap uses rgb variables instead of color variables in some scenarios,
+     such as <Button variant="link"/>, so override those too (see below). */
+  --bs-link-color-rgb: var(--bs-body-color-rgb) !important;
+}
+/* --bs-secondary-color-rgb is the same as --bs-body-color-rgb, with opacity
+   being the only distinguishing factor. So, --bs-link-hover-color-rgb must be
+   overriden with hardcoded values for each theme. These values correspond to a
+   color-mix of 75% --bs-secondary-color-rgb and 25% --bs-body-color-rgb,
+   effectively the equivalent of --bs-secondary-color. */
+[data-bs-theme="dark"]{
+  --bs-link-hover-color-rgb: 175, 179, 183 !important;
+}
+[data-bs-theme="light"]{
+  --bs-link-hover-color-rgb: 89, 92, 95 !important;
+}
+
 body{
   font-family: "Noto Sans", system-ui;
   font-weight: 300;
@@ -7,8 +45,4 @@ body{
 
 main{
   margin: 0% 5% 0% 5%; /* top, right, bottom, left */
-}
-
-a{
-  color: var(--bs-body-color); /* Set link color to text color */
 }

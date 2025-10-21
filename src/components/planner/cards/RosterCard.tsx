@@ -112,12 +112,26 @@ export function RosterCard(props: RosterCardProps): ReactNode{
   }
 
   return(
-    <div className="mb-4 d-flex" style={{"--table-color": "#777"} as React.CSSProperties}>
-      <div className="settings-tab">
-        <Button variant="link" onClick={() => setOnTop(true)}>
+    <div
+      className="mb-4 d-flex"
+      style={{
+        "--table-color": "#777"
+      } as React.CSSProperties}
+    >
+      <div // Config tab
+        className="d-flex flex-column rounded-start-3 p-2"
+        style={{
+          "backgroundColor": "#777",
+        } as React.CSSProperties}
+      >
+        <Button className="text-dark fs-4 p-0" variant="link" // Swap up
+          onClick={() => setOnTop(true)} // Moves to top of Roster View
+        >
           <i className="bi bi-chevron-up"/>
         </Button>
-        <Button variant="link" onClick={() => setOnTop(false)}>
+        <Button className="text-dark fs-4 p-0" variant="link" // Swap down
+          onClick={() => setOnTop(false)} // Moves to bottom of Roster View
+        >
           <i className="bi bi-chevron-down"/>
         </Button>
       </div>

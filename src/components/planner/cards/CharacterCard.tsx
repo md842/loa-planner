@@ -220,7 +220,7 @@ export function CharacterCard(props: CharacterCardProps): ReactNode{
               >
                 Save
               </Button>
-              <Button variant="primary"
+              <Button className="ms-2" variant="primary"
                 onClick={() => {
                   if (isNewChar)
                     handleDelete(index);
@@ -245,17 +245,30 @@ export function CharacterCard(props: CharacterCardProps): ReactNode{
       } as React.CSSProperties}
     >
       <ConfigModal/>
-      <div className="settings-tab">
-        <Button variant="link" onClick={() => setModalVis(true)}>
+      <div // Config tab
+        className="d-flex flex-column rounded-start-3 p-2"
+        style={{
+          "backgroundColor": charState.color,
+        } as React.CSSProperties}
+      >
+        <Button className="text-dark fs-4 p-0" variant="link" // Config modal
+          onClick={() => setModalVis(true)}
+        >
           <i className="bi bi-gear-fill"/>
         </Button>
-        <Button variant="link" onClick={() => handleSwap(index, -1)}> {/* direction -1 represents up */}
+        <Button className="text-dark fs-4 p-0" variant="link" // Swap up
+          onClick={() => handleSwap(index, -1)} // direction -1 represents up
+        >
           <i className="bi bi-chevron-up"/>
         </Button>
-        <Button variant="link" onClick={() => handleSwap(index, 1)}> {/* direction 1 represents down */}
+        <Button className="text-dark fs-4 p-0" variant="link" // Swap down
+          onClick={() => handleSwap(index, 1)} // direction 1 represents down
+        >
           <i className="bi bi-chevron-down"/>
         </Button>
-        <Button variant="link" onClick={() => handleDelete(index)}>
+        <Button className="text-dark fs-4 p-0" variant="link" // Delete char
+          onClick={() => handleDelete(index)}
+        >
           <i className="bi bi-trash3-fill"/>
         </Button>
       </div>

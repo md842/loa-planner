@@ -1,5 +1,3 @@
-import './Planner.css';
-
 import {createContext, useEffect, useState} from 'react';
 
 import {RosterView} from '../components/planner/RosterView';
@@ -66,7 +64,7 @@ export function Planner(){
         <Tabs
           activeKey={activeKey}
           onSelect={(key) => setActiveKey(key!)}
-          className="planner-tabs mb-5" justify
+          className="px-5 mb-5" justify
         >
           <Tab eventKey="roster-view" title="Roster View">
             <RosterView/>
