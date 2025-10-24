@@ -1,19 +1,49 @@
 /* All pages common styling */
 
+body{
+  font-family: "Noto Sans", var(--bs-body-font-family) !important;
+  font-weight: 300 !important;
+}
+
 /* Responsive font size scaling */
-@media (min-width: 1920px){
+@media (max-width: 1599px){
   :root{
-    font-size: 1rem;
+    /* Use user's font size setting up to a maximum of 14px */
+    font-size: clamp(0px, 1rem, 14px);
   }
 }
-@media (max-width: 1920px){
+@media (max-width: 1199px){
   :root{
-    font-size: 0.875rem;
+    /* Use user's font size setting up to a maximum of 12px */
+    font-size: clamp(0px, 1rem, 12px);
   }
 }
-@media (max-width: 1080px){
-  :root{
-    font-size: 0.75rem;
+@media (max-width: 1079px){
+  /* Components require a minimum width of 960px to display correctly, override
+     container max-widths on very small screens to maintain correct display. */
+  body{
+    min-width: 984px; /* 960px + 1rem left/right margins */
+  }
+  .main-container{
+    max-width: 960px !important; /* Overrides Bootstrap max-width: 720px */
+  }
+  .component-container{
+    max-width: unset !important; /* Overrides Bootstrap max-width: 720px */
+  }
+  .main-container .container-table{
+    max-width: unset; /* Overrides Bootstrap max-width: 720px */
+  }
+
+  .modal{
+    /* Bootstrap Modal vertical placement appears to break down on very small
+       screens (e.g., phones), this fixes it. */
+    height: 100vh !important; /* Overrides Bootstrap height: 100% */
+  }
+  .modal-backdrop{
+    /* Bootstrap Modal backdrop does not account for scrolling on small
+       screens, resulting in incomplete backdrop coverage. This fixes it. */
+    min-width: 984px; /* Accounts for horizontal scrolling */
+    height: 100% !important; /* Accounts for vertical scrolling */
   }
 }
 
@@ -36,13 +66,4 @@
 }
 [data-bs-theme="light"]{
   --bs-link-hover-color-rgb: 89, 92, 95 !important;
-}
-
-body{
-  font-family: "Noto Sans", system-ui;
-  font-weight: 300;
-}
-
-main{
-  margin: 0% 5% 0% 5%; /* top, right, bottom, left */
 }

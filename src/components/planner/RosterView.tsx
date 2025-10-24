@@ -40,7 +40,7 @@ export function RosterView(){
 	return(
     <>
       <PlannerTutorialModal defaultActiveKey="1" modalVis={modalVis} setModalVis={setModalVis}/>
-      <Container fluid="md">
+      <Container className="component-container p-0" fluid="md">
         {rosterOnTop && /* If true, render RosterCard above CharacterCards. */
           <RosterCard
             chars={chars}

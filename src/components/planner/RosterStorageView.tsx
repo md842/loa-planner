@@ -36,7 +36,7 @@ export function RosterStorageView(){
 	return(
     <>
       <PlannerTutorialModal defaultActiveKey="2" modalVis={modalVis} setModalVis={setModalVis}/>
-      <Container fluid="md">
+      <Container className="component-container p-0" fluid="md">
         <Row>
           <Col className="d-flex flex-column">
             <RosterStorageTable

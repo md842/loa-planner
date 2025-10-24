@@ -1,6 +1,6 @@
 export function PlannedFeatures(){
   return(
-    <main>
+    <main className="mx-5">
       <h5 className="mb-4">Here's a look at features I'm working on, in order of priority:</h5>
 
       <h6>Calculators (New Page)</h6>

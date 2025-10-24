@@ -20,7 +20,7 @@ export function MarketDataView(){
 	return(
     <>
       <PlannerTutorialModal defaultActiveKey="3" modalVis={modalVis} setModalVis={setModalVis}/>
-      <Container fluid>
+      <Container className="component-container p-0" fluid>
         <MarketDataTable
           title="Fusion Materials"
           color="#F90"

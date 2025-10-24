@@ -53,56 +53,58 @@ export function Planner(){
 
   return(
     <main>
-      <PlannerSyncContext value={
-        {
-          marketDataChanged: marketDataChanged,
-          setMarketDataChanged: setMarketDataChanged,
-          rosterMatsChanged: rosterMatsChanged,
-          setRosterMatsChanged: setRosterMatsChanged
-        } as PlannerSyncSignals}
-      >
-        <Tabs
-          activeKey={activeKey}
-          onSelect={(key) => setActiveKey(key!)}
-          className="px-5 mb-5" justify
+      <Container className="main-container p-0">
+        <PlannerSyncContext value={
+          {
+            marketDataChanged: marketDataChanged,
+            setMarketDataChanged: setMarketDataChanged,
+            rosterMatsChanged: rosterMatsChanged,
+            setRosterMatsChanged: setRosterMatsChanged
+          } as PlannerSyncSignals}
         >
-          <Tab eventKey="roster-view" title="Roster View">
-            <RosterView/>
-          </Tab>
-          {!verticalMonitor && // Render combined tab on horizontal monitors
-            <Tab eventKey="roster-storage" title="Roster Storage and Market Data">
-              <Container fluid>
-                <Row>
-                  <Col xs={8}>
-                    <h3 className="text-center mb-3">Roster Storage</h3>
-                    <RosterStorageView/>
-                  </Col>
-                  <Col xs={4}>
-                    <h3 className="text-center mb-3">Market Data</h3>
-                    <MarketDataView/>
-                  </Col>
-                </Row>
-              </Container>
+          <Tabs
+            activeKey={activeKey}
+            onSelect={(key) => setActiveKey(key!)}
+            className="px-5 mb-5" justify
+          >
+            <Tab eventKey="roster-view" title="Roster View">
+              <RosterView/>
             </Tab>
-          }
-          {verticalMonitor && // Render separate tabs on vertical monitors
-            <Tab eventKey="roster-storage" title="Roster Storage">
-              <RosterStorageView/>
-            </Tab>
-          }
-          {verticalMonitor && // Render separate tabs on vertical monitors
-            <Tab eventKey="market-data" title="Market Data">
-              <Container fluid>
-                <Row>
-                  <Col className="mx-auto" xs={8}>
-                    <MarketDataView/>
-                  </Col>
-                </Row>
-              </Container>
-            </Tab>
-          }
-        </Tabs>
-      </PlannerSyncContext>
+            {!verticalMonitor && // Render combined tab on horizontal monitors
+              <Tab eventKey="roster-storage" title="Roster Storage and Market Data">
+                <Container fluid>
+                  <Row>
+                    <Col xs={8}>
+                      <h3 className="text-center mb-3">Roster Storage</h3>
+                      <RosterStorageView/>
+                    </Col>
+                    <Col xs={4}>
+                      <h3 className="text-center mb-3">Market Data</h3>
+                      <MarketDataView/>
+                    </Col>
+                  </Row>
+                </Container>
+              </Tab>
+            }
+            {verticalMonitor && // Render separate tabs on vertical monitors
+              <Tab eventKey="roster-storage" title="Roster Storage">
+                <RosterStorageView/>
+              </Tab>
+            }
+            {verticalMonitor && // Render separate tabs on vertical monitors
+              <Tab eventKey="market-data" title="Market Data">
+                <Container fluid>
+                  <Row>
+                    <Col className="mx-auto" xs={8}>
+                      <MarketDataView/>
+                    </Col>
+                  </Row>
+                </Container>
+              </Tab>
+            }
+          </Tabs>
+        </PlannerSyncContext>
+      </Container>
     </main>
   );
 }

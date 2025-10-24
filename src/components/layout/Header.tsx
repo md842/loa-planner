@@ -25,13 +25,10 @@ export default function Header(){
   }
 
   useEffect(() => {
-    if (darkMode) // Apply dark mode
-      document.documentElement.setAttribute('data-bs-theme', "dark");
-    else // Apply light mode
-      document.documentElement.setAttribute('data-bs-theme', "light");
+    // Apply appropriate Bootstrap theme for the value of darkMode
+    document.documentElement.setAttribute('data-bs-theme', darkMode ? "dark" : "light");
 
-    /* Save dark/light mode setting to local storage, allows dark/light mode
-       setting to persist between sessions */
+    // Allows dark mode setting to persist between sessions
     localStorage.setItem('darkMode', darkMode.toString());
   }, [darkMode]); // Runs on mount and when darkMode changes
 
